@@ -68,9 +68,9 @@ void SettingsDlg::initialise(GameContext* context)
 
 SMSettings* getSettingsHandler(GameContext* context)
   {
-  if(TOMainMenuContext* toContext = dynamic_cast<TOMainMenuContext*>(context))
+  if(SMMainMenuContext* toContext = dynamic_cast<SMMainMenuContext*>(context))
     return toContext->getSettings();
-  if(TOGameContext* toContext = dynamic_cast<TOGameContext*>(context))
+  if(SMGameContext* toContext = dynamic_cast<SMGameContext*>(context))
     return toContext->getSettings();
   return nullptr;
   }

@@ -44,7 +44,7 @@ bool WorldItemSelectionManager::onWorldClick(GameContext* gameContext, uint mous
   if (!isCtrlClick)
     deselectAll(gameContext);
 
-  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
+  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   if (gameContext->getBoundingBoxManager()->boundingBoxPicked())
     {
     uint pickedTowerID = (uint)gameContext->getBoundingBoxManager()->getPickedBoundingBoxMeta();
@@ -114,7 +114,7 @@ bool WorldItemSelectionManager::isMouseDragging() const
 
 void WorldItemSelectionManager::deselectAll(GameContext* gameContext)
   {
-//  TOGameContext::cast(gameContext)->hideAllRangeFields();
+//  SMGameContext::cast(gameContext)->hideAllRangeFields();
 //  towerSelectionBoxesMap.clear();
 //  selectionBoxRenderables->clearBoxes();
 //  selectedTowers.clear();
@@ -132,13 +132,13 @@ void WorldItemSelectionManager::deselectTower(GameContext* gameContext, uint tow
 
 //void WorldItemSelectionManager::selectTower(GameContext* gameContext, TowerPtr tower)
 //  {
-//  TOGameContext::cast(gameContext)->displayTowerRangeField(tower.get());
+//  SMGameContext::cast(gameContext)->displayTowerRangeField(tower.get());
 //  selectedTowers.add(tower, tower->getID());
 //
 //  // create selection box if one doesn't already exist for this tower
 //  if (towerSelectionBoxesMap.count(tower->getID()) == 0)
 //    {
-//    BoundingBoxPtr boundingBox = TOGameContext::cast(gameContext)->getTowerCombinedBoundingBox(tower->getID());
+//    BoundingBoxPtr boundingBox = SMGameContext::cast(gameContext)->getTowerCombinedBoundingBox(tower->getID());
 //    expandBoundingBox(boundingBox);
 //    uint boxID = selectionBoxRenderables->addBox(boundingBox->getLowerBound(), boundingBox->getUpperBound());
 //    towerSelectionBoxesMap[tower->getID()] = boxID;
@@ -152,7 +152,7 @@ Vector2D toVector2D(const Vector3D& vector)
 
 void WorldItemSelectionManager::selectTowerScreenRect(GameContext* gameContext, const Vector2D& screenPoint1, const Vector2D& screenPoint2)
   {
-//  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
+//  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
 //  Vector2D terrainHitPoints[] =
 //    {
 //      toVector2D(toGameContext->terrainHitTest(screenPoint1.x, screenPoint1.y)),

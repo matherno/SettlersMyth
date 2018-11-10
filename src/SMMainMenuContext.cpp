@@ -7,13 +7,13 @@
 #include "SettingsDlg.h"
 
 
-TOMainMenuContext::TOMainMenuContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings)
+SMMainMenuContext::SMMainMenuContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings)
   : GameContextImpl(renderContext), settings(settings)
   {}
 
 typedef std::pair<string, OnMouseClickCallback> MenuOption;
 
-bool TOMainMenuContext::initialise()
+bool SMMainMenuContext::initialise()
   {
   bool result = GameContextImpl::initialise();
 
@@ -86,15 +86,15 @@ bool TOMainMenuContext::initialise()
   return result;
   }
 
-FontPtr TOMainMenuContext::getDefaultFont()
+FontPtr SMMainMenuContext::getDefaultFont()
   {
   return getRenderContext()->getSharedFont(FONT_DEFAULT_FNT, FONT_DEFAULT_GLYPHS, FONT_DEFAULT_SCALING);
   }
 
-TOMainMenuContext::MainMenuOutcome TOMainMenuContext::doMainMenu(RenderContextPtr renderContext, std::shared_ptr<SMSettings> settings)
+SMMainMenuContext::MainMenuOutcome SMMainMenuContext::doMainMenu(RenderContextPtr renderContext, std::shared_ptr<SMSettings> settings)
   {
   mathernogl::logInfo("Loading main menu...");
-  TOMainMenuContext mainMenuContext(renderContext, settings);
+  SMMainMenuContext mainMenuContext(renderContext, settings);
   mainMenuContext.initialise();
   while(!mainMenuContext.isContextEnded() && renderContext->isWindowOpen())
     {
@@ -104,20 +104,20 @@ TOMainMenuContext::MainMenuOutcome TOMainMenuContext::doMainMenu(RenderContextPt
     mainMenuContext.processDrawStage();
     mainMenuContext.endFrame(30);
     }
-  TOMainMenuContext::MainMenuOutcome outcome = mainMenuContext.getSelectedOption();
+  SMMainMenuContext::MainMenuOutcome outcome = mainMenuContext.getSelectedOption();
   mainMenuContext.cleanUp();
   renderContext->reset();
   return outcome;
   }
 
-void TOMainMenuContext::showLoadDlg()
+void SMMainMenuContext::showLoadDlg()
   {
   std::shared_ptr<SaveLoadDlg> saveLoadDlg(new SaveLoadDlg(getUIManager()->getNextComponentID(), SaveLoadDlg::modeLoad));
   getUIManager()->addComponent(saveLoadDlg);
   getUIManager()->pushModalComponent(saveLoadDlg);
 
   //  On loaded from a file
-  saveLoadDlg->setLoadGameStateCallback([this](std::shared_ptr<TOGameState> state)
+  saveLoadDlg->setLoadGameStateCallback([this](std::shared_ptr<SMGameState> state)
       {
       currentOutcome.optionSelected = optionLoad;
       currentOutcome.loadedState = state;
@@ -133,7 +133,7 @@ void TOMainMenuContext::showLoadDlg()
       });
   }
 
-void TOMainMenuContext::showSettingsDlg()
+void SMMainMenuContext::showSettingsDlg()
   {
   std::shared_ptr<SettingsDlg> settingsDlg(new SettingsDlg(getUIManager()->getNextComponentID()));
   getUIManager()->addComponent(settingsDlg);

@@ -4,27 +4,31 @@
 
 #include <RenderSystem/RenderableMesh.h>
 #include <RenderSystem/PostProcessing.h>
+#include <GameObjectDefs/StaticObjectDef.h>
 
 #include "SMGameContext.h"
 #include "Resources.h"
 
 #define LAND_HEIGHT 0
 
-bool TOGameContext::initialise()
+bool SMGameContext::initialise()
   {
   bool success = GameContextImpl::initialise();
   getRenderContext()->registerDrawStage(DRAW_STAGE_POST_PROC_EDGE);
   getRenderContext()->registerDrawStage(DRAW_STAGE_OPAQUE_AFTER_EDGE);
   getRenderContext()->registerDrawStage(DRAW_STAGE_FOGOFWAR);
 
+  if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
+    return false;
+
 //  PostProcStepHandlerPtr postProcSilhoutting(new PostProcSimpleBase(getRenderContext()->getNextPostProcessingStepID(), DRAW_STAGE_POST_PROC_EDGE, "shaders/SilhouttingFS.glsl"));
 //  postProcSilhoutting->initialise(getRenderContext());
 //  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
   if (loadedGameState)
-    toInputHandler.reset(new TOInputHandler(getInputManager()->getNextHandlerID(), loadedGameState->cameraFocalPos, loadedGameState->cameraZoomFactor, loadedGameState->cameraRotation, -45));
+    toInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), loadedGameState->cameraFocalPos, loadedGameState->cameraZoomFactor, loadedGameState->cameraRotation, -45));
   else
-    toInputHandler.reset(new TOInputHandler(getInputManager()->getNextHandlerID(), Vector3D(10, 0, 10), 30, 0, -45));
+    toInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 0, -45));
   addInputHandler(toInputHandler);
 
   initSurface();
@@ -32,17 +36,17 @@ bool TOGameContext::initialise()
   pauseMenuHandler.reset(new PauseMenuHandler(getNextActorID()));
   addActor(pauseMenuHandler);
 
-  RenderableMesh* lumberer = new RenderableMesh(getRenderContext()->getNextRenderableID());
-  lumberer->setMeshStorage(getRenderContext()->getSharedMeshStorage("resources/buildings/Woodcutter.obj"));
-  lumberer->setDrawStyleVertColours();
-  lumberer->getTransform()->translate(Vector3D(10, 0, 10));
-  lumberer->initialise(getRenderContext());
-  getRenderContext()->getRenderableSet()->addRenderable(RenderablePtr(lumberer));
+  griddedActorIDs.clear();
+  for (int x = 0; x < mapSize.x; ++x)
+    {
+    for (int y = 0; y < mapSize.y; ++y)
+      griddedActorIDs.push_back(0);
+    }
 
   return success;
   }
 
-void TOGameContext::cleanUp()
+void SMGameContext::cleanUp()
   {
   if (surfaceMesh)
     {
@@ -55,7 +59,7 @@ void TOGameContext::cleanUp()
   GameContextImpl::cleanUp();
   }
 
-void TOGameContext::processInputStage()
+void SMGameContext::processInputStage()
   {
   GameContextImpl::processInputStage();
 
@@ -67,51 +71,147 @@ void TOGameContext::processInputStage()
   getRenderContext()->configureShadowMap(false, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
   }
 
-void TOGameContext::processUpdateStage()
+void SMGameContext::processUpdateStage()
   {
   hudHandler.updateUI(this);
 
   GameContextImpl::processUpdateStage();
   }
 
-void TOGameContext::processDrawStage()
+void SMGameContext::processDrawStage()
   {
   getRenderContext()->invalidateShadowMap();
   GameContextImpl::processDrawStage();
   }
 
-void TOGameContext::initSurface()
+void SMGameContext::initSurface()
   {
   RenderContext* renderContext = getRenderContext();
 
   const float cellSize = 1;
   const uint numCells = 200;
+  mapSize.x = numCells;
+  mapSize.y = numCells;
   surfaceMesh.reset(new RenderableTerrain(renderContext->getNextRenderableID(), numCells, cellSize, DRAW_STAGE_OPAQUE_AFTER_EDGE));
   surfaceMesh->setMultiColour(Vector3D(pow(0.2, 2.2), pow(0.4, 2.2), pow(0.2, 2.2)), Vector3D(pow(0.15, 2.2), pow(0.3, 2.2), pow(0.15, 2.2)));
   surfaceMesh->initialise(renderContext);
+  surfaceMesh->getTransform()->translate(0, 0, numCells * cellSize * -1);
   renderContext->getRenderableSet()->addRenderable(surfaceMesh);
   }
 
-FontPtr TOGameContext::getDefaultFont()
+FontPtr SMGameContext::getDefaultFont()
   {
   return getRenderContext()->getSharedFont(FONT_DEFAULT_FNT, FONT_DEFAULT_GLYPHS, FONT_DEFAULT_SCALING);
   }
 
-void TOGameContext::getGameState(TOGameState* state)
+void SMGameContext::getGameState(SMGameState* state)
   {
   state->cameraFocalPos = toInputHandler->getFocalPosition();
   state->cameraRotation = toInputHandler->getRotation();
   state->cameraZoomFactor = toInputHandler->getZoomOffset();
   }
 
-void TOGameContext::displayPauseMenu()
+void SMGameContext::displayPauseMenu()
   {
   pauseMenuHandler->displayMenu(this);
   }
 
-Vector3D TOGameContext::getCameraFocalPosition() const
+Vector3D SMGameContext::getCameraFocalPosition() const
   {
   return toInputHandler->getFocalPosition();
   }
+
+
+SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY& position)
+  {
+  if (!isOnMap(position))
+    return nullptr;
+
+  auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID);
+  if (gameActor)
+    {
+    SMStaticActorPtr staticActor = std::dynamic_pointer_cast<SMStaticActor>(gameActor);
+    if (staticActor)
+      {
+      staticActor->setPos(position);
+      staticActors.add(staticActor, staticActor->getID());
+      auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
+      setGridCells(staticActor->getID(), position, staticObjectDef->getSize());
+      return gameActor;
+      }
+
+    SMResourceActorPtr resourceActor = std::dynamic_pointer_cast<SMResourceActor>(gameActor);
+    if (resourceActor)
+      {
+      resourceActors.add(resourceActor, resourceActor->getID());
+      return gameActor;
+      }
+
+    ASSERT(false, "");
+    return gameActor;
+    }
+  return nullptr;
+  }
+
+Vector2D SMGameContext::terrainHitTest(uint mouseX, uint mouseY)
+  {
+  Vector3D cursorWorldPos = getCursorWorldPos(mouseX, mouseY);
+  Vector3D cursorViewDir = getViewDirectionAtCursor(mouseX, mouseY);
+  ASSERT (cursorViewDir.y != 0, "View is parallel to terrain, can't hit!");
+  double tValue = -1.0 * cursorWorldPos.y / cursorViewDir.y;
+  Vector3D position = cursorWorldPos + (cursorViewDir * tValue);
+  return Vector2D(position.x, -1 * position.z);
+  }
+
+SMStaticActorPtr SMGameContext::getObjectAtGridPos(const GridXY& gridPos)
+  {
+  if (!isOnMap(gridPos))
+    return nullptr;
+
+  auto actorID = griddedActorIDs[gridPos.x + gridPos.y * mapSize.x];
+  if (actorID > 0 && staticActors.contains(actorID))
+    return staticActors.get(actorID);
+  return nullptr;
+  }
+
+bool SMGameContext::isOnMap(const GridXY& gridPos)
+  {
+  return gridPos.x >= 0 && gridPos.x < mapSize.x && gridPos.y >= 0 && gridPos.y < mapSize.y;
+  }
+
+bool SMGameContext::isCellClear(const GridXY& gridPos)
+  {
+  if (!isOnMap(gridPos))
+    return false;
+  return griddedActorIDs[gridPos.x + gridPos.y * mapSize.x] == 0;
+  }
+
+bool SMGameContext::isRegionClear(const GridXY& gridPos, const GridXY& regionSize)
+  {
+  for (int x = 0; x < regionSize.x; ++x)
+    {
+    for (int y = 0; y < regionSize.y; ++y)
+      {
+      if (!isCellClear(gridPos + GridXY(x, y)))
+        return false;
+      }
+    }
+  return true;
+  }
+
+void SMGameContext::setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize)
+  {
+  for (int x = 0; x < regionSize.x; ++x)
+    {
+    for (int y = 0; y < regionSize.y; ++y)
+      {
+      GridXY pos = gridPos + GridXY(x, y);
+      if (isOnMap(pos))
+        griddedActorIDs[pos.x + pos.y * mapSize.x] = id;
+      }
+    }
+  }
+
+
 
 

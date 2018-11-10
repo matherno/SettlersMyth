@@ -6,7 +6,7 @@
 *   
 */
 
-class TOInputHandler : public InputHandler
+class SMInputHandler : public InputHandler
   {
 private:
   Vector3D focalPosition;
@@ -25,7 +25,7 @@ private:
   uint activePlayer = 0;
 
 public:
-  TOInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset = 0, float rotation = 0, float pitch = -45);
+  SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset = 0, float rotation = 0, float pitch = -45);
 
   Vector3D getFocalPosition() const { return focalPosition; }
   float getPitch() const { return pitch; };

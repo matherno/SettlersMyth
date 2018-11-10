@@ -43,14 +43,14 @@ void runGame()
     return;
     }
 
-  TOMainMenuContext::MainMenuOutcome mainMenuOutcome;
+  SMMainMenuContext::MainMenuOutcome mainMenuOutcome;
   while (renderContext->isWindowOpen())
     {
-    mainMenuOutcome = TOMainMenuContext::doMainMenu(renderContext, settings);
+    mainMenuOutcome = SMMainMenuContext::doMainMenu(renderContext, settings);
     if (mainMenuOutcome.isQuitGame())
       break;
 
-    std::shared_ptr<TOGameState> loadedState;
+    std::shared_ptr<SMGameState> loadedState;
     if (mainMenuOutcome.isLoadGame())
       {
       loadedState = mainMenuOutcome.loadedState;
@@ -64,7 +64,7 @@ void runGame()
 
       try
         {
-        TOGameContext gameContext(renderContext, settings, loadedState);
+        SMGameContext gameContext(renderContext, settings, loadedState);
         gameContext.initialise();
         while (!gameContext.isContextEnded() && renderContext->isWindowOpen())
           {

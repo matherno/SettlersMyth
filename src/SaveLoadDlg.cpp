@@ -166,8 +166,8 @@ void SaveLoadDlg::onLoadPressed()
   if (onLoadingFunc && !filePath.empty())
     {
     mathernogl::logInfo("Loading game from '" + filePath + "'");
-    std::shared_ptr<TOGameState> state(new TOGameState());
-    if (TOGameSaveLoad::loadGame(state.get(), filePath))
+    std::shared_ptr<SMGameState> state(new SMGameState());
+    if (SMGameSaveLoad::loadGame(state.get(), filePath))
       {
       onLoadingFunc(state);
       }
@@ -185,8 +185,8 @@ void SaveLoadDlg::onSavePressed(GameContext* context)
         if (result == UIMessageBox::resultContinue)
           {
           mathernogl::logInfo("Saving game to: '" + filePath + "'");
-          std::shared_ptr<TOGameState> state = onSavingFunc();
-          TOGameSaveLoad::saveGame(state.get(), filePath);
+          std::shared_ptr<SMGameState> state = onSavingFunc();
+          SMGameSaveLoad::saveGame(state.get(), filePath);
           }
         });
     }
@@ -198,8 +198,8 @@ void SaveLoadDlg::onSaveNewPressed()
   if (onSavingFunc && !filePath.empty() && saveFiles.size() < MAX_SAVES)
     {
     mathernogl::logInfo("Saving game to new file: '" + filePath + "'");
-    std::shared_ptr<TOGameState> state = onSavingFunc();
-    TOGameSaveLoad::saveGame(state.get(), filePath);
+    std::shared_ptr<SMGameState> state = onSavingFunc();
+    SMGameSaveLoad::saveGame(state.get(), filePath);
     }
   }
 

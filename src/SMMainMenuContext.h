@@ -8,7 +8,7 @@
 *   
 */
 
-class TOMainMenuContext : public GameContextImpl
+class SMMainMenuContext : public GameContextImpl
   {
 public:
   enum Option
@@ -23,7 +23,7 @@ public:
   struct MainMenuOutcome
     {
     Option optionSelected = optionNone;
-    std::shared_ptr<TOGameState> loadedState;
+    std::shared_ptr<SMGameState> loadedState;
     bool isNewGame() const { return optionSelected == optionNew; }
     bool isLoadGame() const { return optionSelected == optionLoad; }
     bool isQuitGame() const { return optionSelected == optionQuit; }
@@ -34,16 +34,16 @@ private:
   std::shared_ptr<SMSettings> settings;
 
 public:
-  TOMainMenuContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings);
+  SMMainMenuContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings);
   MainMenuOutcome getSelectedOption() { return currentOutcome; }
   virtual FontPtr getDefaultFont() override;
   virtual bool initialise() override;
   SMSettings* getSettings() { return settings.get(); }
 
   static MainMenuOutcome doMainMenu(RenderContextPtr renderContext, std::shared_ptr<SMSettings> settings);
-  inline static TOMainMenuContext* cast(GameContext* context)
+  inline static SMMainMenuContext* cast(GameContext* context)
     {
-    TOMainMenuContext* toContext = dynamic_cast<TOMainMenuContext*>(context);
+    SMMainMenuContext* toContext = dynamic_cast<SMMainMenuContext*>(context);
     ASSERT(toContext, "Given game context wasn't a TOMainMenuContext!");
     return toContext;
     }

@@ -14,7 +14,7 @@ struct TowerState
   bool underConstruction = false;
   };
 
-struct TOGameState
+struct SMGameState
   {
   Vector3D cameraFocalPos;
   double cameraZoomFactor = 0;
@@ -22,10 +22,10 @@ struct TOGameState
   std::vector<TowerState> towers;
   };
 
-class TOGameSaveLoad
+class SMGameSaveLoad
   {
 public:
-  static bool loadGame(TOGameState* state, string filePath);
-  static bool saveGame(const TOGameState* state, string filePath);
-  static bool verifyState(const TOGameState* state);
+  static bool loadGame(SMGameState* state, string filePath);
+  static bool saveGame(const SMGameState* state, string filePath);
+  static bool verifyState(const SMGameState* state);
   };

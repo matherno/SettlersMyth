@@ -7,18 +7,18 @@
 #include "SMGameContext.h"
 #include "SaveLoadDlg.h"
 
-TOInputHandler::TOInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset, float rotation, float pitch)
+SMInputHandler::SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset, float rotation, float pitch)
   : InputHandler(id), focalPosition(focalPosition), zoomOffset(zoomOffset), rotation(rotation), pitch(pitch)
   {
   }
 
-void TOInputHandler::refreshCamera(Camera* camera) const
+void SMInputHandler::refreshCamera(Camera* camera) const
   {
   *camera->getWorldToCamera() = mathernogl::matrixTranslate(focalPosition * -1) * rotationMatrix * mathernogl::matrixTranslate(0, 0, -zoomOffset);
   camera->setValid(false);
   }
 
-void TOInputHandler::onAttached(GameContext* gameContext)
+void SMInputHandler::onAttached(GameContext* gameContext)
   {
   Camera* camera = gameContext->getCamera();
   refreshRotationMatrix();
@@ -27,19 +27,19 @@ void TOInputHandler::onAttached(GameContext* gameContext)
   camera->setValid(false);
   }
 
-void TOInputHandler::onDetached(GameContext* gameContext)
+void SMInputHandler::onDetached(GameContext* gameContext)
   {
 
   }
 
-void TOInputHandler::onUpdate(GameContext* gameContext)
+void SMInputHandler::onUpdate(GameContext* gameContext)
   {
   performMouseCameraMovement(gameContext);
   }
 
-bool TOInputHandler::onKeyHeld(GameContext* gameContext, uint key)
+bool SMInputHandler::onKeyHeld(GameContext* gameContext, uint key)
   {
-  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
+  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   char character = getCharFromKeyCode(key);
   Vector3D translation(0);
   float rotationDelta = 0;
@@ -85,16 +85,16 @@ bool TOInputHandler::onKeyHeld(GameContext* gameContext, uint key)
   return false;
   }
 
-void TOInputHandler::refreshRotationMatrix()
+void SMInputHandler::refreshRotationMatrix()
   {
   rotationMatrix = mathernogl::matrixYaw(-rotation) * mathernogl::matrixPitch(-pitch);
   }
 
-bool TOInputHandler::onKeyPressed(GameContext* gameContext, uint key)
+bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
   {
   if (key == KEY_ESC)
     {
-    TOGameContext::cast(gameContext)->displayPauseMenu();
+    SMGameContext::cast(gameContext)->displayPauseMenu();
     return true;
     }
 
@@ -105,22 +105,22 @@ bool TOInputHandler::onKeyPressed(GameContext* gameContext, uint key)
       gameContext->setPaused(paused);
       return true;
     case 'T':
-      TOGameContext::cast(gameContext)->getHUDHandler()->toggleDebugPanel();
+      SMGameContext::cast(gameContext)->getHUDHandler()->toggleDebugPanel();
       return true;
     }
   return false;
   }
 
-bool TOInputHandler::onMousePressed(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+bool SMInputHandler::onMousePressed(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
   return false;
   }
 
-bool TOInputHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+bool SMInputHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
 //  if (button == MOUSE_LEFT)
 //    {
-//    WorldItemSelectionManager* selectionManager = TOGameContext::cast(gameContext)->getSelectionManager();
+//    WorldItemSelectionManager* selectionManager = SMGameContext::cast(gameContext)->getSelectionManager();
 //    if (!selectionManager->isMouseDragging())
 //      selectionManager->onStartMouseDrag(gameContext, mouseX, mouseY);
 //    else
@@ -130,9 +130,9 @@ bool TOInputHandler::onMouseHeld(GameContext* gameContext, uint button, uint mou
   return false;
   }
 
-bool TOInputHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+bool SMInputHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
-  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
+  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   if (button == MOUSE_LEFT)
     {
 //    WorldItemSelectionManager* selectionManager = toGameContext->getSelectionManager();
@@ -146,14 +146,14 @@ bool TOInputHandler::onMouseReleased(GameContext* gameContext, uint button, uint
     }
   else if (button == MOUSE_MIDDLE)
     {
-//    Vector3D worldPos = TOGameContext::cast(gameContext)->terrainHitTest(mouseX, mouseY);
+//    Vector3D worldPos = SMGameContext::cast(gameContext)->terrainHitTest(mouseX, mouseY);
 //    toGameContext->createDepositGroup(worldPos, 2.5, 10);
 //    return true;
     }
   return false;
   }
 
-bool TOInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset, uint mouseX, uint mouseY)
+bool SMInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset, uint mouseX, uint mouseY)
   {
   zoomOffset -= scrollOffset * zoomSpeed;
   zoomOffset = mathernogl::clampf(zoomOffset, minZoom, maxZoom);
@@ -161,9 +161,9 @@ bool TOInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset
   return true;
   }
 
-void TOInputHandler::performMouseCameraMovement(GameContext* gameContext)
+void SMInputHandler::performMouseCameraMovement(GameContext* gameContext)
   {
-  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
+  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   if (!toGameContext->getSettings()->enableScreenEdgePan())
     return;
 

@@ -112,7 +112,7 @@ bool readTowerList(std::ifstream& inFile, std::vector<TowerState>& towerList)
   return true;
   }
 
-bool TOGameSaveLoad::loadGame(TOGameState* state, string filePath)
+bool SMGameSaveLoad::loadGame(SMGameState* state, string filePath)
   {
   if (!state)
     return false;
@@ -181,7 +181,7 @@ void writeTowers(std::ofstream& file, const std::vector<TowerState>* towerStates
     }
   }
 
-bool TOGameSaveLoad::saveGame(const TOGameState* state, string filePath)
+bool SMGameSaveLoad::saveGame(const SMGameState* state, string filePath)
   {
   if (!state)
     return false;
@@ -215,7 +215,7 @@ bool TOGameSaveLoad::saveGame(const TOGameState* state, string filePath)
   return false;
   }
 
-bool TOGameSaveLoad::verifyState(const TOGameState* state)
+bool SMGameSaveLoad::verifyState(const SMGameState* state)
   {
   return true;
   }

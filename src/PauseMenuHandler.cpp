@@ -140,8 +140,8 @@ void PauseMenuHandler::onSavePressed(GameContext* gameContext)
   uint id = saveLoadDlg->getID();
   saveLoadDlg->setSaveGameStateCallback([this, id, gameContext]()
         {
-        std::shared_ptr<TOGameState> state(new TOGameState());
-        TOGameContext::cast(gameContext)->getGameState(state.get());
+        std::shared_ptr<SMGameState> state(new SMGameState());
+        SMGameContext::cast(gameContext)->getGameState(state.get());
         gameContext->getUIManager()->removeComponent(id);
         gameContext->getUIManager()->popModalComponent();
         onReturnPressed(gameContext);

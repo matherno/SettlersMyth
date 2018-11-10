@@ -9,8 +9,8 @@
 *   
 */
 
-typedef std::function<std::shared_ptr<TOGameState>()> OnSavingFunc;
-typedef std::function<void(std::shared_ptr<TOGameState> state)> OnLoadingFunc;
+typedef std::function<std::shared_ptr<SMGameState>()> OnSavingFunc;
+typedef std::function<void(std::shared_ptr<SMGameState> state)> OnLoadingFunc;
 typedef std::function<void()> OnCancelledFunc;
 
 class SaveLoadDlg : public UIPanel

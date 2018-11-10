@@ -5,79 +5,113 @@
 #include <RenderSystem/RenderableMesh.h>
 #include <RenderSystem/RenderableSetImpl.h>
 #include <GameSystem/InputCodes.h>
+#include <GameObjectDefs/BuildingDef.h>
 #include "WorldItemPlacementHandler.h"
 #include "SMGameContext.h"
 
-TowerPlacementHandler::TowerPlacementHandler(uint id, uint towerTypeID) : InputHandler(id), towerTypeID(towerTypeID)
+BuildingPlacementHandler::BuildingPlacementHandler(uint id, uint buildingDefID) : InputHandler(id), buildingDefID(buildingDefID)
   {}
 
-void TowerPlacementHandler::onAttached(GameContext* gameContext)
+void BuildingPlacementHandler::onAttached(GameContext* gameContext)
   {
-  RenderContext* renderContext = gameContext->getRenderContext();
-  towerHighlight = renderContext->createRenderableSet();
-  renderContext->getRenderableSet()->addRenderable(towerHighlight);
-
-//  PhasingMesh* mesh = new PhasingMesh(renderContext->getNextRenderableID(), DRAW_STAGE_OVERLAY);
-//  mesh->setMeshStorage(renderContext->getSharedMeshStorage(type->baseMeshFilePath));
-//  mesh->initialise(renderContext);
-//  towerHighlight->addRenderable(RenderablePtr(mesh));
-  }
-
-void TowerPlacementHandler::onDetached(GameContext* gameContext)
-  {
-  RenderContext* renderContext = gameContext->getRenderContext();
-  towerHighlight->forEachChild([renderContext](RenderablePtr child)
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  auto gameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(buildingDefID);
+  if (gameObjDef)
     {
-    renderContext->getRenderableSet()->removeRenderable(child->getID());
-    child->cleanUp(renderContext);
-    });
-  renderContext->getRenderableSet()->removeRenderable(towerHighlight->getID());
-  towerHighlight->cleanUp(renderContext);
+    const auto buildingDef = dynamic_cast<const BuildingDef*>(gameObjDef.get());
+    if (buildingDef)
+      {
+      buildingSizeX = buildingDef->getSizeX();
+      buildingSizeY = buildingDef->getSizeY();
+
+      auto renderContext = gameContext->getRenderContext();
+      RenderableLineStrips* lineStrips = new RenderableLineStrips(renderContext->getNextRenderableID());
+      lineStrips->setLineWidth(3);
+      buildingOutline.reset(lineStrips);
+      buildingOutline->initialise(renderContext);
+      renderContext->getRenderableSet()->addRenderable(buildingOutline);
+      updateOutline();
+      }
+    }
+
   }
 
-bool TowerPlacementHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+void BuildingPlacementHandler::onDetached(GameContext* gameContext)
   {
-//  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
-//  if (button == MOUSE_LEFT)
-//    {
-//    if (isHighlightPosValid)
-//      {
-//      const TowerType* towerType = TowerFactory::getTowerType(towerTypeID);
-//      TowerPtr tower = toGameContext->createTower(towerTypeID, towerHighlightPos, true);
-//
-//      if (!gameContext->getInputManager()->isKeyDown(KEY_LCTRL))
-//        {
-//        if (endHandlerCallback)
-//          endHandlerCallback();
-//        }
-//      else
-//        {
-//        //  placing another tower
-//        toGameContext->displayAllRelayRanges();
-//        }
-//      }
-//    }
-//  else if (button == MOUSE_RIGHT)
-//    endHandlerCallback();
+  if (buildingOutline)
+    {
+    buildingOutline->cleanUp(gameContext->getRenderContext());
+    gameContext->getRenderContext()->getRenderableSet()->removeRenderable(buildingOutline->getID());
+    buildingOutline.reset();
+    }
+  }
+
+bool BuildingPlacementHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+  {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  if (button == MOUSE_LEFT)
+    {
+    if (isOutlinePosValid)
+      {
+      smGameContext->createSMGameActor(buildingDefID, buildingPlacementPos);
+      if (!gameContext->getInputManager()->isKeyDown(KEY_LCTRL))
+        {
+        if (endHandlerCallback)
+          endHandlerCallback();
+        }
+      else
+        {
+        isOutlinePosValid = false;
+        updateOutline();
+        }
+      }
+    }
+  else if (button == MOUSE_RIGHT)
+    endHandlerCallback();
   return true;
   }
 
-bool TowerPlacementHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
+bool BuildingPlacementHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
   {
-//  TOGameContext* toGameContext = TOGameContext::cast(gameContext);
-//  bool isLand = false;
-//  Vector3D terrainPos = toGameContext->terrainHitTest(mouseX, mouseY, &isLand);
-//  towerHighlight->getTransform()->translate(terrainPos - towerHighlightPos);
-//  towerHighlightPos = terrainPos;
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  Vector2D terrainPos = smGameContext->terrainHitTest(mouseX, mouseY);
+  buildingPlacementPos = terrainPos;
+  buildingPlacementPos.x -= std::floor((double)buildingSizeX / 2.0);
+  buildingPlacementPos.y -= std::floor((double)buildingSizeY / 2.0);
+
+  isOutlinePosValid = smGameContext->isRegionClear(buildingPlacementPos, GridXY(buildingSizeX, buildingSizeY));
+  if (buildingOutline)
+    {
+    buildingOutline->getTransform()->setIdentityMatrix();
+    buildingOutline->getTransform()->translate(std::floor(buildingPlacementPos.x), 0.1, -std::floor(buildingPlacementPos.y));
+    updateOutline();
+    }
   return true;
   }
 
-bool TowerPlacementHandler::onMousePressed(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+
+bool BuildingPlacementHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
   return true;
   }
 
-bool TowerPlacementHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+void BuildingPlacementHandler::updateOutline()
   {
-  return true;
+  if (!buildingOutline)
+    return;
+  RenderableLineStrips* lineStrips = dynamic_cast<RenderableLineStrips*>(buildingOutline.get());
+  if (!lineStrips)
+    return;
+
+  lineStrips->clearLineStrips();
+  for (double y : std::vector<double> { 0.01, 0.5 })
+    {
+    lineStrips->startLineStrip(isOutlinePosValid ? outlineColourValid : outlineColourInvalid);
+    lineStrips->addPoint(Vector3D(0, y, 0));
+    lineStrips->addPoint(Vector3D(buildingSizeX, y, 0));
+    lineStrips->addPoint(Vector3D(buildingSizeX, y, -buildingSizeY));
+    lineStrips->addPoint(Vector3D(0, y, -buildingSizeY));
+    lineStrips->addPoint(Vector3D(0, y, 0));
+    lineStrips->finishLineStrip();
+    }
   }

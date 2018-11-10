@@ -78,7 +78,7 @@ string createProgressString(int amount, int max)
 
 void TowerFocusPanel::updateTowerInfo(GameContext* context)
   {
-  TOGameContext* toGameContext = TOGameContext::cast(context);
+  SMGameContext* toGameContext = SMGameContext::cast(context);
 
 //  if (TowerPtr focusedTower = toGameContext->getFocusedTower())
 //    {
@@ -148,7 +148,7 @@ void TODebugPanel::updateDebugInfo(GameContext* context)
   {
   if (textComponent && isVisible() && refreshTimer.incrementTimer(context->getDeltaTime()))
     {
-    TOGameContext* toGameContext = TOGameContext::cast(context);
+    SMGameContext* toGameContext = SMGameContext::cast(context);
     string text;
     text += "Game Time: " + mathernogl::formatTime(context->getGameTime()) + "\n";
     text += "Delta Time: " + std::to_string(toGameContext->getDeltaTime()) + " ms\n";
@@ -218,6 +218,7 @@ void HUDHandler::setupTowerFocusPanel(GameContext* context)
 void HUDHandler::setupTowerBuildPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
+  SMGameContext* smGameContext = SMGameContext::cast(context);
 
   UIPanel* subPanel = new UIPanel(uiManager->getNextComponentID());
   subPanel->setOffset(Vector2D(0, 0));
@@ -232,30 +233,33 @@ void HUDHandler::setupTowerBuildPanel(GameContext* context)
 
   towerButtonGroup.reset(new UIToggleButtonGroup());
 
-//  int towerNum = 0;
-//  for ()
-//    {
-//
-//    UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
-//    button->setOffset(Vector2D(50 + towerNum * 80, 20));
-//    button->setSize(Vector2D(60, 60));
-//    button->setButtonTexture(context->getRenderContext()->getSharedTexture(towerType.iconFilePath));
-//    button->setButtonHighlightColour(Vector3D(0.3, 0.3, 1));
-//    button->setVerticalAlignment(alignmentStart);
-//    button->setHorizontalAlignment(alignmentStart);
-//    button->setHighlightWidth(3);
-//    button->setGroup(towerButtonGroup);
-//    button->setMouseClickCallback([this, towerTypeID, button, context](uint x, uint y) -> bool
-//                                    {
-//                                    if (button->isToggledDown())
-//                                      startTowerPlacingMode(context, towerTypeID);
-//                                    else
-//                                      endTowerPlacingMode(context);
-//                                    return true;
-//                                    });
-//    subPanel->addChild(UIComponentPtr(button));
-//    ++towerNum;
-//    }
+  int buildingNum = 0;
+  std::vector<IGameObjectDefPtr> buildings;
+  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::building, &buildings);
+  for (auto buildingDef : buildings)
+    {
+    UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
+    button->setOffset(Vector2D(50 + buildingNum * 80, 20));
+    button->setSize(Vector2D(60, 60));
+    if (!buildingDef->getIconFilePath().empty())
+      button->setButtonTexture(context->getRenderContext()->getSharedTexture(buildingDef->getIconFilePath()));
+    button->setButtonHighlightColour(Vector3D(0.3, 0.3, 1));
+    button->setVerticalAlignment(alignmentStart);
+    button->setHorizontalAlignment(alignmentStart);
+    button->setHighlightWidth(3);
+    button->setGroup(towerButtonGroup);
+    uint gameDefID = buildingDef->getID();
+    button->setMouseClickCallback([this, gameDefID, button, context](uint x, uint y) -> bool
+                                    {
+                                    if (button->isToggledDown())
+                                      startBuildingPlacingMode(context, gameDefID);
+                                    else
+                                      endBuildingPlacingMode(context);
+                                    return true;
+                                    });
+    subPanel->addChild(UIComponentPtr(button));
+    ++buildingNum;
+    }
   }
 
 void HUDHandler::setupDebugPanel(GameContext* context)
@@ -271,7 +275,7 @@ void HUDHandler::setupDebugPanel(GameContext* context)
 //#endif
   }
 
-void HUDHandler::endTowerPlacingMode(GameContext* gameContext)
+void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)
   {
   if (placementHandler)
     {
@@ -281,22 +285,22 @@ void HUDHandler::endTowerPlacingMode(GameContext* gameContext)
   deselectTowerType();
   }
 
-void HUDHandler::startTowerPlacingMode(GameContext* gameContext, uint towerTypeID)
+void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID)
   {
-//  TOGameContext::cast(gameContext)->getSelectionManager()->deselectAll(gameContext);
-//
-//  if (placementHandler)
-//    {
-//    gameContext->removeInputHandler(placementHandler);
-//    placementHandler.reset();
-//    }
-//  placementHandler.reset(new TowerPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), towerTypeID));
-//  placementHandler->setEndHandlerCallback([this, gameContext]() { endTowerPlacingMode(gameContext); });
-//  gameContext->addInputHandler(placementHandler);
+//  SMGameContext::cast(gameContext)->getSelectionManager()->deselectAll(gameContext);
+
+  if (placementHandler)
+    {
+    gameContext->removeInputHandler(placementHandler);
+    placementHandler.reset();
+    }
+  placementHandler.reset(new BuildingPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), buildingDefID));
+  placementHandler->setEndHandlerCallback([this, gameContext]() { endBuildingPlacingMode(gameContext); });
+  gameContext->addInputHandler(placementHandler);
   }
 
 void HUDHandler::cleanUp(GameContext* context)
   {
-  endTowerPlacingMode(context);
+  endBuildingPlacingMode(context);
   }
 

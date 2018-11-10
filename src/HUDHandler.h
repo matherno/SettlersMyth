@@ -48,7 +48,7 @@ private:
   std::shared_ptr<TowerFocusPanel> towerFocusPanel;
   std::shared_ptr<TODebugPanel> debugPanel;
   UIToggleButtonGroupPtr towerButtonGroup;
-  std::shared_ptr<TowerPlacementHandler> placementHandler;
+  std::shared_ptr<BuildingPlacementHandler> placementHandler;
 
 public:
   void initialiseUI(GameContext* context);
@@ -61,6 +61,6 @@ protected:
   void setupTowerFocusPanel(GameContext* context);
   void setupTowerBuildPanel(GameContext* context);
   void setupDebugPanel(GameContext* context);
-  void startTowerPlacingMode(GameContext* gameContext, uint towerTypeID);
-  void endTowerPlacingMode(GameContext* gameContext);
+  void startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID);
+  void endBuildingPlacingMode(GameContext* gameContext);
   };
