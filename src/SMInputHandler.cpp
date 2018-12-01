@@ -122,6 +122,24 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
 
 bool SMInputHandler::onMousePressed(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
+  if (button == MOUSE_LEFT)
+    {
+    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+    Vector2D terrainPos = smGameContext->terrainHitTest(mouseX, mouseY);
+
+    if (!currentUnit)
+      {
+      auto unitGameDef = smGameContext->getGameObjectFactory()->findGameObjectDef("Settler");
+      currentUnit = smGameContext->createSMGameActor(unitGameDef->getID(), terrainPos);
+      }
+    else
+      {
+      if (!gameContext->getInputManager()->isKeyDown(KEY_LCTRL))
+        Unit::cast(currentUnit.get())->clearOrders(gameContext);
+      Unit::cast(currentUnit.get())->pushOrder(IUnitOrderPtr(new UnitOrderMoveToTarget(terrainPos)));
+      }
+
+    }
   return false;
   }
 

@@ -2,6 +2,7 @@
 // Created by matt on 10/11/18.
 //
 
+#include <GameObjectDefs/DynamicObjectDef.h>
 #include "SMGameActor.h"
 
 SMGameActor::SMGameActor(uint id, const IGameObjectDef* gameObjectDef) : GameActor(id), gameObjectDef(gameObjectDef)
@@ -135,5 +136,73 @@ void SMStaticActor::initialiseActorFromSave(GameContext* gameContext, XMLElement
   }
 
 
-SMResourceActor::SMResourceActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
+
+
+
+SMDynamicActor::SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
   {}
+
+void SMDynamicActor::onAttached(GameContext* gameContext)
+  {
+  SMGameActor::onAttached(gameContext);
+  updateRenderableTransform();
+  speed = DynamicObjectDef::cast(gameObjectDef)->getSpeed();
+  }
+
+void SMDynamicActor::onUpdate(GameContext* gameContext)
+  {
+  if (gotTarget && !hasReachedTarget())
+    moveToTarget(gameContext->getDeltaTime());
+  SMGameActor::onUpdate(gameContext);
+  }
+
+void SMDynamicActor::setPosition(Vector2D position)
+  {
+  this->position = position;
+  updateRenderableTransform();
+  }
+
+void SMDynamicActor::setRotation(double rotation)
+  {
+  this->rotation = rotation;
+  updateRenderableTransform();
+  }
+
+bool SMDynamicActor::hasReachedTarget() const
+  {
+  if (!gotTarget)
+    return false;
+  return fabs(position.x - targetPosition.x) < 1e-10 && fabs(position.y - targetPosition.y) < 1e-10;
+  }
+
+void SMDynamicActor::setTarget(Vector2D target)
+  {
+  gotTarget = true;
+  targetPosition = target;
+  }
+
+void SMDynamicActor::clearTarget()
+  {
+  gotTarget = false;
+  }
+
+void SMDynamicActor::moveToTarget(long deltaTime)
+  {
+  double maxDistance = ((double)deltaTime / 1000.0) * speed;
+  Vector2D posToTarget = targetPosition - position;
+  if (posToTarget.magnitude() < maxDistance)
+    setPosition(targetPosition);
+  else
+    setPosition(position + posToTarget.getUniform() * (float)maxDistance);
+  setRotation(-1 * mathernogl::ccwAngleBetween(Vector2D(0, 1), posToTarget.getUniform()));
+  }
+
+void SMDynamicActor::updateRenderableTransform()
+  {
+  if (renderable)
+    {
+    renderable->getTransform()->setIdentityMatrix();
+    renderable->getTransform()->rotate(0, 1, 0, rotation);
+    renderable->getTransform()->translate(position.x, 0, -position.y);
+    }
+  }

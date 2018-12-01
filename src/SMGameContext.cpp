@@ -115,6 +115,11 @@ Vector3D SMGameContext::getCameraFocalPosition() const
 
 SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY& position)
   {
+  return createSMGameActor(gameObjDefID, Vector2D(position.x, position.y));
+  }
+
+SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2D& position)
+  {
   if (!isOnMap(position))
     return nullptr;
 
@@ -125,6 +130,9 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY&
     auto staticActor = SMStaticActor::cast(gameActor.get());
     if (staticActor)
       staticActor->setGridPos(position);
+    auto dynamicActor = SMDynamicActor::cast(gameActor.get());
+    if (dynamicActor)
+      dynamicActor->setPosition(position);
     return gameActor;
     }
   return nullptr;
@@ -149,6 +157,11 @@ SMStaticActorPtr SMGameContext::getObjectAtGridPos(const GridXY& gridPos)
   if (actorID > 0 && staticActors.contains(actorID))
     return staticActors.get(actorID);
   return nullptr;
+  }
+
+bool SMGameContext::isOnMap(const Vector2D& gridPos)
+  {
+  return isOnMap(GridXY(gridPos));
   }
 
 bool SMGameContext::isOnMap(const GridXY& gridPos)
@@ -207,7 +220,7 @@ bool SMGameContext::saveGame(string filePath) const
     actor->saveActor(element);
     }
 
-  for (auto actor : *resourceActors.getList())
+  for (auto actor : *dynamicActors.getList())
     {
     auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
     actor->saveActor(element);
@@ -270,10 +283,10 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
     }
 
-  SMResourceActorPtr resourceActor = std::dynamic_pointer_cast<SMResourceActor>(gameActor);
-  if (resourceActor)
+  SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);
+  if (dynamicActor)
     {
-    resourceActors.add(resourceActor, resourceActor->getID());
+    dynamicActors.add(dynamicActor, dynamicActor->getID());
     }
   }
 

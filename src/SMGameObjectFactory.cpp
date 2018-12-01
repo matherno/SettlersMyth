@@ -3,6 +3,7 @@
 //
 
 #include <GameObjectDefs/ResourceDepositDef.h>
+#include <GameObjectDefs/UnitDef.h>
 #include "SMGameObjectFactory.h"
 #include "GameObjectDefFileHelper.h"
 #include "GameObjectDefs/BuildingHarvesterDef.h"
@@ -177,6 +178,8 @@ IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
     return new BuildingHarvesterDef();
   if (type == GameObjectType::deposit)
     return new ResourceDepositDef();
+  if (type == GameObjectType::unit || isSubType(GameObjectType::unit, type))
+    return new UnitDef();
   return nullptr;
   }
 
@@ -192,6 +195,24 @@ SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint
     }
   ASSERT(false, "Not a valid game object def ID: " + std::to_string(gameObjectDefID));
   return nullptr;
+  }
+
+bool GameObjectFactory::isSubType(GameObjectType type, GameObjectType subType) const
+  {
+  auto iter = std::find(typeHierarchy.begin(), typeHierarchy.end(), type);
+  int numLevels = 0;
+  do
+    {
+    ++iter;
+    if (*iter == subType)
+      return true;
+    else if (*iter == GameObjectType::LEVELSTART)
+      ++numLevels;
+    else if (*iter == GameObjectType::LEVELEND)
+      --numLevels;
+    }
+  while (numLevels >= 1);
+  return false;
   }
 
 SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const

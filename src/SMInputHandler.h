@@ -1,6 +1,7 @@
 #pragma once
 
 #include <GameSystem/GameSystem.h>
+#include "Unit.h"
 
 /*
 *   
@@ -23,6 +24,7 @@ private:
   bool paused = false;
   bool fogOfWarShown = true;
   bool cameraNeedsRefresh = true;
+  SMGameActorPtr currentUnit = nullptr;
 
 public:
   SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset = 0, float rotation = 0, float pitch = -45);

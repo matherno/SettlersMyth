@@ -28,6 +28,11 @@ enum class GameObjectType
   pickup,
   resource,
 
+  unit,
+  settler,
+  citizen,
+  //  animals?,
+
   LEVELSTART,   // special codes for the hierarchy
   LEVELEND,
   };
@@ -55,6 +60,12 @@ static const std::list<GameObjectType> typeHierarchy
       GameObjectType::resource,
       GameObjectType::LEVELEND,
 
+    GameObjectType::unit,
+      GameObjectType::LEVELSTART,
+      GameObjectType::settler,
+      GameObjectType::citizen,
+      GameObjectType::LEVELEND,
+
     GameObjectType::LEVELEND,
   };
 
@@ -73,6 +84,9 @@ static const std::map<GameObjectType, string> typeNames
     { GameObjectType::obstacle, "Obstacle" },
     { GameObjectType::pickup, "Pickup" },
     { GameObjectType::resource, "Resource" },
+    { GameObjectType::unit, "Unit" },
+    { GameObjectType::settler, "Settler" },
+    { GameObjectType::citizen, "Citizen" },
   };
 
 class SMGameActor;
@@ -144,6 +158,7 @@ public:
   void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
   SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const;
   SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID) const;
+  bool isSubType(GameObjectType type, GameObjectType subType) const;
 
   bool loadGameObjectDefs(const string& defsDirectory);
   string getError() const { return errorMessage; }

@@ -25,6 +25,8 @@
 #define OD_HARVESTER "harvester"
 #define OD_ICON "icon"
 #define OD_IMAGEFILE "imagefile"
+#define OD_UNIT "unit"
+#define OD_SPEED "speed"
 
 static string xmlGetStringAttribute(tinyxml2::XMLElement* element, const string& attributeName)
   {

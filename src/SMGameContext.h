@@ -37,7 +37,7 @@ private:
   GameObjectFactory gameObjectFactory;
 
   mathernogl::MappedList<SMStaticActorPtr> staticActors;
-  mathernogl::MappedList<SMResourceActorPtr> resourceActors;
+  mathernogl::MappedList<SMDynamicActorPtr> dynamicActors;
   std::vector<uint> griddedActorIDs;
   GridXY mapSize;
 
@@ -59,6 +59,7 @@ public:
   Vector3D getCameraFocalPosition() const;
   Vector2D terrainHitTest(uint mouseX, uint mouseY);
   SMStaticActorPtr getObjectAtGridPos(const GridXY& gridPos);
+  bool isOnMap(const Vector2D& gridPos);
   bool isOnMap(const GridXY& gridPos);
   bool isCellClear(const GridXY& gridPos);
   bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize);
@@ -67,6 +68,7 @@ public:
   bool loadGame(string filePath);
 
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const GridXY& position);
+  SMGameActorPtr createSMGameActor(uint gameObjDefID, const Vector2D& position);
 
   inline static SMGameContext* cast(GameContext* context)
     {

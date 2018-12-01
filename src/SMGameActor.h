@@ -4,6 +4,7 @@
 #include "SMGameObjectFactory.h"
 #include "Grid.h"
 #include "SaveLoadFileHelper.h"
+#include "Resource.h"
 
 /*
 *   
@@ -68,15 +69,32 @@ public:
 typedef std::shared_ptr<SMStaticActor> SMStaticActorPtr;
 
 
-class SMResourceActor : public SMGameActor
+class SMDynamicActor : public SMGameActor
   {
 private:
   Vector2D position;
   double rotation = 0;
 
-public:
-  SMResourceActor(uint id, const IGameObjectDef* gameObjectDef);
+  bool gotTarget = false;
+  Vector2D targetPosition;
+  double speed = 1;   // units per second
 
-  inline static SMResourceActor* cast(SMGameActor* actor){ return dynamic_cast<SMResourceActor*>(actor); }
+public:
+  SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef);
+  virtual void onAttached(GameContext* gameContext) override;
+  virtual void onUpdate(GameContext* gameContext) override;
+  void setPosition(Vector2D position);
+  void setRotation(double rotation);
+
+  bool hasGotTarget() const { return gotTarget; }
+  bool hasReachedTarget() const;
+  void setTarget(Vector2D target);
+  void clearTarget();
+
+  inline static SMDynamicActor* cast(SMGameActor* actor){ return dynamic_cast<SMDynamicActor*>(actor); }
+
+protected:
+  void moveToTarget(long deltaTime);
+  void updateRenderableTransform();
   };
-typedef std::shared_ptr<SMResourceActor> SMResourceActorPtr;
+typedef std::shared_ptr<SMDynamicActor> SMDynamicActorPtr;
