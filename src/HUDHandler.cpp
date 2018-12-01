@@ -178,14 +178,14 @@ void HUDHandler::initialiseUI(GameContext* context)
   mainUIPanel->setWidthMatchParent(true);
   uiManager->addComponent(mainUIPanel);
 
-  setupTowerBuildPanel(context);
-  setupTowerFocusPanel(context);
+  setupBuildPanel(context);
+  setupFocusPanel(context);
   setupDebugPanel(context);
   }
 
 void HUDHandler::updateUI(GameContext* context)
   {
-  towerFocusPanel->updateTowerInfo(context);
+  focusPanel->updateTowerInfo(context);
   debugPanel->updateDebugInfo(context);
   }
 
@@ -201,21 +201,21 @@ void HUDHandler::toggleDebugPanel()
   debugPanel->setVisible(!debugPanel->isVisible(), true);
   }
 
-void HUDHandler::setupTowerFocusPanel(GameContext* context)
+void HUDHandler::setupFocusPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
-  towerFocusPanel.reset(new TowerFocusPanel(uiManager->getNextComponentID()));
-  towerFocusPanel->setOffset(Vector2D(-10, 0));
-  towerFocusPanel->setSize(Vector2D(600, 100));
-  towerFocusPanel->setColour(Vector3D(0.3, 0.3, 0.25));
-  towerFocusPanel->setVerticalAlignment(alignmentCentre);
-  towerFocusPanel->setHorizontalAlignment(alignmentEnd);
-  towerFocusPanel->setHeightMatchParent(true);
-  towerFocusPanel->setPadding(10, 10);
-  mainUIPanel->addChild(towerFocusPanel);
+  focusPanel.reset(new TowerFocusPanel(uiManager->getNextComponentID()));
+  focusPanel->setOffset(Vector2D(-10, 0));
+  focusPanel->setSize(Vector2D(600, 100));
+  focusPanel->setColour(Vector3D(0.3, 0.3, 0.25));
+  focusPanel->setVerticalAlignment(alignmentCentre);
+  focusPanel->setHorizontalAlignment(alignmentEnd);
+  focusPanel->setHeightMatchParent(true);
+  focusPanel->setPadding(10, 10);
+  mainUIPanel->addChild(focusPanel);
   }
 
-void HUDHandler::setupTowerBuildPanel(GameContext* context)
+void HUDHandler::setupBuildPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
   SMGameContext* smGameContext = SMGameContext::cast(context);
@@ -235,7 +235,7 @@ void HUDHandler::setupTowerBuildPanel(GameContext* context)
 
   int buildingNum = 0;
   std::vector<IGameObjectDefPtr> buildings;
-  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::building, &buildings);
+  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::staticObject, &buildings);
   for (auto buildingDef : buildings)
     {
     UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
@@ -294,7 +294,7 @@ void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildin
     gameContext->removeInputHandler(placementHandler);
     placementHandler.reset();
     }
-  placementHandler.reset(new BuildingPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), buildingDefID));
+  placementHandler.reset(new WorldItemPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), buildingDefID));
   placementHandler->setEndHandlerCallback([this, gameContext]() { endBuildingPlacingMode(gameContext); });
   gameContext->addInputHandler(placementHandler);
   }

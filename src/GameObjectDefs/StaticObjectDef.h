@@ -20,4 +20,13 @@ public:
   GridXY getSize() const { return size; }
   int getSizeX() const { return size.x; }
   int getSizeY() const { return size.y; }
+
+  static const StaticObjectDef* cast(const IGameObjectDef* def) { return dynamic_cast<const StaticObjectDef*>(def); }
+  };
+
+class ObstacleDef : public StaticObjectDef
+  {
+public:
+  virtual GameObjectType getType() const override { return GameObjectType::obstacle; }
+  static const ObstacleDef* cast(const IGameObjectDef* def) { return dynamic_cast<const ObstacleDef*>(def); }
   };

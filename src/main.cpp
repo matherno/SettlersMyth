@@ -50,29 +50,32 @@ void runGame()
     if (mainMenuOutcome.isQuitGame())
       break;
 
-    std::shared_ptr<SMGameState> loadedState;
+    string saveFile;
     if (mainMenuOutcome.isLoadGame())
       {
-      loadedState = mainMenuOutcome.loadedState;
-      if (!loadedState)
+      saveFile = mainMenuOutcome.saveFile;
+      if (saveFile.empty())
         continue;
       }
 
     if (mainMenuOutcome.isNewGame() || mainMenuOutcome.isLoadGame())
       {
-      mathernogl::logInfo("Starting game...");
+      mathernogl::logInfo("Starting game... " + saveFile);
 
       try
         {
-        SMGameContext gameContext(renderContext, settings, loadedState);
+        SMGameContext gameContext(renderContext, settings);
         gameContext.initialise();
-        while (!gameContext.isContextEnded() && renderContext->isWindowOpen())
+        if (saveFile.empty() || gameContext.loadGame(saveFile))
           {
-          gameContext.startFrame();
-          gameContext.processInputStage();
-          gameContext.processUpdateStage();
-          gameContext.processDrawStage();
-          gameContext.endFrame(60);
+          while (!gameContext.isContextEnded() && renderContext->isWindowOpen())
+            {
+            gameContext.startFrame();
+            gameContext.processInputStage();
+            gameContext.processUpdateStage();
+            gameContext.processDrawStage();
+            gameContext.endFrame(60);
+            }
           }
         gameContext.cleanUp();
         }

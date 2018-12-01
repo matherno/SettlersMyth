@@ -2,6 +2,7 @@
 // Created by matt on 8/11/18.
 //
 
+#include <GameObjectDefs/ResourceDepositDef.h>
 #include "SMGameObjectFactory.h"
 #include "GameObjectDefFileHelper.h"
 #include "GameObjectDefs/BuildingHarvesterDef.h"
@@ -23,19 +24,44 @@ IGameObjectDefPtr GameObjectFactory::getGameObjectDef(uint id) const
   return nullptr;
   }
 
+IGameObjectDefPtr GameObjectFactory::findGameObjectDef(string name) const
+  {
+  for (auto pair : gameObjectDefs)
+    {
+    if (pair.second->getUniqueName() == name)
+      return pair.second;
+    }
+  return nullptr;
+  }
 
 void GameObjectFactory::forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const
   {
-  auto heirarchyIter  = std::find(typeHeirarchy.begin(), typeHeirarchy.end(), type);
-  if (heirarchyIter == typeHeirarchy.end())
+  ASSERT(type != GameObjectType::LEVELSTART && type != GameObjectType::LEVELEND, "");
+  auto hierarchyIter = std::find(typeHierarchy.begin(), typeHierarchy.end(), type);
+  if (hierarchyIter == typeHierarchy.end())
     return;   // type isn't in the typeHeirarchy structure
+  forEachGameObjectDef(hierarchyIter, func);
+  }
+
+
+void GameObjectFactory::forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const
+  {
+  const GameObjectType type = *hierarchyIter;
 
   //  iterate though each child type, if this type has any
-  heirarchyIter++;
-  if (heirarchyIter != typeHeirarchy.end() && *heirarchyIter == GameObjectType::LEVELSTART)
+  hierarchyIter++;
+  if (hierarchyIter != typeHierarchy.end() && *hierarchyIter == GameObjectType::LEVELSTART)
     {
-    for (heirarchyIter++; heirarchyIter != typeHeirarchy.end() && *heirarchyIter != GameObjectType::LEVELEND; heirarchyIter++)
-      forEachGameObjectDef(*heirarchyIter, func);
+    hierarchyIter++;
+    while (hierarchyIter != typeHierarchy.end() && *hierarchyIter != GameObjectType::LEVELEND)
+      {
+      forEachGameObjectDef(hierarchyIter, func);
+      hierarchyIter++;
+      }
+    }
+  else
+    {
+    hierarchyIter--;
     }
 
   //  iterate through each game object def of this type if any
@@ -47,7 +73,6 @@ void GameObjectFactory::forEachGameObjectDef(GameObjectType type, std::function<
     if (def) func(def);
     }
   }
-
 
 
 bool GameObjectFactory::loadGameObjectDefs(const string& defsDirectory)
@@ -137,7 +162,7 @@ bool GameObjectFactory::loadGameObjectDef(tinyxml2::XMLElement* xmlGameObjectDef
       typesToGameDefs[type] = std::vector<uint>();
     typesToGameDefs[type].push_back(id);
 
-    mathernogl::logInfo("Loaded game object def: [" + std::to_string(gameObjectDef->getID()) + "] " + gameObjectDef->getName());
+    mathernogl::logInfo("Loaded game object def: [" + std::to_string(gameObjectDef->getID()) + "] " + gameObjectDef->getDisplayName());
     return true;
     }
   else
@@ -145,10 +170,13 @@ bool GameObjectFactory::loadGameObjectDef(tinyxml2::XMLElement* xmlGameObjectDef
   }
 
 
-IGameObjectDef* GameObjectFactory::constructGameObjectDef(string type)
+IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
   {
-  if (type == "Harvester")
+  GameObjectType type = getTypeBasedOnTypeName(name);
+  if (type == GameObjectType::harvester)
     return new BuildingHarvesterDef();
+  if (type == GameObjectType::deposit)
+    return new ResourceDepositDef();
   return nullptr;
   }
 
@@ -166,3 +194,38 @@ SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint
   return nullptr;
   }
 
+SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const
+  {
+  string sObjDefName = xmlGetStringAttribute(xmlGameActor, SL_GAMEOBJDEF_NAME);
+  auto gameObjectDef = findGameObjectDef(sObjDefName);
+  if (gameObjectDef)
+    {
+    auto actor = gameObjectDef->createGameActor(gameContext);
+    if (actor)
+      {
+      actor->setXMLToLoadFrom(xmlGameActor);
+      gameContext->addActor(actor);
+      }
+    return actor;
+    }
+  ASSERT(false, "Unknown game actor object definition name");
+  return nullptr;
+  }
+
+string GameObjectFactory::getTypeName(GameObjectType type)
+  {
+  if (typeNames.count(type) > 0)
+    return typeNames.at(type);
+  ASSERT(false, "");
+  return "";
+  }
+
+GameObjectType GameObjectFactory::getTypeBasedOnTypeName(string typeName)
+  {
+  for (auto pair : typeNames)
+    {
+    if (pair.second.compare(typeName) == 0)
+      return pair.first;
+    }
+  return GameObjectType::none;
+  }

@@ -22,23 +22,24 @@ private:
   float zoomOffset;
   bool paused = false;
   bool fogOfWarShown = true;
-  uint activePlayer = 0;
+  bool cameraNeedsRefresh = true;
 
 public:
   SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset = 0, float rotation = 0, float pitch = -45);
 
+  void setCameraNeedsRefresh() { cameraNeedsRefresh = true; }
   Vector3D getFocalPosition() const { return focalPosition; }
   float getPitch() const { return pitch; };
   float getRotation() const { return rotation; };
   float getZoomOffset() { return zoomOffset; }
+  void setFocalPosition(Vector3D pos) { focalPosition = pos; }
   void setPanSpeed(float speed) { panSpeed = speed; }
   void setYawSpeed(float speed) { yawSpeed = speed; }
   void setZoomOffset(float zoomOffset) { this->zoomOffset = zoomOffset; }
   void setZoomSpeed(float speed) { zoomSpeed = speed; }
   void setZoomLimits(float min, float max) { minZoom = min; maxZoom = max; }
-  void refreshCamera(Camera* camera) const;
-  void setActivePlayer(uint player) { activePlayer = player; }
-  uint getActivePlayer() const { return activePlayer; }
+  void setRotation(float rot) { rotation = rot; }
+  void refreshCamera(Camera* camera);
 
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;

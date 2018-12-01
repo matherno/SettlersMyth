@@ -12,10 +12,11 @@ SMInputHandler::SMInputHandler(uint id, const Vector3D& focalPosition, float zoo
   {
   }
 
-void SMInputHandler::refreshCamera(Camera* camera) const
+void SMInputHandler::refreshCamera(Camera* camera)
   {
   *camera->getWorldToCamera() = mathernogl::matrixTranslate(focalPosition * -1) * rotationMatrix * mathernogl::matrixTranslate(0, 0, -zoomOffset);
   camera->setValid(false);
+  cameraNeedsRefresh = false;
   }
 
 void SMInputHandler::onAttached(GameContext* gameContext)
@@ -35,6 +36,14 @@ void SMInputHandler::onDetached(GameContext* gameContext)
 void SMInputHandler::onUpdate(GameContext* gameContext)
   {
   performMouseCameraMovement(gameContext);
+  if (cameraNeedsRefresh)
+    {
+    Camera* camera = gameContext->getCamera();
+    refreshRotationMatrix();
+    refreshCamera(camera);
+    *camera->getCameraToClip() = mathernogl::matrixPerspective(1, gameContext->getRenderContext()->getWindow()->getAspectRatio(), -1, -300);
+    camera->setValid(false);
+    }
   }
 
 bool SMInputHandler::onKeyHeld(GameContext* gameContext, uint key)

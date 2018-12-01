@@ -4,11 +4,10 @@
 
 #include <UISystem/UIMessageBox.h>
 #include "SaveLoadDlg.h"
+#include "SaveLoadFileHelper.h"
 
 #define MAX_SAVES 9   // only limited by what can fit on the listComponent at one time (need pagination/scrolling)
-#define SAVES_DIRECTORY "saves/"
-#define SAVES_FILE_EXT "sms"
-#define MAX_SAVE_NAME_LENGTH  30
+
 
 SaveLoadDlg::SaveLoadDlg(uint id, Mode mode) : UIPanel(id), mode(mode)
   {
@@ -163,31 +162,20 @@ void SaveLoadDlg::onDeletePressed(GameContext* context)
 void SaveLoadDlg::onLoadPressed()
   {
   string filePath = getSelectedFilePath();
-  if (onLoadingFunc && !filePath.empty())
-    {
-    mathernogl::logInfo("Loading game from '" + filePath + "'");
-    std::shared_ptr<SMGameState> state(new SMGameState());
-    if (SMGameSaveLoad::loadGame(state.get(), filePath))
-      {
-      onLoadingFunc(state);
-      }
-    }
+  if (funcOnLoad && !filePath.empty())
+    funcOnLoad(filePath);
   }
 
 void SaveLoadDlg::onSavePressed(GameContext* context)
   {
   string filePath = getSelectedFilePath();
-  if (onSavingFunc && !filePath.empty())
+  if (funcOnSave && !filePath.empty())
     {
     UIMessageBox::popupMessageBox(context->getUIManager(), "Save over existing save?", UIMessageBox::modeContinueCancel,
       [this, context, filePath](UIMessageBox::MsgBoxResult result)
         {
         if (result == UIMessageBox::resultContinue)
-          {
-          mathernogl::logInfo("Saving game to: '" + filePath + "'");
-          std::shared_ptr<SMGameState> state = onSavingFunc();
-          SMGameSaveLoad::saveGame(state.get(), filePath);
-          }
+          funcOnSave(filePath);
         });
     }
   }
@@ -195,18 +183,14 @@ void SaveLoadDlg::onSavePressed(GameContext* context)
 void SaveLoadDlg::onSaveNewPressed()
   {
   string filePath = getNewSaveFilePath();
-  if (onSavingFunc && !filePath.empty() && saveFiles.size() < MAX_SAVES)
-    {
-    mathernogl::logInfo("Saving game to new file: '" + filePath + "'");
-    std::shared_ptr<SMGameState> state = onSavingFunc();
-    SMGameSaveLoad::saveGame(state.get(), filePath);
-    }
+  if (funcOnSave && !filePath.empty() && saveFiles.size() < MAX_SAVES)
+    funcOnSave(filePath);
   }
 
 void SaveLoadDlg::onCancelPressed()
   {
-  if (onCancelledFunc)
-    onCancelledFunc();
+  if (funcOnCancel)
+    funcOnCancel();
   }
 
 string SaveLoadDlg::getSelectedFilePath()
@@ -231,6 +215,6 @@ string SaveLoadDlg::getNewSaveFilePath()
 
 void SaveLoadDlg::onEscapePressed(GameContext* context)
   {
-  if (onCancelledFunc)
-    onCancelledFunc();
+  if (funcOnCancel)
+    funcOnCancel();
   }

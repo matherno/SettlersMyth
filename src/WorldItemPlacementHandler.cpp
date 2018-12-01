@@ -9,16 +9,16 @@
 #include "WorldItemPlacementHandler.h"
 #include "SMGameContext.h"
 
-BuildingPlacementHandler::BuildingPlacementHandler(uint id, uint buildingDefID) : InputHandler(id), buildingDefID(buildingDefID)
+WorldItemPlacementHandler::WorldItemPlacementHandler(uint id, uint buildingDefID) : InputHandler(id), buildingDefID(buildingDefID)
   {}
 
-void BuildingPlacementHandler::onAttached(GameContext* gameContext)
+void WorldItemPlacementHandler::onAttached(GameContext* gameContext)
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   auto gameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(buildingDefID);
   if (gameObjDef)
     {
-    const auto buildingDef = dynamic_cast<const BuildingDef*>(gameObjDef.get());
+    const auto buildingDef = StaticObjectDef::cast(gameObjDef.get());
     if (buildingDef)
       {
       buildingSizeX = buildingDef->getSizeX();
@@ -36,7 +36,7 @@ void BuildingPlacementHandler::onAttached(GameContext* gameContext)
 
   }
 
-void BuildingPlacementHandler::onDetached(GameContext* gameContext)
+void WorldItemPlacementHandler::onDetached(GameContext* gameContext)
   {
   if (buildingOutline)
     {
@@ -46,7 +46,7 @@ void BuildingPlacementHandler::onDetached(GameContext* gameContext)
     }
   }
 
-bool BuildingPlacementHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   if (button == MOUSE_LEFT)
@@ -71,7 +71,7 @@ bool BuildingPlacementHandler::onMouseReleased(GameContext* gameContext, uint bu
   return true;
   }
 
-bool BuildingPlacementHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
+bool WorldItemPlacementHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   Vector2D terrainPos = smGameContext->terrainHitTest(mouseX, mouseY);
@@ -90,12 +90,12 @@ bool BuildingPlacementHandler::onMouseMove(GameContext* gameContext, uint mouseX
   }
 
 
-bool BuildingPlacementHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
+bool WorldItemPlacementHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
   return true;
   }
 
-void BuildingPlacementHandler::updateOutline()
+void WorldItemPlacementHandler::updateOutline()
   {
   if (!buildingOutline)
     return;

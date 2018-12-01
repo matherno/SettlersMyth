@@ -3,14 +3,13 @@
 #include <UISystem/UIPanel.h>
 #include <UISystem/UIList.h>
 #include <UISystem/UIEditText.h>
-#include "SMGameSaveLoad.h"
 
 /*
 *   
 */
 
-typedef std::function<std::shared_ptr<SMGameState>()> OnSavingFunc;
-typedef std::function<void(std::shared_ptr<SMGameState> state)> OnLoadingFunc;
+typedef std::function<void(string)> OnSavingFunc;
+typedef std::function<void(string)> OnLoadingFunc;
 typedef std::function<void()> OnCancelledFunc;
 
 class SaveLoadDlg : public UIPanel
@@ -27,15 +26,15 @@ private:
   std::shared_ptr<UIList> listComponent;
   std::shared_ptr<UIEditText> saveNameTextComp;
   std::map<uint, string> saveFiles;
-  OnSavingFunc onSavingFunc;
-  OnLoadingFunc onLoadingFunc;
-  OnCancelledFunc onCancelledFunc;
+  OnSavingFunc funcOnSave;
+  OnLoadingFunc funcOnLoad;
+  OnCancelledFunc funcOnCancel;
 
 public:
   SaveLoadDlg(uint id, Mode mode);
-  void setSaveGameStateCallback(OnSavingFunc func) { onSavingFunc = func; }
-  void setLoadGameStateCallback(OnLoadingFunc func) { onLoadingFunc = func; }
-  void setCancelledCallback(OnCancelledFunc func) { onCancelledFunc = func; }
+  void setSaveGameStateCallback(OnSavingFunc func) { funcOnSave = func; }
+  void setLoadGameStateCallback(OnLoadingFunc func) { funcOnLoad = func; }
+  void setCancelledCallback(OnCancelledFunc func) { funcOnCancel = func; }
   virtual void initialise(GameContext* context) override;
   virtual void onEscapePressed(GameContext* context) override;
   static void getSavedFiles(std::list<string>* files);

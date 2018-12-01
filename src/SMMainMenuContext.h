@@ -23,7 +23,7 @@ public:
   struct MainMenuOutcome
     {
     Option optionSelected = optionNone;
-    std::shared_ptr<SMGameState> loadedState;
+    string saveFile = "";
     bool isNewGame() const { return optionSelected == optionNew; }
     bool isLoadGame() const { return optionSelected == optionLoad; }
     bool isQuitGame() const { return optionSelected == optionQuit; }

@@ -45,10 +45,10 @@ class HUDHandler
   {
 private:
   std::shared_ptr<UIPanel> mainUIPanel;
-  std::shared_ptr<TowerFocusPanel> towerFocusPanel;
+  std::shared_ptr<TowerFocusPanel> focusPanel;
   std::shared_ptr<TODebugPanel> debugPanel;
   UIToggleButtonGroupPtr towerButtonGroup;
-  std::shared_ptr<BuildingPlacementHandler> placementHandler;
+  std::shared_ptr<WorldItemPlacementHandler> placementHandler;
 
 public:
   void initialiseUI(GameContext* context);
@@ -58,8 +58,8 @@ public:
   void toggleDebugPanel();
 
 protected:
-  void setupTowerFocusPanel(GameContext* context);
-  void setupTowerBuildPanel(GameContext* context);
+  void setupFocusPanel(GameContext* context);
+  void setupBuildPanel(GameContext* context);
   void setupDebugPanel(GameContext* context);
   void startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID);
   void endBuildingPlacingMode(GameContext* gameContext);

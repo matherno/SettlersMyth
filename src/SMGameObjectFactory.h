@@ -4,6 +4,7 @@
 #include <TowOff/GameSystem/GameSystem.h>
 #include "tinyxml2/tinyxml2.h"
 #include "SMGameActor.h"
+#include "SaveLoadFileHelper.h"
 
 
 /*
@@ -32,20 +33,20 @@ enum class GameObjectType
   };
 
 
-static const std::list<GameObjectType> typeHeirarchy
+static const std::list<GameObjectType> typeHierarchy
   {
   GameObjectType::all,
     GameObjectType::LEVELSTART,
 
     GameObjectType::staticObject,
       GameObjectType::LEVELSTART,
-      GameObjectType::deposit,
       GameObjectType::building,
         GameObjectType::LEVELSTART,
         GameObjectType::harvester,
         GameObjectType::manufacturer,
         GameObjectType::storage,
         GameObjectType::LEVELEND,
+      GameObjectType::deposit,
       GameObjectType::obstacle,
       GameObjectType::LEVELEND,
 
@@ -57,32 +58,71 @@ static const std::list<GameObjectType> typeHeirarchy
     GameObjectType::LEVELEND,
   };
 
+static const std::map<GameObjectType, string> typeNames
+  {
+    { GameObjectType::LEVELSTART, "LEVEL_START" },
+    { GameObjectType::LEVELEND, "LEVEL_END" },
+    { GameObjectType::all, "All" },
+    { GameObjectType::none, "None" },
+    { GameObjectType::staticObject, "Static Object" },
+    { GameObjectType::deposit, "Deposit" },
+    { GameObjectType::building, "Building" },
+    { GameObjectType::harvester, "Harvester" },
+    { GameObjectType::manufacturer, "Manufacturer" },
+    { GameObjectType::storage, "Storage" },
+    { GameObjectType::obstacle, "Obstacle" },
+    { GameObjectType::pickup, "Pickup" },
+    { GameObjectType::resource, "Resource" },
+  };
+
 class SMGameActor;
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
+
 
 class IGameObjectBehaviour
   {
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) = 0;
+  virtual void initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) { initialise(gameActor, gameContext); }
+  virtual void save(SMGameActor* gameActor, XMLElement* xmlElement) {};
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) = 0;
   virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) = 0;
+  virtual string getBehaviourName() { return ""; };
   };
 typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
+
+
+class BehaviourHelper : public IGameObjectBehaviour
+  {
+public:
+  typedef std::function<void(SMGameActor*, GameContext*)> Callback;
+
+private:
+  Callback onInit, onUpdate;
+
+public:
+  BehaviourHelper (Callback fInit, Callback fUpdate) : onInit(fInit), onUpdate(fUpdate) {}
+  virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override { if (onInit) onInit(gameActor, gameContext); };
+  virtual void update(SMGameActor* gameActor, GameContext* gameContext) override { if (onUpdate) onUpdate(gameActor, gameContext); };
+  virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) override {};
+  };
 
 
 class IGameObjectDef
   {
 public:
-  virtual string getName() const = 0;
+  virtual string getUniqueName() const = 0;
+  virtual string getDisplayName() const = 0;
   virtual uint getID() const = 0;
   virtual string getIconFilePath() const = 0;
   virtual GameObjectType getType() const = 0;
   virtual RenderablePtr constructRenderable(RenderContext* renderContext) const = 0;
 
-private:
+protected:
   friend class GameObjectFactory;
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) = 0;
   virtual SMGameActorPtr createGameActor(GameContext* gameContext) const = 0;
+  virtual void createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behaviourList) const {};
   };
 typedef std::shared_ptr<const IGameObjectDef> IGameObjectDefPtr;
 
@@ -99,12 +139,18 @@ public:
 
   void getGameObjectDefs(GameObjectType type, std::vector<IGameObjectDefPtr>* defsList) const;
   IGameObjectDefPtr getGameObjectDef(uint id) const;
+  IGameObjectDefPtr findGameObjectDef(string name) const;
   void forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const;
+  void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
+  SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const;
   SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID) const;
 
   bool loadGameObjectDefs(const string& defsDirectory);
   string getError() const { return errorMessage; }
   void clearError() { errorMessage = ""; }
+
+  static string getTypeName(GameObjectType type);
+  static GameObjectType getTypeBasedOnTypeName(string name);
 
 private:
   void clearGameObjectDefs();

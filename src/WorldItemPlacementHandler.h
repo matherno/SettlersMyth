@@ -8,7 +8,7 @@
 *   
 */
 
-class BuildingPlacementHandler : public InputHandler
+class WorldItemPlacementHandler : public InputHandler
   {
 private:
   const uint buildingDefID;
@@ -22,7 +22,7 @@ private:
   int buildingSizeY = 1;
 
 public:
-  BuildingPlacementHandler(uint id, uint buildingDefID);
+  WorldItemPlacementHandler(uint id, uint buildingDefID);
   void setEndHandlerCallback(CallbackFunc func){ endHandlerCallback = func; }
 
   virtual void onAttached(GameContext* gameContext) override;

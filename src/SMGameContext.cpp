@@ -8,6 +8,7 @@
 
 #include "SMGameContext.h"
 #include "Resources.h"
+#include "SaveLoadFileHelper.h"
 
 #define LAND_HEIGHT 0
 
@@ -25,11 +26,8 @@ bool SMGameContext::initialise()
 //  postProcSilhoutting->initialise(getRenderContext());
 //  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
-  if (loadedGameState)
-    toInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), loadedGameState->cameraFocalPos, loadedGameState->cameraZoomFactor, loadedGameState->cameraRotation, -45));
-  else
-    toInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 0, -45));
-  addInputHandler(toInputHandler);
+  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 0, -45));
+  addInputHandler(smInputHandler);
 
   initSurface();
   hudHandler.initialiseUI(this);
@@ -64,9 +62,9 @@ void SMGameContext::processInputStage()
   GameContextImpl::processInputStage();
 
   static const Vector3D lightDir = Vector3D(0.2, -0.5, -0.5).getUniform();
-  double shadowMapOffset = toInputHandler->getZoomOffset();
+  double shadowMapOffset = smInputHandler->getZoomOffset();
   double shadowMapFOV = shadowMapOffset * 1.5;
-  Vector3D shadowMapPos = toInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
+  Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
   static const uint shadowMapWidth = 1500;
   getRenderContext()->configureShadowMap(false, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
   }
@@ -104,13 +102,6 @@ FontPtr SMGameContext::getDefaultFont()
   return getRenderContext()->getSharedFont(FONT_DEFAULT_FNT, FONT_DEFAULT_GLYPHS, FONT_DEFAULT_SCALING);
   }
 
-void SMGameContext::getGameState(SMGameState* state)
-  {
-  state->cameraFocalPos = toInputHandler->getFocalPosition();
-  state->cameraRotation = toInputHandler->getRotation();
-  state->cameraZoomFactor = toInputHandler->getZoomOffset();
-  }
-
 void SMGameContext::displayPauseMenu()
   {
   pauseMenuHandler->displayMenu(this);
@@ -118,7 +109,7 @@ void SMGameContext::displayPauseMenu()
 
 Vector3D SMGameContext::getCameraFocalPosition() const
   {
-  return toInputHandler->getFocalPosition();
+  return smInputHandler->getFocalPosition();
   }
 
 
@@ -130,24 +121,10 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY&
   auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID);
   if (gameActor)
     {
-    SMStaticActorPtr staticActor = std::dynamic_pointer_cast<SMStaticActor>(gameActor);
+    addSMGameActor(gameActor);
+    auto staticActor = SMStaticActor::cast(gameActor.get());
     if (staticActor)
-      {
-      staticActor->setPos(position);
-      staticActors.add(staticActor, staticActor->getID());
-      auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
-      setGridCells(staticActor->getID(), position, staticObjectDef->getSize());
-      return gameActor;
-      }
-
-    SMResourceActorPtr resourceActor = std::dynamic_pointer_cast<SMResourceActor>(gameActor);
-    if (resourceActor)
-      {
-      resourceActors.add(resourceActor, resourceActor->getID());
-      return gameActor;
-      }
-
-    ASSERT(false, "");
+      staticActor->setGridPos(position);
     return gameActor;
     }
   return nullptr;
@@ -211,6 +188,96 @@ void SMGameContext::setGridCells(uint id, const GridXY& gridPos, const GridXY& r
       }
     }
   }
+
+bool SMGameContext::saveGame(string filePath) const
+  {
+  mathernogl::logInfo("Saving game... " + filePath);
+  XMLDocument doc;
+
+  XMLElement* xmlSaveFile = xmlCreateElement(doc, nullptr, SL_SMSAVE);
+  xmlSaveFile->SetAttribute(SL_VERSION, SAVE_CURRENT_VERSION);
+
+  xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_POS, smInputHandler->getFocalPosition());
+  xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_ZOOM, smInputHandler->getZoomOffset());
+  xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_ROT, smInputHandler->getRotation());
+
+  for (auto actor : *staticActors.getList())
+    {
+    auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
+    actor->saveActor(element);
+    }
+
+  for (auto actor : *resourceActors.getList())
+    {
+    auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
+    actor->saveActor(element);
+    }
+
+  XMLError xmlError = doc.SaveFile(filePath.c_str());
+  if (xmlError > 0)
+    {
+    mathernogl::logError("Failed to save to file '" + filePath + "' : " + XMLDocument::ErrorIDToName(xmlError));
+    return false;
+    }
+  return true;
+  }
+
+
+bool SMGameContext::loadGame(string filePath)
+  {
+  mathernogl::logInfo("Loading game... " + filePath);
+  XMLDocument doc;
+  XMLError xmlError = doc.LoadFile(filePath.c_str());
+  if (xmlError > 0)
+    {
+    mathernogl::logError("Failed to load file: " + std::string(XMLDocument::ErrorIDToName(xmlError)));
+    return false;
+    }
+
+  XMLElement* xmlSaveFile = doc.FirstChildElement(SL_SMSAVE);
+  if (!xmlSaveFile)
+    {
+    mathernogl::logError("Failed to load game: invalid save file format");
+    return false;
+    }
+
+  Vector3D camPos = xmlGetVec3Value(xmlSaveFile, SL_CAMERA_POS);
+  double camZoom = xmlGetDblValue(xmlSaveFile, SL_CAMERA_ZOOM);
+  double camRot = xmlGetDblValue(xmlSaveFile, SL_CAMERA_ROT);
+  smInputHandler->setFocalPosition(camPos);
+  smInputHandler->setZoomOffset(camZoom);
+  smInputHandler->setRotation(camRot);
+  smInputHandler->setCameraNeedsRefresh();
+
+  XMLElement* xmlGameActor = xmlSaveFile->FirstChildElement(SL_SMGAMEACTOR);
+  while (xmlGameActor)
+    {
+    auto smGameActor = gameObjectFactory.createGameActor(this, xmlGameActor);
+    addSMGameActor(smGameActor);
+    xmlGameActor = xmlGameActor->NextSiblingElement(SL_SMGAMEACTOR);
+    }
+
+  return true;
+  }
+
+void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
+  {
+  SMStaticActorPtr staticActor = std::dynamic_pointer_cast<SMStaticActor>(gameActor);
+  if (staticActor)
+    {
+    staticActors.add(staticActor, staticActor->getID());
+    auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
+    setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
+    }
+
+  SMResourceActorPtr resourceActor = std::dynamic_pointer_cast<SMResourceActor>(gameActor);
+  if (resourceActor)
+    {
+    resourceActors.add(resourceActor, resourceActor->getID());
+    }
+  }
+
+
 
 
 

@@ -46,5 +46,7 @@ RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext)
 SMGameActorPtr StaticObjectDef::createGameActor(GameContext* gameContext) const
   {
   SMStaticActor* actor = new SMStaticActor(gameContext->getNextActorID(), this);
+  createActorBehaviours(actor->getBehaviourList());
   return SMGameActorPtr(actor);
   }
+

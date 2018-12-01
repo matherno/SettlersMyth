@@ -117,10 +117,10 @@ void SMMainMenuContext::showLoadDlg()
   getUIManager()->pushModalComponent(saveLoadDlg);
 
   //  On loaded from a file
-  saveLoadDlg->setLoadGameStateCallback([this](std::shared_ptr<SMGameState> state)
+  saveLoadDlg->setLoadGameStateCallback([this](string saveFile)
       {
       currentOutcome.optionSelected = optionLoad;
-      currentOutcome.loadedState = state;
+      currentOutcome.saveFile = saveFile;
       endContext();
       });
 

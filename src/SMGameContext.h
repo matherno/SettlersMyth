@@ -9,7 +9,6 @@ class SMGameContext;
 #include <GameSystem/Timer.h>
 #include "SMInputHandler.h"
 #include "HUDHandler.h"
-#include "SMGameSaveLoad.h"
 #include "PauseMenuHandler.h"
 #include "WorldItemSelectionManager.h"
 #include "SMSettings.h"
@@ -30,11 +29,10 @@ typedef mathernogl::MappedList<std::pair<Vector3D, float>> VisibilityMarkersList
 class SMGameContext : public GameContextImpl
   {
 private:
-  std::shared_ptr<SMGameState> loadedGameState;
   std::shared_ptr<RenderableTerrain> surfaceMesh;
   HUDHandler hudHandler;
   std::shared_ptr<SMSettings> settingsHandler;
-  std::shared_ptr<SMInputHandler> toInputHandler;
+  std::shared_ptr<SMInputHandler> smInputHandler;
   std::shared_ptr<PauseMenuHandler> pauseMenuHandler;
   GameObjectFactory gameObjectFactory;
 
@@ -44,8 +42,8 @@ private:
   GridXY mapSize;
 
 public:
-  SMGameContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings, std::shared_ptr<SMGameState> loadedGameState = nullptr)
-    : GameContextImpl(renderContext), settingsHandler(settings), loadedGameState(loadedGameState) {}
+  SMGameContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings)
+    : GameContextImpl(renderContext), settingsHandler(settings) {}
   virtual bool initialise() override;
   virtual void cleanUp() override;
   virtual void processInputStage() override;
@@ -56,7 +54,6 @@ public:
   HUDHandler* getHUDHandler(){ return &hudHandler; }
   SMSettings* getSettings(){ return settingsHandler.get(); }
   void displayPauseMenu();
-  void getGameState(SMGameState* state);
   const GameObjectFactory* getGameObjectFactory() const { return &gameObjectFactory; }
 
   Vector3D getCameraFocalPosition() const;
@@ -65,6 +62,9 @@ public:
   bool isOnMap(const GridXY& gridPos);
   bool isCellClear(const GridXY& gridPos);
   bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize);
+
+  bool saveGame(string filePath) const;
+  bool loadGame(string filePath);
 
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const GridXY& position);
 
@@ -78,4 +78,5 @@ public:
 protected:
   void initSurface();
   void setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize);
+  void addSMGameActor(SMGameActorPtr gameActor);
   };

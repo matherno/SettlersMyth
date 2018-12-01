@@ -138,14 +138,12 @@ void PauseMenuHandler::onSavePressed(GameContext* gameContext)
 
   //  On saving to a file
   uint id = saveLoadDlg->getID();
-  saveLoadDlg->setSaveGameStateCallback([this, id, gameContext]()
+  saveLoadDlg->setSaveGameStateCallback([this, id, gameContext](string filePath)
         {
-        std::shared_ptr<SMGameState> state(new SMGameState());
-        SMGameContext::cast(gameContext)->getGameState(state.get());
+        SMGameContext::cast(gameContext)->saveGame(filePath);
         gameContext->getUIManager()->removeComponent(id);
         gameContext->getUIManager()->popModalComponent();
         onReturnPressed(gameContext);
-        return state;
         });
 
   //  On cancelled saving

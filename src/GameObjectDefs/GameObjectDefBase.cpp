@@ -12,13 +12,14 @@ bool GameObjectDefBase::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, stri
   {
   id = nextID;
   nextID++;
-  name = xmlGetStringAttribute(xmlGameObjectDef, OD_NAME);
-  if (name.empty())
+  nameUnique = xmlGetStringAttribute(xmlGameObjectDef, OD_NAME);
+  if (nameUnique.empty())
     {
-    *errorMsg = "Game object def name is empty";
+    *errorMsg = "Game object def name is blank";
     return false;
     }
 
+  nameDisplay = nameUnique;
   auto xmlIcon = xmlGameObjectDef->FirstChildElement(OD_ICON);
   if (xmlIcon)
     iconFilepath = RES_DIR + xmlGetStringAttribute(xmlIcon, OD_IMAGEFILE);
