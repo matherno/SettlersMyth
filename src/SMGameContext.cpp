@@ -126,13 +126,13 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2
   auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID);
   if (gameActor)
     {
-    addSMGameActor(gameActor);
     auto staticActor = SMStaticActor::cast(gameActor.get());
     if (staticActor)
       staticActor->setGridPos(position);
     auto dynamicActor = SMDynamicActor::cast(gameActor.get());
     if (dynamicActor)
       dynamicActor->setPosition(position);
+    addSMGameActor(gameActor);
     return gameActor;
     }
   return nullptr;
