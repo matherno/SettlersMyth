@@ -46,6 +46,8 @@ bool SMGameContext::initialise()
 
 void SMGameContext::cleanUp()
   {
+  dynamicActors.clear();
+  staticActors.clear();
   if (surfaceMesh)
     {
     getRenderContext()->getRenderableSet()->removeRenderable(surfaceMesh->getID());

@@ -38,8 +38,9 @@ RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext)
   renderable->setMeshStorage(renderContext->getSharedMeshStorage(meshFilePath));
   renderable->initialise(renderContext);
   renderable->setDrawStyleVertColours();
-  renderContext->getRenderableSet()->addRenderable(RenderablePtr(renderable));
-  return RenderablePtr(renderable);
+  RenderablePtr ptr(renderable);
+  renderContext->getRenderableSet()->addRenderable(ptr);
+  return ptr;
   }
 
 
