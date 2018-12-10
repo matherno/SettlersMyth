@@ -8,6 +8,7 @@
 #include <GameObjectDefs/BuildingDef.h>
 #include "WorldItemPlacementHandler.h"
 #include "SMGameContext.h"
+#include "Building.h"
 
 WorldItemPlacementHandler::WorldItemPlacementHandler(uint id, uint buildingDefID) : InputHandler(id), buildingDefID(buildingDefID)
   {}
@@ -53,7 +54,17 @@ bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint b
     {
     if (isOutlinePosValid)
       {
-      smGameContext->createSMGameActor(buildingDefID, buildingPlacementPos);
+      auto gameActor = smGameContext->createSMGameActor(buildingDefID, buildingPlacementPos);
+      if (auto building = Building::cast(gameActor.get()))
+        {
+        for (int i = 0; i < 4; ++i)
+          {
+          auto unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameObjectDef("Settler")->getID(), buildingPlacementPos);
+          auto unitPtr = Unit::cast(unit);
+          building->attachUnit(unitPtr);
+          }
+        }
+
       if (!gameContext->getInputManager()->isKeyDown(KEY_LCTRL))
         {
         if (endHandlerCallback)
@@ -79,7 +90,7 @@ bool WorldItemPlacementHandler::onMouseMove(GameContext* gameContext, uint mouse
   buildingPlacementPos.x -= std::floor((double)buildingSizeX / 2.0);
   buildingPlacementPos.y -= std::floor((double)buildingSizeY / 2.0);
 
-  isOutlinePosValid = smGameContext->isRegionClear(buildingPlacementPos, GridXY(buildingSizeX, buildingSizeY));
+  isOutlinePosValid = smGameContext->getGridMapHandler()->isRegionClear(buildingPlacementPos, GridXY(buildingSizeX, buildingSizeY));
   if (buildingOutline)
     {
     buildingOutline->getTransform()->setIdentityMatrix();

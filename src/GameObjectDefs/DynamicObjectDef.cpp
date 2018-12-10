@@ -16,11 +16,6 @@ bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, strin
   if (xmlRender)
     meshFilePath = RES_DIR + xmlGetStringAttribute(xmlRender, OD_MESHFILE);
 
-  auto xmlUnit = xmlGameObjectDef->FirstChildElement(OD_UNIT);
-  if (xmlUnit)
-    xmlUnit->QueryAttribute(OD_SPEED, &speed);
-  return true;
-
   return true;
   }
 
@@ -33,8 +28,9 @@ RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext
   renderable->setMeshStorage(renderContext->getSharedMeshStorage(meshFilePath));
   renderable->initialise(renderContext);
   renderable->setDrawStyleVertColours();
-  renderContext->getRenderableSet()->addRenderable(RenderablePtr(renderable));
-  return RenderablePtr(renderable);
+  RenderablePtr ptr(renderable);
+  renderContext->getRenderableSet()->addRenderable(ptr);
+  return ptr;
   }
 
 SMGameActorPtr DynamicObjectDef::createGameActor(GameContext* gameContext) const

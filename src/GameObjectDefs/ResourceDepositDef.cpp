@@ -2,6 +2,8 @@
 // Created by matt on 24/11/18.
 //
 
+#include <GameObjectDefFileHelper.h>
+#include <SMGameContext.h>
 #include "ResourceDepositDef.h"
 
 bool ResourceDepositDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
@@ -9,7 +11,17 @@ bool ResourceDepositDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, str
   if(!StaticObjectDef::loadFromXML(xmlGameObjectDef, errorMsg))
     return false;
 
-
+  auto xmlDeposit = xmlGameObjectDef->FirstChildElement(OD_DEPOSIT);
+  if (xmlDeposit)
+    {
+    resourceName = xmlGetStringAttribute(xmlDeposit, OD_RESOURCENAME);
+    xmlDeposit->QueryAttribute(OD_RESOURCEAMOUNT, &resourceAmount);
+    }
+  else
+    {
+    *errorMsg = "No deposit definition found";
+    return false;
+    }
 
   return true;
   }
@@ -27,7 +39,27 @@ void ResourceDepositDef::createActorBehaviours(std::vector<IGameObjectBehaviourP
       staticActor->setCellPos(Vector2D(xPos, yPos));
     };
 
-  IGameObjectBehaviourPtr randomCellPos(new BehaviourHelper(onInitFunc, nullptr));
+  auto onUpdateFunc = [](SMGameActor* gameActor, GameContext* gameContext)
+    {
+    if (gameActor->totalResourceCount() == 0)
+      SMGameContext::cast(gameContext)->destroySMActor(gameActor->getID());
+    };
+
+  IGameObjectBehaviourPtr randomCellPos(new BehaviourHelper(onInitFunc, onUpdateFunc));
   behaviourList->push_back(randomCellPos);
+  }
+
+SMGameActorPtr ResourceDepositDef::createGameActor(GameContext* gameContext) const
+  {
+  auto actor = StaticObjectDef::createGameActor(gameContext);
+  if (actor)
+    {
+    auto resourceGameObjDef = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDef(resourceName);
+    if (resourceGameObjDef)
+      actor->storeResource(resourceGameObjDef->getID(), resourceAmount);
+    else
+      ASSERT(false, "Not a resource? '" + resourceName + "'");
+    }
+  return actor;
   }
 

@@ -4,6 +4,8 @@
 
 #include <GameObjectDefs/DynamicObjectDef.h>
 #include "SMGameActor.h"
+#include "SMGameContext.h"
+#include "GameObjectDefFileHelper.h"
 
 SMGameActor::SMGameActor(uint id, const IGameObjectDef* gameObjectDef) : GameActor(id), gameObjectDef(gameObjectDef)
   {}
@@ -39,26 +41,61 @@ void SMGameActor::onDetached(GameContext* gameContext)
     behaviour->cleanUp(this, gameContext);
   }
 
-void SMGameActor::saveActor(XMLElement* element)
+void SMGameActor::saveActor(XMLElement* element, GameContext* gameContext)
   {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   element->SetAttribute(SL_LINKID, getLinkID());
   element->SetAttribute(SL_GAMEOBJDEF_NAME, gameObjectDef->getUniqueName().c_str());
+
+  // save resources
+  XMLElement* resListElem = xmlCreateElement(element, SL_RESOURCELIST);
+  for (auto pair : *getStoredResources())
+    {
+    const int amount = pair.second;
+    if (amount == 0)
+      continue;
+    IGameObjectDefPtr resGameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(pair.first);
+    if (resGameObjDef)
+      {
+      XMLElement* resourceElem = xmlCreateElement(resListElem, SL_RESOURCE);
+      resourceElem->SetAttribute(SL_NAME, resGameObjDef->getUniqueName().c_str());
+      resourceElem->SetAttribute(SL_AMOUNT, amount);
+      }
+    }
+
   for (auto behaviour : behaviours)
     {
     const string behaviourName = behaviour->getBehaviourName();
     if (!behaviourName.empty())
       {
       auto behaviourElement = xmlCreateElement(element, xmlCreateBehaviourElemName(behaviourName));
-      behaviour->save(this, behaviourElement);
+      behaviour->save(this, gameContext, behaviourElement);
       }
     }
   }
 
 void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
   {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  const GameObjectFactory* gameObjectFactory = smGameContext->getGameObjectFactory();
   uint linkID = 0;
   element->QueryUnsignedAttribute(SL_LINKID, &linkID);
   setLinkID(linkID);
+
+  XMLElement* resListElem = element->FirstChildElement(SL_RESOURCELIST);
+  XMLElement* resourceElem = resListElem->FirstChildElement(SL_RESOURCE);
+  while (resourceElem)
+    {
+    const string name = xmlGetStringAttribute(resourceElem, SL_NAME);
+    int amount = 0;
+    resourceElem->QueryAttribute(SL_AMOUNT, &amount);
+    IGameObjectDefPtr resGameObjDef = gameObjectFactory->findGameObjectDef(name);
+    if (resGameObjDef && gameObjectFactory->isTypeOrSubType(GameObjectType::resource, resGameObjDef->getType()))
+      storeResource(resGameObjDef->getID(), amount);
+    else
+      mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
+    resourceElem = resListElem->NextSiblingElement(SL_RESOURCE);
+    }
 
   for (auto behaviour : behaviours)
     {
@@ -73,9 +110,28 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
     else
       behaviour->initialise(this, gameContext);
     }
-
   }
 
+void SMGameActor::processCommand(const SMActorCommand& command, GameContext* gameContext)
+  {
+  for (auto behaviour : behaviours)
+    {
+    if (behaviour->processCommand(this, gameContext, command))
+      return;
+    }
+  }
+
+void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
+  {
+  for (const auto& pair : *getStoredResources())
+    {
+    if (pair.second > 0)
+      {
+      SMGameContext::cast(gameContext)->dropResource(pair.first, pair.second, position);
+      takeAllResource(pair.first);
+      }
+    }
+  }
 
 
 SMStaticActor::SMStaticActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
@@ -87,7 +143,7 @@ void SMStaticActor::setGridPos(GridXY pos)
   if (renderable)
     {
     renderable->getTransform()->setIdentityMatrix();
-    renderable->getTransform()->translate(getPosition());
+    renderable->getTransform()->translate(getPosition3D());
     }
   }
 
@@ -111,9 +167,9 @@ void SMStaticActor::onAttached(GameContext* gameContext)
   setGridPos(gridPos);     // sets renderables transform
   }
 
-Vector3D SMStaticActor::getPosition() const
+Vector2D SMStaticActor::getPosition() const
   {
-  return Vector3D(cellPos.x + gridPos.x, 0, -(cellPos.y + gridPos.y));
+  return Vector2D(gridPos.x, gridPos.y) + cellPos;
   }
 
 GridXY SMStaticActor::getGridPosition() const
@@ -121,9 +177,20 @@ GridXY SMStaticActor::getGridPosition() const
   return gridPos;
   }
 
-void SMStaticActor::saveActor(XMLElement* element)
+Vector2D SMStaticActor::getCellPosition() const
   {
-  SMGameActor::saveActor(element);
+  return cellPos;
+  }
+
+Vector3D SMStaticActor::getPosition3D() const
+  {
+  Vector2D pos = getPosition();
+  return Vector3D(pos.x, 0, -pos.y);
+  }
+
+void SMStaticActor::saveActor(XMLElement* element, GameContext* gameContext)
+  {
+  SMGameActor::saveActor(element, gameContext);
   xmlCreateElement(element, SL_GRIDPOS, gridPos);
   xmlCreateElement(element, SL_CELLPOS, cellPos);
   }
@@ -136,9 +203,6 @@ void SMStaticActor::initialiseActorFromSave(GameContext* gameContext, XMLElement
   }
 
 
-
-
-
 SMDynamicActor::SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
   {}
 
@@ -146,13 +210,10 @@ void SMDynamicActor::onAttached(GameContext* gameContext)
   {
   SMGameActor::onAttached(gameContext);
   updateRenderableTransform();
-  speed = DynamicObjectDef::cast(gameObjectDef)->getSpeed();
   }
 
 void SMDynamicActor::onUpdate(GameContext* gameContext)
   {
-  if (gotTarget && !hasReachedTarget())
-    moveToTarget(gameContext->getDeltaTime());
   SMGameActor::onUpdate(gameContext);
   }
 
@@ -168,34 +229,6 @@ void SMDynamicActor::setRotation(double rotation)
   updateRenderableTransform();
   }
 
-bool SMDynamicActor::hasReachedTarget() const
-  {
-  if (!gotTarget)
-    return false;
-  return fabs(position.x - targetPosition.x) < 1e-10 && fabs(position.y - targetPosition.y) < 1e-10;
-  }
-
-void SMDynamicActor::setTarget(Vector2D target)
-  {
-  gotTarget = true;
-  targetPosition = target;
-  }
-
-void SMDynamicActor::clearTarget()
-  {
-  gotTarget = false;
-  }
-
-void SMDynamicActor::moveToTarget(long deltaTime)
-  {
-  double maxDistance = ((double)deltaTime / 1000.0) * speed;
-  Vector2D posToTarget = targetPosition - position;
-  if (posToTarget.magnitude() < maxDistance)
-    setPosition(targetPosition);
-  else
-    setPosition(position + posToTarget.getUniform() * (float)maxDistance);
-  setRotation(-1 * mathernogl::ccwAngleBetween(Vector2D(0, 1), posToTarget.getUniform()));
-  }
 
 void SMDynamicActor::updateRenderableTransform()
   {

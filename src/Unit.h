@@ -1,20 +1,26 @@
 #pragma once
 
 #include "SMGameActor.h"
-#include "UnitOrders.h"
+#include "GridMapHandlerBase.h"
 
 /*
 *   
 */
 
 class IUnitOrder;
-typedef std::shared_ptr<IUnitOrder> IUnitOrderPtr;
+typedef std::shared_ptr<IUnitOrder> UnitOrderPtr;
 
 class Unit : public SMDynamicActor
   {
-private:
-  std::list<IUnitOrderPtr> orderList;
+protected:
   bool hasStartedOrder = false;
+  uint attachedBuilding = 0;
+
+  bool gotTarget = false;
+  Vector2D targetPosition;
+  std::unique_ptr<GridMapPath> pathToTarget;
+  double speed = 1;   // units per second
+  bool idling = true;
 
 public:
   Unit(uint id, const IGameObjectDef* gameObjectDef);
@@ -22,11 +28,24 @@ public:
   virtual void onUpdate(GameContext* gameContext) override;
   virtual void onDetached(GameContext* gameContext) override;
 
-  IUnitOrderPtr getTopOrder();
-  void pushOrder(IUnitOrderPtr order);
-  void clearOrders(GameContext* gameContext);
-  bool isIdling() const { return orderList.size() == 0; }
-  int getOrderCount() const { return (int)orderList.size(); }
+  bool isIdling() const { return idling; }
+  void setIdle(bool idle) { idling = idle; }
+
+  void setAttachedBuilding(uint id) { attachedBuilding = id; }
+  void detachFromBuilding() { attachedBuilding = 0; }
+  uint getAttachedBuilding() const { return attachedBuilding; }
+  bool isAttachedToBuilding() const { return attachedBuilding > 0; }
+
+  bool hasGotTarget() const { return gotTarget; }
+  bool hasReachedTarget() const;
+  void setTarget(Vector2D target);
+  void clearTarget();
+  void setSpeed(double speed) { this->speed = speed; }
+  double getSpeed() const { return speed; }
 
   static Unit* cast(SMGameActor* gameActor){ return dynamic_cast<Unit*>(gameActor); }
+  static std::shared_ptr<Unit> cast(SMGameActorPtr gameActor){ return std::dynamic_pointer_cast<Unit>(gameActor); }
   };
+
+typedef std::shared_ptr<Unit> UnitPtr;
+typedef std::weak_ptr<Unit> UnitWkPtr;

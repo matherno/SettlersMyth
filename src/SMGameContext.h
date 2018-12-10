@@ -15,6 +15,7 @@ class SMGameContext;
 #include "SMGameActor.h"
 #include "SMGameObjectFactory.h"
 #include "Grid.h"
+#include "GridMapHandlerBase.h"
 
 #define DRAW_STAGE_POST_PROC_EDGE     (DRAW_STAGE_OPAQUE + 1)
 #define DRAW_STAGE_OPAQUE_AFTER_EDGE  (DRAW_STAGE_POST_PROC_EDGE + 1)
@@ -35,11 +36,10 @@ private:
   std::shared_ptr<SMInputHandler> smInputHandler;
   std::shared_ptr<PauseMenuHandler> pauseMenuHandler;
   GameObjectFactory gameObjectFactory;
+  std::unique_ptr<GridMapHandlerBase> gridMapHandler;
 
   mathernogl::MappedList<SMStaticActorPtr> staticActors;
   mathernogl::MappedList<SMDynamicActorPtr> dynamicActors;
-  std::vector<uint> griddedActorIDs;
-  GridXY mapSize;
 
 public:
   SMGameContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings)
@@ -55,20 +55,20 @@ public:
   SMSettings* getSettings(){ return settingsHandler.get(); }
   void displayPauseMenu();
   const GameObjectFactory* getGameObjectFactory() const { return &gameObjectFactory; }
+  const GridMapHandlerBase* getGridMapHandler() const { return gridMapHandler.get(); }
+  SMStaticActorPtr getStaticActor(uint id);
+  SMDynamicActorPtr getDynamicActor(uint id);
+  void dropResource(uint id, int amount, Vector2D position);
 
   Vector3D getCameraFocalPosition() const;
   Vector2D terrainHitTest(uint mouseX, uint mouseY);
-  SMStaticActorPtr getObjectAtGridPos(const GridXY& gridPos);
-  bool isOnMap(const Vector2D& gridPos);
-  bool isOnMap(const GridXY& gridPos);
-  bool isCellClear(const GridXY& gridPos);
-  bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize);
 
-  bool saveGame(string filePath) const;
+  bool saveGame(string filePath);
   bool loadGame(string filePath);
 
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const GridXY& position);
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const Vector2D& position);
+  void destroySMActor(uint id);
 
   inline static SMGameContext* cast(GameContext* context)
     {

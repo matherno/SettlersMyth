@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "tinyxml2/tinyxml2.h"
 
 #define GAME_OBJ_DEF_FILE_EXT "smd"
@@ -19,7 +20,6 @@
 #define OD_LOTENTRY "lotentry"
 #define OD_BUILDINGENTRY "buildingentry"
 #define OD_CONSTRUCTION "construction"
-#define OD_RESOURCE "resource"
 #define OD_AMOUNT "amount"
 #define OD_TIME "time"
 #define OD_HARVESTER "harvester"
@@ -27,12 +27,17 @@
 #define OD_IMAGEFILE "imagefile"
 #define OD_UNIT "unit"
 #define OD_SPEED "speed"
+#define OD_DEPOSIT "deposit"
+#define OD_RESOURCENAME "resource_name"
+#define OD_RESOURCEAMOUNT "resource_amount"
+#define OD_HARVESTTIME "harvest_time"
 
-static string xmlGetStringAttribute(tinyxml2::XMLElement* element, const string& attributeName)
+
+static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)
   {
   const char* attribute;
   element->QueryStringAttribute(attributeName.c_str(), &attribute);
   if (attribute)
-    return string(attribute);
+    return std::string(attribute);
   return "";
   }

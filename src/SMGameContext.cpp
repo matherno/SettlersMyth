@@ -19,6 +19,7 @@ bool SMGameContext::initialise()
   getRenderContext()->registerDrawStage(DRAW_STAGE_OPAQUE_AFTER_EDGE);
   getRenderContext()->registerDrawStage(DRAW_STAGE_FOGOFWAR);
 
+  gridMapHandler.reset(new GridMapSimpleDirect(GridXY(200, 200)));
   if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
     return false;
 
@@ -34,12 +35,6 @@ bool SMGameContext::initialise()
   pauseMenuHandler.reset(new PauseMenuHandler(getNextActorID()));
   addActor(pauseMenuHandler);
 
-  griddedActorIDs.clear();
-  for (int x = 0; x < mapSize.x; ++x)
-    {
-    for (int y = 0; y < mapSize.y; ++y)
-      griddedActorIDs.push_back(0);
-    }
 
   return success;
   }
@@ -88,10 +83,8 @@ void SMGameContext::initSurface()
   {
   RenderContext* renderContext = getRenderContext();
 
+  const uint numCells = gridMapHandler->getMapSize().x;
   const float cellSize = 1;
-  const uint numCells = 200;
-  mapSize.x = numCells;
-  mapSize.y = numCells;
   surfaceMesh.reset(new RenderableTerrain(renderContext->getNextRenderableID(), numCells, cellSize, DRAW_STAGE_OPAQUE_AFTER_EDGE));
   surfaceMesh->setMultiColour(Vector3D(pow(0.2, 2.2), pow(0.4, 2.2), pow(0.2, 2.2)), Vector3D(pow(0.15, 2.2), pow(0.3, 2.2), pow(0.15, 2.2)));
   surfaceMesh->initialise(renderContext);
@@ -117,12 +110,12 @@ Vector3D SMGameContext::getCameraFocalPosition() const
 
 SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY& position)
   {
-  return createSMGameActor(gameObjDefID, Vector2D(position.x, position.y));
+  return createSMGameActor(gameObjDefID, position.centre());
   }
 
 SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2D& position)
   {
-  if (!isOnMap(position))
+  if (!gridMapHandler->isOnMap(position))
     return nullptr;
 
   auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID);
@@ -140,6 +133,33 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2
   return nullptr;
   }
 
+void SMGameContext::destroySMActor(uint id)
+  {
+  SMGameActorPtr actor;
+
+  SMStaticActorPtr staticActor = getStaticActor(id);
+  if (staticActor)
+    {
+    staticActors.remove(id);
+    const StaticObjectDef* staticObjDef = StaticObjectDef::cast(staticActor->getDef());
+    gridMapHandler->setGridCells(0, staticActor->getGridPosition(), staticObjDef->getSize());
+    actor = staticActor;
+    }
+
+  SMDynamicActorPtr dynamicActor = getDynamicActor(id);
+  if (dynamicActor)
+    {
+    dynamicActors.remove(id);
+    actor = dynamicActor;
+    }
+
+  if (actor)
+    {
+    gameObjectFactory.freeLinkID(actor->getLinkID());
+    removeActor(actor->getID());
+    }
+  }
+
 Vector2D SMGameContext::terrainHitTest(uint mouseX, uint mouseY)
   {
   Vector3D cursorWorldPos = getCursorWorldPos(mouseX, mouseY);
@@ -150,61 +170,7 @@ Vector2D SMGameContext::terrainHitTest(uint mouseX, uint mouseY)
   return Vector2D(position.x, -1 * position.z);
   }
 
-SMStaticActorPtr SMGameContext::getObjectAtGridPos(const GridXY& gridPos)
-  {
-  if (!isOnMap(gridPos))
-    return nullptr;
-
-  auto actorID = griddedActorIDs[gridPos.x + gridPos.y * mapSize.x];
-  if (actorID > 0 && staticActors.contains(actorID))
-    return staticActors.get(actorID);
-  return nullptr;
-  }
-
-bool SMGameContext::isOnMap(const Vector2D& gridPos)
-  {
-  return isOnMap(GridXY(gridPos));
-  }
-
-bool SMGameContext::isOnMap(const GridXY& gridPos)
-  {
-  return gridPos.x >= 0 && gridPos.x < mapSize.x && gridPos.y >= 0 && gridPos.y < mapSize.y;
-  }
-
-bool SMGameContext::isCellClear(const GridXY& gridPos)
-  {
-  if (!isOnMap(gridPos))
-    return false;
-  return griddedActorIDs[gridPos.x + gridPos.y * mapSize.x] == 0;
-  }
-
-bool SMGameContext::isRegionClear(const GridXY& gridPos, const GridXY& regionSize)
-  {
-  for (int x = 0; x < regionSize.x; ++x)
-    {
-    for (int y = 0; y < regionSize.y; ++y)
-      {
-      if (!isCellClear(gridPos + GridXY(x, y)))
-        return false;
-      }
-    }
-  return true;
-  }
-
-void SMGameContext::setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize)
-  {
-  for (int x = 0; x < regionSize.x; ++x)
-    {
-    for (int y = 0; y < regionSize.y; ++y)
-      {
-      GridXY pos = gridPos + GridXY(x, y);
-      if (isOnMap(pos))
-        griddedActorIDs[pos.x + pos.y * mapSize.x] = id;
-      }
-    }
-  }
-
-bool SMGameContext::saveGame(string filePath) const
+bool SMGameContext::saveGame(string filePath)
   {
   mathernogl::logInfo("Saving game... " + filePath);
   XMLDocument doc;
@@ -219,13 +185,13 @@ bool SMGameContext::saveGame(string filePath) const
   for (auto actor : *staticActors.getList())
     {
     auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
-    actor->saveActor(element);
+    actor->saveActor(element, this);
     }
 
   for (auto actor : *dynamicActors.getList())
     {
     auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
-    actor->saveActor(element);
+    actor->saveActor(element, this);
     }
 
   XMLError xmlError = doc.SaveFile(filePath.c_str());
@@ -282,7 +248,7 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     {
     staticActors.add(staticActor, staticActor->getID());
     auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
-    setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
+    gridMapHandler->setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
     }
 
   SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);
@@ -292,6 +258,24 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     }
   }
 
+SMStaticActorPtr SMGameContext::getStaticActor(uint id)
+  {
+  if (staticActors.contains(id))
+    return staticActors.get(id);
+  return nullptr;
+  }
+
+SMDynamicActorPtr SMGameContext::getDynamicActor(uint id)
+  {
+  if (dynamicActors.contains(id))
+    return dynamicActors.get(id);
+  return nullptr;
+  }
+
+void SMGameContext::dropResource(uint id, int amount, Vector2D position)
+  {
+  // tba
+  }
 
 
 

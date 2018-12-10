@@ -26,6 +26,10 @@
 #define SL_GRIDPOS "gridpos"
 #define SL_CELLPOS "cellpos"
 #define SL_POS "pos"
+#define SL_RESOURCELIST "resource_list"
+#define SL_RESOURCE "resource"
+#define SL_NAME "name"
+#define SL_AMOUNT "amount"
 
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"

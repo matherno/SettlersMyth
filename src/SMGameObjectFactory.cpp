@@ -4,6 +4,7 @@
 
 #include <GameObjectDefs/ResourceDepositDef.h>
 #include <GameObjectDefs/UnitDef.h>
+#include <GameObjectDefs/ResourceDef.h>
 #include "SMGameObjectFactory.h"
 #include "GameObjectDefFileHelper.h"
 #include "GameObjectDefs/BuildingHarvesterDef.h"
@@ -92,14 +93,6 @@ bool GameObjectFactory::loadGameObjectDefs(const string& defsDirectory)
       return false;
       }
     }
-
-  clearError();
-  if (!finaliseGameObjectDefs())
-    {
-    mathernogl::logError("Failed to finalise Game Object Defs : " + getError());
-    return false;
-    }
-
   return true;
   }
 
@@ -134,12 +127,6 @@ bool GameObjectFactory::loadGameObjectDefFile(const string& filePath)
     xmlGameObjectDef = xmlGameObjectDef->NextSiblingElement(OD_GAME_OBJECT_DEF);
     }
 
-  return true;
-  }
-
-
-bool GameObjectFactory::finaliseGameObjectDefs()
-  {
   return true;
   }
 
@@ -178,12 +165,17 @@ IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
     return new BuildingHarvesterDef();
   if (type == GameObjectType::deposit)
     return new ResourceDepositDef();
-  if (type == GameObjectType::unit || isSubType(GameObjectType::unit, type))
+  if (isTypeOrSubType(GameObjectType::unit, type))
     return new UnitDef();
+  if (type == GameObjectType::resource)
+    return new ResourceDef();
+
+  if (isTypeOrSubType(GameObjectType::staticObject, type))
+    return new ObstacleDef();
   return nullptr;
   }
 
-SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint gameObjectDefID) const
+SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint gameObjectDefID)
   {
   auto gameObjectDef = getGameObjectDef(gameObjectDefID);
   if (gameObjectDef)
@@ -191,9 +183,35 @@ SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint
     auto actor = gameObjectDef->createGameActor(gameContext);
     if (actor)
       gameContext->addActor(actor);
+
+    while (usedLinkIDs.count(nextLinkID) > 0)
+      ++nextLinkID;
+    actor->setLinkID(nextLinkID);
+    usedLinkIDs.insert(nextLinkID);
+    ++nextLinkID;
     return actor;
     }
+
   ASSERT(false, "Not a valid game object def ID: " + std::to_string(gameObjectDefID));
+  return nullptr;
+  }
+
+SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, XMLElement* xmlGameActor)
+  {
+  string sObjDefName = xmlGetStringAttribute(xmlGameActor, SL_GAMEOBJDEF_NAME);
+  auto gameObjectDef = findGameObjectDef(sObjDefName);
+  if (gameObjectDef)
+    {
+    auto actor = gameObjectDef->createGameActor(gameContext);
+    if (actor)
+      {
+      actor->setXMLToLoadFrom(xmlGameActor);
+      gameContext->addActor(actor);
+      usedLinkIDs.insert(actor->getLinkID());
+      }
+    return actor;
+    }
+  ASSERT(false, "Unknown game actor object definition name");
   return nullptr;
   }
 
@@ -215,22 +233,9 @@ bool GameObjectFactory::isSubType(GameObjectType type, GameObjectType subType) c
   return false;
   }
 
-SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const
+bool GameObjectFactory::isTypeOrSubType(GameObjectType type, GameObjectType subType) const
   {
-  string sObjDefName = xmlGetStringAttribute(xmlGameActor, SL_GAMEOBJDEF_NAME);
-  auto gameObjectDef = findGameObjectDef(sObjDefName);
-  if (gameObjectDef)
-    {
-    auto actor = gameObjectDef->createGameActor(gameContext);
-    if (actor)
-      {
-      actor->setXMLToLoadFrom(xmlGameActor);
-      gameContext->addActor(actor);
-      }
-    return actor;
-    }
-  ASSERT(false, "Unknown game actor object definition name");
-  return nullptr;
+  return type == subType || isSubType(type, subType);
   }
 
 string GameObjectFactory::getTypeName(GameObjectType type)
@@ -250,3 +255,9 @@ GameObjectType GameObjectFactory::getTypeBasedOnTypeName(string typeName)
     }
   return GameObjectType::none;
   }
+
+void GameObjectFactory::freeLinkID(uint linkID)
+  {
+  usedLinkIDs.erase(linkID);
+  }
+

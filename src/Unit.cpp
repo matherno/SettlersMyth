@@ -3,6 +3,7 @@
 //
 
 #include "Unit.h"
+#include "SMGameContext.h"
 
 Unit::Unit(uint id, const IGameObjectDef* gameObjectDef) : SMDynamicActor(id, gameObjectDef)
   {
@@ -10,50 +11,62 @@ Unit::Unit(uint id, const IGameObjectDef* gameObjectDef) : SMDynamicActor(id, ga
 
 void Unit::onUpdate(GameContext* gameContext)
   {
-  auto topOrder = getTopOrder();
-  if (hasStartedOrder)
+  if (gotTarget && !hasReachedTarget())
     {
-    topOrder->update(this, gameContext);
-    if (topOrder->isDone(this, gameContext))
+    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+
+    if (!pathToTarget)
       {
-      orderList.pop_front();
-      hasStartedOrder = false;
+      pathToTarget.reset(new GridMapPath());
+      smGameContext->getGridMapHandler()->getPathToTarget(getPosition(), targetPosition, pathToTarget.get());
+      if (pathToTarget->nodeCount() > 1 && pathToTarget->getTopPathNode() == getPosition())
+        pathToTarget->popTopPathNode();   // if first node is the cell we are in, pop it off
+      }
+
+    if (pathToTarget->nodeCount() > 0)
+      {
+      Vector2D nodePosition =  pathToTarget->getTopPathNode().centre();
+      if (pathToTarget->nodeCount() == 1)
+        nodePosition = targetPosition;
+
+      const double maxDistance = ((double) gameContext->getDeltaTime() / 1000.0) * speed;
+      Vector2D posToNode = nodePosition - getPosition();
+      if (posToNode.magnitude() < maxDistance)
+        {
+        setPosition(nodePosition);
+        pathToTarget->popTopPathNode();
+        }
+      else
+        {
+        setPosition(getPosition() + posToNode.getUniform() * (float) maxDistance);
+        }
+      setRotation(-1 * mathernogl::ccwAngleBetween(Vector2D(0, 1), posToNode.getUniform()));
       }
     }
-  else
-    {
-    if (topOrder)
-      {
-      topOrder->start(this, gameContext);
-      hasStartedOrder = true;
-      }
-    }
+
   SMDynamicActor::onUpdate(gameContext);
   }
 
 void Unit::onDetached(GameContext* gameContext)
   {
-  clearOrders(gameContext);
   SMGameActor::onDetached(gameContext);
   }
 
-void Unit::pushOrder(IUnitOrderPtr order)
+bool Unit::hasReachedTarget() const
   {
-  orderList.push_back(order);
+  if (!gotTarget)
+    return false;
+  return fabs(getPosition().x - targetPosition.x) < 1e-10 && fabs(getPosition().y - targetPosition.y) < 1e-10;
   }
 
-void Unit::clearOrders(GameContext* gameContext)
+void Unit::setTarget(Vector2D target)
   {
-  if (!isIdling() && getOrderCount() > 0)
-    getTopOrder()->cancel(this, gameContext);
-  orderList.clear();
-  hasStartedOrder = false;
+  gotTarget = true;
+  targetPosition = target;
+  pathToTarget.reset();
   }
 
-IUnitOrderPtr Unit::getTopOrder()
+void Unit::clearTarget()
   {
-  if (getOrderCount() > 0)
-    return orderList.front();
-  return IUnitOrderPtr();
+  gotTarget = false;
   }
-

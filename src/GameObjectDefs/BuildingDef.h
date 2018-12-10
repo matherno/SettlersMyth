@@ -11,7 +11,7 @@
 
 class BuildingDef : public StaticObjectDef
   {
-private:
+public:
   std::vector<GridXY> inputSpots;
   std::vector<GridXY> outputSpots;
   GridXY lotEntry;
@@ -23,11 +23,7 @@ private:
 
 public:
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;
+  virtual SMGameActorPtr createGameActor(GameContext* gameContext) const override;
 
-  const std::vector<GridXY>* getInputSpots() const { return &inputSpots; }
-  const std::vector<GridXY>* getOutputSpots() const { return &outputSpots; }
-  GridXY getLotEntry() const { return lotEntry; }
-  GridXY getLotEntryDir() const { return lotEntryDir; }
-  GridXY getBuildingEntry() const { return buildingEntry; }
-  GridXY getBuildingEntryDir() const { return buildingEntryDir; }
+  static const BuildingDef* cast(const IGameObjectDef* def) { return dynamic_cast<const BuildingDef*>(def); }
   };

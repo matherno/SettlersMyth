@@ -2,9 +2,11 @@
 
 #include <TowOff/RenderSystem/RenderSystem.h>
 #include <TowOff/GameSystem/GameSystem.h>
+#include <set>
 #include "tinyxml2/tinyxml2.h"
 #include "SMGameActor.h"
 #include "SaveLoadFileHelper.h"
+#include "SMActorCommand.h"
 
 
 /*
@@ -89,6 +91,7 @@ static const std::map<GameObjectType, string> typeNames
     { GameObjectType::citizen, "Citizen" },
   };
 
+class GameObjectFactory;
 class SMGameActor;
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
 
@@ -98,10 +101,11 @@ class IGameObjectBehaviour
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) = 0;
   virtual void initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) { initialise(gameActor, gameContext); }
-  virtual void save(SMGameActor* gameActor, XMLElement* xmlElement) {};
+  virtual void save(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) {};
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) = 0;
   virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) = 0;
   virtual string getBehaviourName() { return ""; };
+  virtual bool processCommand(SMGameActor* gameActor, GameContext* gameContext, const SMActorCommand& command) { return false; }  // return true if handled
   };
 typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
 
@@ -144,9 +148,11 @@ typedef std::shared_ptr<const IGameObjectDef> IGameObjectDefPtr;
 class GameObjectFactory
   {
 private:
-  std::map<uint, std::shared_ptr<const IGameObjectDef>> gameObjectDefs;
+  std::map<uint, IGameObjectDefPtr> gameObjectDefs;
   std::map<GameObjectType, std::vector<uint>> typesToGameDefs;
   string errorMessage;
+  std::set<uint> usedLinkIDs;
+  uint nextLinkID = 1;
 
 public:
   GameObjectFactory() {};
@@ -156,9 +162,11 @@ public:
   IGameObjectDefPtr findGameObjectDef(string name) const;
   void forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const;
   void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
-  SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor) const;
-  SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID) const;
+  SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor);
+  SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID);
   bool isSubType(GameObjectType type, GameObjectType subType) const;
+  bool isTypeOrSubType(GameObjectType type, GameObjectType subType) const;
+  void freeLinkID(uint linkID);
 
   bool loadGameObjectDefs(const string& defsDirectory);
   string getError() const { return errorMessage; }
@@ -171,6 +179,6 @@ private:
   void clearGameObjectDefs();
   bool loadGameObjectDefFile(const string& filePath);
   bool loadGameObjectDef(tinyxml2::XMLElement* xmlGameObjectDef);
-  bool finaliseGameObjectDefs();
   IGameObjectDef* constructGameObjectDef(string type);
   };
+

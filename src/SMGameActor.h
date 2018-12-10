@@ -4,7 +4,8 @@
 #include "SMGameObjectFactory.h"
 #include "Grid.h"
 #include "SaveLoadFileHelper.h"
-#include "Resource.h"
+#include "ResourceStorage.h"
+#include "SMActorCommand.h"
 
 /*
 *   
@@ -15,7 +16,7 @@ class IGameObjectBehaviour;
 typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
 
 
-class SMGameActor : public GameActor
+class SMGameActor : public GameActor, public ResourceStorage
   {
 protected:
   uint smActorLinkID = 0;
@@ -31,8 +32,10 @@ public:
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;
   virtual void onDetached(GameContext* gameContext) override;
-  virtual void saveActor(XMLElement* element);
+  virtual void saveActor(XMLElement* element, GameContext* gameContext);
   void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
+  void processCommand(const SMActorCommand& command, GameContext* gameContext);
+  void dropAllResources(GameContext* gameContext, Vector2D position);
 
   const IGameObjectDef* getDef() const { return gameObjectDef; }
   std::vector<IGameObjectBehaviourPtr>* getBehaviourList() { return &behaviours; }
@@ -52,19 +55,20 @@ private:
 public:
   SMStaticActor(uint id, const IGameObjectDef* gameObjectDef);
   virtual void onAttached(GameContext* gameContext) override;
+  virtual void saveActor(XMLElement* element, GameContext* gameContext) override;
 
   void setGridPos(GridXY pos);
   void setCellPos (Vector2D pos);
   void setCellPos (Vector3D pos);
-  Vector3D getPosition() const;
+  Vector2D getCellPosition() const;
   GridXY getGridPosition() const;
-
-  virtual void saveActor(XMLElement* element) override;
-protected:
-  virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element) override;
-public:
+  Vector2D getPosition() const;
+  Vector3D getPosition3D() const;
 
   inline static SMStaticActor* cast(SMGameActor* actor){ return dynamic_cast<SMStaticActor*>(actor); }
+
+protected:
+  virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element) override;
   };
 typedef std::shared_ptr<SMStaticActor> SMStaticActorPtr;
 
@@ -75,26 +79,17 @@ private:
   Vector2D position;
   double rotation = 0;
 
-  bool gotTarget = false;
-  Vector2D targetPosition;
-  double speed = 1;   // units per second
-
 public:
   SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef);
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;
   void setPosition(Vector2D position);
   void setRotation(double rotation);
-
-  bool hasGotTarget() const { return gotTarget; }
-  bool hasReachedTarget() const;
-  void setTarget(Vector2D target);
-  void clearTarget();
+  Vector2D getPosition() const { return position; }
 
   inline static SMDynamicActor* cast(SMGameActor* actor){ return dynamic_cast<SMDynamicActor*>(actor); }
 
 protected:
-  void moveToTarget(long deltaTime);
   void updateRenderableTransform();
   };
 typedef std::shared_ptr<SMDynamicActor> SMDynamicActorPtr;

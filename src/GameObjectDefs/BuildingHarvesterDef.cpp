@@ -2,6 +2,7 @@
 // Created by matt on 10/11/18.
 //
 
+#include <Behaviours/HarvesterBehaviour.h>
 #include "BuildingHarvesterDef.h"
 #include "GameObjectDefFileHelper.h"
 
@@ -10,9 +11,13 @@ bool BuildingHarvesterDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, s
   if(!BuildingDef::loadFromXML(xmlGameObjectDef, errorMsg))
     return false;
 
-  auto xmlHarvester = xmlGameObjectDef->FirstChildElement(OD_HARVESTER);
-  if (xmlHarvester)
+  if (auto xmlHarvester = xmlGameObjectDef->FirstChildElement(OD_HARVESTER))
     {
+    if (auto xmlDeposit = xmlHarvester->FirstChildElement(OD_DEPOSIT))
+      {
+      depositName = xmlGetStringAttribute(xmlDeposit, OD_NAME);
+      xmlDeposit->QueryAttribute(OD_HARVESTTIME, &harvestTime);
+      }
     }
   else
     {
@@ -21,5 +26,11 @@ bool BuildingHarvesterDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, s
     }
 
   return true;
+  }
+
+void BuildingHarvesterDef::createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behaviourList) const
+  {
+  IGameObjectDef::createActorBehaviours(behaviourList);
+  behaviourList->push_back(IGameObjectBehaviourPtr(new HarvesterBehaviour()));
   }
 
