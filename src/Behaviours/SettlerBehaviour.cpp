@@ -22,6 +22,11 @@ void SettlerBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
 
 
   Unit::cast(gameActor)->setIdle(!unitBusy);
+  if (!unitBusy)
+    {
+    activeCommand = CMD_IDLE;
+    Unit::cast(gameActor)->clearTarget();
+    }
   }
 
 void SettlerBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameContext)
@@ -60,6 +65,11 @@ Building* SettlerBehaviour::getAttachedBuilding(SMGameActor* gameActor, GameCont
   return Building::cast(SMGameContext::cast(gameContext)->getStaticActor(attachedBuildingLinkID).get());
   }
 
+SMStaticActor* SettlerBehaviour::getTargetActor()
+  {
+  return targetActor.lock().get();
+  }
+
 
 
 /*
@@ -84,14 +94,18 @@ bool SettlerBehaviour::startHarvesting(SMGameActor* gameActor, GameContext* game
   const string& depositName = harvesterDef->depositName;
   targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, buildingPosition, depositName);
 
-  if (targetActor)
+  if (getTargetActor())
     {
     timer.setTimeOut(harvesterDef->harvestTime);
     timer.reset();
-    unit->setTarget(targetActor->getPosition());
+    unit->setTarget(getTargetActor()->getPosition());
     return true;
     }
-  return false;
+  else
+    {
+    processCommand(gameActor, gameContext, CMD_RETURN_TO_BASE);
+    return true;
+    }
   }
 
 bool SettlerBehaviour::updateHarvesting(SMGameActor* gameActor, GameContext* gameContext)
@@ -104,7 +118,7 @@ bool SettlerBehaviour::updateHarvesting(SMGameActor* gameActor, GameContext* gam
   if (!harvesterDef)
     return false;
 
-  if (!targetActor || targetActor->getStoredResources()->empty())
+  if (!getTargetActor() || getTargetActor()->getStoredResources()->empty())
     return false;
 
   Unit* unit = Unit::cast(gameActor);
@@ -113,8 +127,8 @@ bool SettlerBehaviour::updateHarvesting(SMGameActor* gameActor, GameContext* gam
     {
     if (timer.incrementTimer(gameContext->getDeltaTime()))
       {
-      const uint resourceID = targetActor->getStoredResources()->begin()->first;
-      if(targetActor->takeResource(resourceID, 1))
+      const uint resourceID = getTargetActor()->getStoredResources()->begin()->first;
+      if(getTargetActor()->takeResource(resourceID, 1))
         unit->storeResource(resourceID, 1);
       timer.reset();
       processCommand(gameActor, gameContext, CMD_RETURN_TO_BASE);
@@ -147,7 +161,6 @@ bool SettlerBehaviour::updateReturnToBase(SMGameActor* gameActor, GameContext* g
   if (unit->hasReachedTarget())
     {
     unit->transferAllResourcesTo(buildingActor);
-    activeCommand = CMD_IDLE;
     return false;
     }
   return true;

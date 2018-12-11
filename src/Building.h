@@ -20,6 +20,7 @@ public:
   void dettachAllUnits();
   Unit* getIdleUnit();
   Unit* getAttachedUnit(uint unitID);
+  const mathernogl::MappedList<UnitWkPtr>* getAttachedUnits() const { return &attachedUnits; }
   bool isUnitAttached(uint unitID) const;
 
   static Building* cast(SMGameActor* gameActor){ return dynamic_cast<Building*>(gameActor); }

@@ -28,6 +28,7 @@ void HarvesterBehaviour::update(SMGameActor* gameActor, GameContext* gameContext
     Unit* unit = building->getIdleUnit();
     if (unit)
       unit->processCommand(SMActorCommand(CMD_HARVEST), gameContext);
+    returnIdlesToBase(gameActor, gameContext);
     sendUnitTimer.reset();
     }
   }
@@ -35,5 +36,18 @@ void HarvesterBehaviour::update(SMGameActor* gameActor, GameContext* gameContext
 void HarvesterBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameContext)
   {
 
+  }
+
+void HarvesterBehaviour::returnIdlesToBase(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  Building* building = Building::cast(gameActor);
+  for (auto unitPtr : *building->getAttachedUnits()->getList())
+    {
+    if(Unit* unit = unitPtr.lock().get())
+      {
+      if(unit->isIdling() && building->getGridPosition() != GridXY(unit->getPosition()))
+        unit->processCommand(CMD_RETURN_TO_BASE, gameContext);
+      }
+    }
   }
 

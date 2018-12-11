@@ -12,7 +12,7 @@ class SettlerBehaviour : public IGameObjectBehaviour
   {
 private:
   uint activeCommand = CMD_IDLE;
-  SMStaticActorPtr targetActor;
+  std::weak_ptr<SMStaticActor> targetActor;
   Timer timer;
 
 public:
@@ -23,6 +23,7 @@ public:
 
 protected:
   Building* getAttachedBuilding(SMGameActor* gameActor, GameContext* gameContext);
+  SMStaticActor* getTargetActor();
 
   bool startHarvesting(SMGameActor* gameActor, GameContext* gameContext);
   bool updateHarvesting(SMGameActor* gameActor, GameContext* gameContext);
