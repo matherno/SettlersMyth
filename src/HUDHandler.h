@@ -5,37 +5,36 @@
 #include <UISystem/UIButton.h>
 #include <UISystem/UIText.h>
 #include "WorldItemPlacementHandler.h"
+#include "SMGameActor.h"
 
 /*
 *   
 */
 
-class TowerFocusPanel : public UIPanel
+class ActorFocusPanel : public UIPanel
   {
 private:
   std::shared_ptr<UIPanel> icon;
-  std::shared_ptr<UIProgressBar> healthBar;
-  std::shared_ptr<UIProgressBar> energyBar;
   std::shared_ptr<UIText> nameText;
-  std::shared_ptr<UIText> healthText;
-  std::shared_ptr<UIText> energyText;\
+  std::shared_ptr<UIText> resourceText;
+  SMGameActorPtr focusActor;
 
 public:
-  TowerFocusPanel(uint id) : UIPanel(id) {}
-  void updateTowerInfo(GameContext* context);
+  ActorFocusPanel(uint id) : UIPanel(id) {}
+  void updateActorInfo(GameContext* context);
 
 private:
   virtual void initialise(GameContext* context) override;
   };
 
-class TODebugPanel : public UIPanel
+class SMDebugPanel : public UIPanel
   {
 private:
   std::shared_ptr<UIText> textComponent;
   Timer refreshTimer;
 
 public:
-  TODebugPanel(uint id) : UIPanel(id) {}
+  SMDebugPanel(uint id) : UIPanel(id) {}
   void updateDebugInfo(GameContext* context);
 private:
   virtual void initialise(GameContext* context) override;
@@ -45,16 +44,16 @@ class HUDHandler
   {
 private:
   std::shared_ptr<UIPanel> mainUIPanel;
-  std::shared_ptr<TowerFocusPanel> focusPanel;
-  std::shared_ptr<TODebugPanel> debugPanel;
-  UIToggleButtonGroupPtr towerButtonGroup;
+  std::shared_ptr<ActorFocusPanel> focusPanel;
+  std::shared_ptr<SMDebugPanel> debugPanel;
+  UIToggleButtonGroupPtr buildingButtonGroup;
   std::shared_ptr<WorldItemPlacementHandler> placementHandler;
 
 public:
   void initialiseUI(GameContext* context);
   void updateUI(GameContext* context);
   void cleanUp(GameContext* context);
-  void deselectTowerType();
+  void deselectUI();
   void toggleDebugPanel();
 
 protected:

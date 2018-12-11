@@ -19,6 +19,9 @@ bool SMGameContext::initialise()
   getRenderContext()->registerDrawStage(DRAW_STAGE_OPAQUE_AFTER_EDGE);
   getRenderContext()->registerDrawStage(DRAW_STAGE_FOGOFWAR);
 
+  selectionManager.reset(new WorldItemSelectionManager(getNextActorID()));
+  addActor(selectionManager);
+
   gridMapHandler.reset(new GridMapSimpleDirect(GridXY(200, 200)));
   if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
     return false;
@@ -29,6 +32,7 @@ bool SMGameContext::initialise()
 
   smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 0, -45));
   addInputHandler(smInputHandler);
+
 
   initSurface();
   hudHandler.initialiseUI(this);
@@ -156,6 +160,7 @@ void SMGameContext::destroySMActor(uint id)
   if (actor)
     {
     gameObjectFactory.freeLinkID(actor->getLinkID());
+    selectionManager->deselectTower(this, actor->getID());
     removeActor(actor->getID());
     }
   }
@@ -272,10 +277,35 @@ SMDynamicActorPtr SMGameContext::getDynamicActor(uint id)
   return nullptr;
   }
 
+SMGameActorPtr SMGameContext::getSMGameActor(uint id)
+  {
+  if (auto actor = getStaticActor(id))
+    return actor;
+  if (auto actor = getDynamicActor(id))
+    return actor;
+  return nullptr;
+  }
+
+void SMGameContext::forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr)> func)
+  {
+  for (SMStaticActorPtr staticActor : *staticActors.getList())
+    {
+    if (gameObjectFactory.isTypeOrSubType(type, staticActor->getDef()->getType()))
+      func(staticActor);
+    }
+
+  for (SMDynamicActorPtr dynamicActor: *dynamicActors.getList())
+    {
+    if (gameObjectFactory.isTypeOrSubType(type, dynamicActor->getDef()->getType()))
+      func(dynamicActor);
+    }
+  }
+
 void SMGameContext::dropResource(uint id, int amount, Vector2D position)
   {
   // tba
   }
+
 
 
 

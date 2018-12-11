@@ -130,15 +130,15 @@ bool SMInputHandler::onMousePressed(GameContext* gameContext, uint button, uint 
 
 bool SMInputHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
-//  if (button == MOUSE_LEFT)
-//    {
-//    WorldItemSelectionManager* selectionManager = SMGameContext::cast(gameContext)->getSelectionManager();
-//    if (!selectionManager->isMouseDragging())
-//      selectionManager->onStartMouseDrag(gameContext, mouseX, mouseY);
-//    else
-//      selectionManager->onUpdateMouseDrag(gameContext, mouseX, mouseY);
-//    return true;
-//    }
+  if (button == MOUSE_LEFT)
+    {
+    WorldItemSelectionManager* selectionManager = SMGameContext::cast(gameContext)->getSelectionManager();
+    if (!selectionManager->isMouseDragging())
+      selectionManager->onStartMouseDrag(gameContext, mouseX, mouseY);
+    else
+      selectionManager->onUpdateMouseDrag(gameContext, mouseX, mouseY);
+    return true;
+    }
   return false;
   }
 
@@ -147,20 +147,14 @@ bool SMInputHandler::onMouseReleased(GameContext* gameContext, uint button, uint
   SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   if (button == MOUSE_LEFT)
     {
-//    WorldItemSelectionManager* selectionManager = toGameContext->getSelectionManager();
-//    bool isCtrlDown = gameContext->getInputManager()->isKeyDown(KEY_LCTRL);
-//    if (selectionManager->isMouseDragging())
-//      {
-//      if(selectionManager->onFinishMouseDrag(gameContext, mouseX, mouseY, isCtrlDown))
-//        return true;
-//      }
-//    return selectionManager->onWorldClick(gameContext, mouseX, mouseY, isCtrlDown);
-    }
-  else if (button == MOUSE_MIDDLE)
-    {
-//    Vector3D worldPos = SMGameContext::cast(gameContext)->terrainHitTest(mouseX, mouseY);
-//    toGameContext->createDepositGroup(worldPos, 2.5, 10);
-//    return true;
+    WorldItemSelectionManager* selectionManager = toGameContext->getSelectionManager();
+    bool isCtrlDown = gameContext->getInputManager()->isKeyDown(KEY_LCTRL);
+    if (selectionManager->isMouseDragging())
+      {
+      if(selectionManager->onFinishMouseDrag(gameContext, mouseX, mouseY, isCtrlDown))
+        return true;
+      }
+    return selectionManager->onWorldClick(gameContext, mouseX, mouseY, isCtrlDown);
     }
   return false;
   }

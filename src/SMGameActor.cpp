@@ -3,6 +3,7 @@
 //
 
 #include <GameObjectDefs/DynamicObjectDef.h>
+#include <GameObjectDefs/StaticObjectDef.h>
 #include "SMGameActor.h"
 #include "SMGameContext.h"
 #include "GameObjectDefFileHelper.h"
@@ -39,6 +40,9 @@ void SMGameActor::onDetached(GameContext* gameContext)
     }
   for (auto behaviour : behaviours)
     behaviour->cleanUp(this, gameContext);
+
+  gameContext->getBoundingBoxManager()->removeBoundingBox(boundingBoxID);
+  boundingBox.reset();
   }
 
 void SMGameActor::saveActor(XMLElement* element, GameContext* gameContext)
@@ -121,6 +125,19 @@ void SMGameActor::processCommand(const SMActorCommand& command, GameContext* gam
     }
   }
 
+void SMGameActor::updateBoundingBox()
+  {
+  if (boundingBox)
+    {
+    Vector2D midPos = getMidPosition();
+    Vector2D halfSize = getSize() * 0.5f;
+    double height = 1.3;
+    Vector3D lowerBound = Vector3D(midPos.x - halfSize.x, 0, -(midPos.y + halfSize.y));
+    Vector3D upperBound = Vector3D(midPos.x + halfSize.x, height, -(midPos.y - halfSize.y));
+    boundingBox->setBounds(lowerBound, upperBound);
+    }
+  }
+
 void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
   {
   for (const auto& pair : *getStoredResources())
@@ -134,6 +151,7 @@ void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
   }
 
 
+
 SMStaticActor::SMStaticActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
   {}
 
@@ -145,6 +163,7 @@ void SMStaticActor::setGridPos(GridXY pos)
     renderable->getTransform()->setIdentityMatrix();
     renderable->getTransform()->translate(getPosition3D());
     }
+  updateBoundingBox();
   }
 
 void SMStaticActor::setCellPos(Vector2D pos)
@@ -152,6 +171,7 @@ void SMStaticActor::setCellPos(Vector2D pos)
   this->cellPos.x = mathernogl::clampf(pos.x, 0, 1);
   this->cellPos.y = mathernogl::clampf(pos.y, 0, 1);
   setGridPos(gridPos);     // sets renderables transform
+  updateBoundingBox();
   }
 
 void SMStaticActor::setCellPos(Vector3D pos)
@@ -159,12 +179,17 @@ void SMStaticActor::setCellPos(Vector3D pos)
   this->cellPos.x = mathernogl::clampf((float)pos.x, 0, 1);
   this->cellPos.y = mathernogl::clampf((float)-pos.z, 0, 1);
   setGridPos(gridPos);     // sets renderables transform
+  updateBoundingBox();
   }
 
 void SMStaticActor::onAttached(GameContext* gameContext)
   {
   SMGameActor::onAttached(gameContext);
   setGridPos(gridPos);     // sets renderables transform
+
+  boundingBox.reset(new BoundingBox());
+  boundingBoxID = gameContext->getBoundingBoxManager()->addBoundingBox(boundingBox, getID());
+  updateBoundingBox();
   }
 
 Vector2D SMStaticActor::getPosition() const
@@ -202,6 +227,22 @@ void SMStaticActor::initialiseActorFromSave(GameContext* gameContext, XMLElement
   SMGameActor::initialiseActorFromSave(gameContext, element);
   }
 
+Vector2D SMStaticActor::getMidPosition() const
+  {
+  const Vector2D size = getSize();
+  if (size.x <= 1 && size.y <= 1)
+    return getPosition();
+  else
+    return getPosition() + (size * 0.5f);
+  }
+
+Vector2D SMStaticActor::getSize() const
+  {
+  if (StaticObjectDef::cast(getDef()))
+    return StaticObjectDef::cast(getDef())->getSize();
+  }
+
+
 
 SMDynamicActor::SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
   {}
@@ -221,6 +262,7 @@ void SMDynamicActor::setPosition(Vector2D position)
   {
   this->position = position;
   updateRenderableTransform();
+  updateBoundingBox();
   }
 
 void SMDynamicActor::setRotation(double rotation)
@@ -238,4 +280,14 @@ void SMDynamicActor::updateRenderableTransform()
     renderable->getTransform()->rotate(0, 1, 0, rotation);
     renderable->getTransform()->translate(position.x, 0, -position.y);
     }
+  }
+
+Vector2D SMDynamicActor::getMidPosition() const
+  {
+  return getPosition();
+  }
+
+Vector2D SMDynamicActor::getSize() const
+  {
+  return Vector2D(0.5, 0.5);
   }

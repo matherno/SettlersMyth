@@ -24,6 +24,8 @@ protected:
   std::vector<IGameObjectBehaviourPtr> behaviours;
   RenderablePtr renderable;
   XMLElement* xmlToLoadFrom = nullptr;
+  BoundingBoxPtr boundingBox;
+  uint boundingBoxID = 0;
 
 public:
   SMGameActor(uint id, const IGameObjectDef* gameObjectDef);
@@ -33,12 +35,16 @@ public:
   virtual void onUpdate(GameContext* gameContext) override;
   virtual void onDetached(GameContext* gameContext) override;
   virtual void saveActor(XMLElement* element, GameContext* gameContext);
-  void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
-  void processCommand(const SMActorCommand& command, GameContext* gameContext);
-  void dropAllResources(GameContext* gameContext, Vector2D position);
 
   const IGameObjectDef* getDef() const { return gameObjectDef; }
   std::vector<IGameObjectBehaviourPtr>* getBehaviourList() { return &behaviours; }
+  virtual Vector2D getMidPosition() const = 0;
+  virtual Vector2D getSize() const = 0;
+  void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
+  void processCommand(const SMActorCommand& command, GameContext* gameContext);
+  void dropAllResources(GameContext* gameContext, Vector2D position);
+  void updateBoundingBox();
+  BoundingBoxPtr getBoundingBox() { return boundingBox; }
 
 protected:
   virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element);
@@ -64,6 +70,8 @@ public:
   GridXY getGridPosition() const;
   Vector2D getPosition() const;
   Vector3D getPosition3D() const;
+  virtual Vector2D getMidPosition() const override;
+  virtual Vector2D getSize() const override;
 
   inline static SMStaticActor* cast(SMGameActor* actor){ return dynamic_cast<SMStaticActor*>(actor); }
 
@@ -86,6 +94,8 @@ public:
   void setPosition(Vector2D position);
   void setRotation(double rotation);
   Vector2D getPosition() const { return position; }
+  virtual Vector2D getMidPosition() const override;
+  virtual Vector2D getSize() const override;
 
   inline static SMDynamicActor* cast(SMGameActor* actor){ return dynamic_cast<SMDynamicActor*>(actor); }
 

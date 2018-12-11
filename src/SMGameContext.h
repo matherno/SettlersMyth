@@ -35,6 +35,7 @@ private:
   std::shared_ptr<SMSettings> settingsHandler;
   std::shared_ptr<SMInputHandler> smInputHandler;
   std::shared_ptr<PauseMenuHandler> pauseMenuHandler;
+  std::shared_ptr<WorldItemSelectionManager> selectionManager;
   GameObjectFactory gameObjectFactory;
   std::unique_ptr<GridMapHandlerBase> gridMapHandler;
 
@@ -53,22 +54,24 @@ public:
   virtual FontPtr getDefaultFont() override;
   HUDHandler* getHUDHandler(){ return &hudHandler; }
   SMSettings* getSettings(){ return settingsHandler.get(); }
-  void displayPauseMenu();
   const GameObjectFactory* getGameObjectFactory() const { return &gameObjectFactory; }
   const GridMapHandlerBase* getGridMapHandler() const { return gridMapHandler.get(); }
-  SMStaticActorPtr getStaticActor(uint id);
-  SMDynamicActorPtr getDynamicActor(uint id);
-  void dropResource(uint id, int amount, Vector2D position);
-
+  WorldItemSelectionManager* getSelectionManager() { return selectionManager.get(); }
   Vector3D getCameraFocalPosition() const;
   Vector2D terrainHitTest(uint mouseX, uint mouseY);
 
+  void displayPauseMenu();
+  void dropResource(uint id, int amount, Vector2D position);
   bool saveGame(string filePath);
   bool loadGame(string filePath);
 
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const GridXY& position);
   SMGameActorPtr createSMGameActor(uint gameObjDefID, const Vector2D& position);
+  SMStaticActorPtr getStaticActor(uint id);
+  SMDynamicActorPtr getDynamicActor(uint id);
+  SMGameActorPtr getSMGameActor(uint id);
   void destroySMActor(uint id);
+  void forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr actor)> func);
 
   inline static SMGameContext* cast(GameContext* context)
     {

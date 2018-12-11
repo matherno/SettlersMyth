@@ -5,7 +5,8 @@
 #include "WorldItemSelectionManager.h"
 #include "SMGameContext.h"
 
-#define SELECTION_BOX_EXPANSION_FACTOR 1.2
+#define SELECTION_BOX_EXPANSION_FACTOR 1.0
+#define SELECTION_BOX_Y_OFFSET -0.05
 #define DRAG_SELECT_TOLERANCE  5
 
 WorldItemSelectionManager::WorldItemSelectionManager(uint id) : GameActor(id)
@@ -47,15 +48,15 @@ bool WorldItemSelectionManager::onWorldClick(GameContext* gameContext, uint mous
   SMGameContext* toGameContext = SMGameContext::cast(gameContext);
   if (gameContext->getBoundingBoxManager()->boundingBoxPicked())
     {
-    uint pickedTowerID = (uint)gameContext->getBoundingBoxManager()->getPickedBoundingBoxMeta();
-    if (!isTowerSelected(pickedTowerID))
+    uint pickedActorID = (uint)gameContext->getBoundingBoxManager()->getPickedBoundingBoxMeta();
+    if (!isActorSelected(pickedActorID))
       {
-//      if (TowerPtr pickedTower = toGameContext->getTower(pickedTowerID))
-//        selectTower(gameContext, pickedTower);
+      if (SMGameActorPtr pickedActor = toGameContext->getSMGameActor(pickedActorID))
+        selectActor(gameContext, pickedActor);
       }
     else if (isCtrlClick)
       {
-      deselectTower(gameContext, pickedTowerID);
+      deselectTower(gameContext, pickedActorID);
       }
     return true;
     }
@@ -100,7 +101,7 @@ bool WorldItemSelectionManager::onFinishMouseDrag(GameContext* gameContext, uint
       {
       if (!isCtrlDown)
         deselectAll(gameContext);
-      selectTowerScreenRect(gameContext, startDragPoint, Vector2D(mouseX, mouseY));
+      selectActorScreenRect(gameContext, startDragPoint, Vector2D(mouseX, mouseY));
       return true;
       }
     }
@@ -114,79 +115,73 @@ bool WorldItemSelectionManager::isMouseDragging() const
 
 void WorldItemSelectionManager::deselectAll(GameContext* gameContext)
   {
-//  SMGameContext::cast(gameContext)->hideAllRangeFields();
-//  towerSelectionBoxesMap.clear();
-//  selectionBoxRenderables->clearBoxes();
-//  selectedTowers.clear();
+  actorSelectionBoxesMap.clear();
+  selectionBoxRenderables->clearBoxes();
+  selectedActors.clear();
   }
 
-void WorldItemSelectionManager::deselectTower(GameContext* gameContext, uint towerID)
+void WorldItemSelectionManager::deselectTower(GameContext* gameContext, uint actorID)
   {
-  // remove tower selection box
-//  if (towerSelectionBoxesMap.count(towerID) > 0)
-//    {
-//    selectionBoxRenderables->removeBox(towerSelectionBoxesMap[towerID]);
-//    towerSelectionBoxesMap.erase(towerID);
-//    }
+  // remove actor selection box
+  if (actorSelectionBoxesMap.count(actorID) > 0)
+    {
+    selectionBoxRenderables->removeBox(actorSelectionBoxesMap[actorID]);
+    actorSelectionBoxesMap.erase(actorID);
+    }
+  if (selectedActors.contains(actorID))
+    selectedActors.remove(actorID);
   }
 
-//void WorldItemSelectionManager::selectTower(GameContext* gameContext, TowerPtr tower)
-//  {
-//  SMGameContext::cast(gameContext)->displayTowerRangeField(tower.get());
-//  selectedTowers.add(tower, tower->getID());
-//
-//  // create selection box if one doesn't already exist for this tower
-//  if (towerSelectionBoxesMap.count(tower->getID()) == 0)
-//    {
-//    BoundingBoxPtr boundingBox = SMGameContext::cast(gameContext)->getTowerCombinedBoundingBox(tower->getID());
-//    expandBoundingBox(boundingBox);
-//    uint boxID = selectionBoxRenderables->addBox(boundingBox->getLowerBound(), boundingBox->getUpperBound());
-//    towerSelectionBoxesMap[tower->getID()] = boxID;
-//    }
-//  }
-
-Vector2D toVector2D(const Vector3D& vector)
+void WorldItemSelectionManager::selectActor(GameContext* gameContext, SMGameActorPtr actor)
   {
-  return Vector2D(vector.x, vector.z);
+  selectedActors.add(actor, actor->getID());
+
+  // create selection box if one doesn't already exist for this actor
+  if (actorSelectionBoxesMap.count(actor->getID()) == 0)
+    {
+    BoundingBox boundingBox(*actor->getBoundingBox());
+    expandBoundingBox(&boundingBox);
+    uint boxID = selectionBoxRenderables->addBox(boundingBox.getLowerBound(), boundingBox.getUpperBound());
+    actorSelectionBoxesMap[actor->getID()] = boxID;
+    }
   }
 
-void WorldItemSelectionManager::selectTowerScreenRect(GameContext* gameContext, const Vector2D& screenPoint1, const Vector2D& screenPoint2)
+void WorldItemSelectionManager::selectActorScreenRect(GameContext* gameContext, const Vector2D& screenPoint1, const Vector2D& screenPoint2)
   {
-//  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
-//  Vector2D terrainHitPoints[] =
-//    {
-//      toVector2D(toGameContext->terrainHitTest(screenPoint1.x, screenPoint1.y)),
-//      toVector2D(toGameContext->terrainHitTest(screenPoint2.x, screenPoint1.y)),
-//      toVector2D(toGameContext->terrainHitTest(screenPoint2.x, screenPoint2.y)),
-//      toVector2D(toGameContext->terrainHitTest(screenPoint1.x, screenPoint2.y)),
-//    };
-//
-//  toGameContext->forEachTower([this, gameContext, terrainHitPoints](TowerPtr tower)
-//    {
-//    Vector2D towerPoint = Vector2D(tower->getPosition().x, tower->getPosition().z);
-//    if (isPointWithinTrapezoid(towerPoint, terrainHitPoints[0], terrainHitPoints[1], terrainHitPoints[2], terrainHitPoints[3]))
-//      selectTower(gameContext, tower);
-//    });
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  Vector2D terrainHitPoints[] =
+    {
+      smGameContext->terrainHitTest(screenPoint1.x, screenPoint1.y),
+      smGameContext->terrainHitTest(screenPoint2.x, screenPoint1.y),
+      smGameContext->terrainHitTest(screenPoint2.x, screenPoint2.y),
+      smGameContext->terrainHitTest(screenPoint1.x, screenPoint2.y),
+    };
+
+  smGameContext->forEachSMActor(GameObjectType::staticObject, [this, gameContext, terrainHitPoints](SMGameActorPtr actor)
+    {
+    Vector2D actorPos = actor->getMidPosition();
+    if (isPointWithinTrapezoid(actorPos, terrainHitPoints[0], terrainHitPoints[1], terrainHitPoints[2], terrainHitPoints[3]))
+      selectActor(gameContext, actor);
+    });
   }
 
-bool WorldItemSelectionManager::isTowerSelected(uint towerID) const
+bool WorldItemSelectionManager::isActorSelected(uint actorID) const
   {
-//  return selectedTowers.contains(towerID);
-  return false;
+  return selectedActors.contains(actorID);
   }
 
-//
-//TowerPtr WorldItemSelectionManager::getFirstSelectedTower()
-//  {
-//  if (selectedTowers.count() > 0)
-//    return *selectedTowers.getList()->begin();
-//  return nullptr;
-//  }
 
-void WorldItemSelectionManager::expandBoundingBox(BoundingBoxPtr box)
+SMGameActorPtr WorldItemSelectionManager::getFirstSelectedActor()
+  {
+  if (selectedActors.count() > 0)
+    return *selectedActors.getList()->begin();
+  return nullptr;
+  }
+
+void WorldItemSelectionManager::expandBoundingBox(BoundingBox* box)
   {
   Vector3D expansion = box->getSize() * (SELECTION_BOX_EXPANSION_FACTOR - 1.0) * 0.5;
-  Vector3D min = box->getLowerBound() - expansion;
+  Vector3D min = box->getLowerBound() - expansion + Vector3D(0, SELECTION_BOX_Y_OFFSET, 0);
   Vector3D max = box->getUpperBound() + expansion;
   box->setBounds(min, max);
   }
@@ -227,3 +222,4 @@ bool WorldItemSelectionManager::isPointWithinTrapezoid(const Vector2D& point, co
     return false;
   return true;
   }
+

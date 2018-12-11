@@ -7,10 +7,10 @@
 #include "Resources.h"
 
 /*
- *  TowerFocusPanel
+ *  ActorFocusPanel
  */
 
-void TowerFocusPanel::initialise(GameContext* context)
+void ActorFocusPanel::initialise(GameContext* context)
   {
   UIPanel::initialise(context);
 
@@ -21,110 +21,79 @@ void TowerFocusPanel::initialise(GameContext* context)
   icon->setColour(Vector3D(0.2));
   addChild(icon);
 
-  static const Vector2D healthBarOffset = Vector2D(120, 15);
-  static const Vector2D statsBarSize = Vector2D(200, 23);
-  static const uint statsBarsGap = 10;
-  static const uint statsTextGap = 5;
-  static const uint statsTextSize = 18;
-
-  healthBar.reset(new UIProgressBar(uiManager->getNextComponentID()));
-  healthBar->setOffset(healthBarOffset);
-  healthBar->setSize(statsBarSize);
-  healthBar->setColour(Vector3D(0.2));
-  healthBar->setBarColour(Vector3D(0.6, 0.1, 0.1));
-  addChild(healthBar);
-
-  healthText.reset(new UIText(uiManager->getNextComponentID()));
-  healthText->setOffset(healthBarOffset + Vector2D(statsBarSize.x + statsTextGap, 0));
-  healthText->setSize(statsBarSize);
-  healthText->setFontSize(statsTextSize);
-  healthText->setFontColour(Vector3D(0));
-  healthText->showBackground(false);
-  healthText->setTextCentreAligned(true, false);
-  addChild(healthText);
-
-  energyBar.reset(new UIProgressBar(uiManager->getNextComponentID()));
-  energyBar->setOffset(healthBarOffset + Vector2D(0, statsBarSize.y + statsBarsGap));
-  energyBar->setSize(statsBarSize);
-  energyBar->setColour(Vector3D(0.2));
-  energyBar->setBarColour(Vector3D(0, 0.2, 0.8));
-  addChild(energyBar);
-
-  energyText.reset(new UIText(uiManager->getNextComponentID()));
-  energyText->setOffset(healthBarOffset + Vector2D(statsBarSize.x + statsTextGap, statsBarSize.y + statsBarsGap));
-  energyText->setSize(statsBarSize);
-  energyText->setFontSize(statsTextSize);
-  energyText->setFontColour(Vector3D(0));
-  energyText->showBackground(false);
-  energyText->setTextCentreAligned(true, false);
-  addChild(energyText);
-
   nameText.reset(new UIText(uiManager->getNextComponentID()));
-  nameText->setOffset(Vector2D(20, -5));
+  nameText->setOffset(Vector2D(20, -10));
   nameText->setSize(Vector2D(250, 40));
   nameText->setVerticalAlignment(alignmentEnd);
   nameText->setFontSize(30);
   nameText->setFontColour(Vector3D(0));
   nameText->showBackground(false);
   addChild(nameText);
+
+  resourceText.reset(new UIText(uiManager->getNextComponentID()));
+  resourceText->setOffset(Vector2D(-10, 0));
+  resourceText->setSize(Vector2D(400, 0));
+  resourceText->setHorizontalAlignment(alignmentEnd);
+  resourceText->setVerticalAlignment(alignmentCentre);
+  resourceText->setHeightMatchParent(true);
+  resourceText->setPadding(0, 10);
+  resourceText->setFontSize(30);
+  resourceText->setFontColour(Vector3D(0));
+  resourceText->showBackground(false);
+  addChild(resourceText);
   }
 
-string createProgressString(int amount, int max)
+void ActorFocusPanel::updateActorInfo(GameContext* context)
   {
-  std::ostringstream stringStream;
-  stringStream << amount << "/" << max;
-  return stringStream.str();
-  }
+  SMGameContext* smGameContext = SMGameContext::cast(context);
 
-void TowerFocusPanel::updateTowerInfo(GameContext* context)
-  {
-  SMGameContext* toGameContext = SMGameContext::cast(context);
+  if (SMGameActorPtr actor = smGameContext->getSelectionManager()->getFirstSelectedActor())
+    {
+    setVisible(true, true);
 
-//  if (TowerPtr focusedTower = toGameContext->getFocusedTower())
-//    {
-//    setVisible(true, true);
-//
-//    bool newFocusTower = false;
-//    if (!activeFocusTower || focusedTower->getID() != activeFocusTower->getID())
-//      {
-//      activeFocusTower = focusedTower;
-//      const TowerType* type = TowerFactory::getTowerType(activeFocusTower->getTowerType());
-//      icon->setTexture(context->getRenderContext()->getSharedTexture(type->iconFilePath));
-//      icon->invalidate();
-//      nameText->setText(type->name);
-//      nameText->invalidate();
-//      newFocusTower = true;
-//      }
-//
-//    const int healthPoints = focusedTower->getHealthPoints();
-//    const int maxHealthPoints = focusedTower->getMaxHealthPoints();
-//    if (UIProgressBar::updateProgressBar(healthBar.get(), healthPoints, maxHealthPoints) || newFocusTower)
-//      {
-//      healthText->setText(createProgressString(healthPoints, maxHealthPoints));
-//      healthText->invalidate();
-//      }
-//
-//    const int storedEnergy = focusedTower->getStoredEnergy();
-//    const int maxEnergy = focusedTower->getMaxEnergy();
-//    if(UIProgressBar::updateProgressBar(energyBar.get(), storedEnergy, maxEnergy) || newFocusTower)
-//      {
-//      energyText->setText(createProgressString(storedEnergy, maxEnergy));
-//      energyText->invalidate();
-//      }
-//    }
-//  else
-//    {
-//    setVisible(false, true);
-//    activeFocusTower.reset();
-//    }
+    if (!focusActor || focusActor->getID() != actor->getID())
+      {
+      focusActor = actor;
+      const IGameObjectDef* actorDef = actor->getDef();
+      if (!actorDef->getIconFilePath().empty())
+        icon->setTexture(context->getRenderContext()->getSharedTexture(actorDef->getIconFilePath()));
+      else
+        icon->setTexture(nullptr);
+      icon->invalidate();
+      nameText->setText(actorDef->getDisplayName());
+      nameText->invalidate();
+
+      }
+
+    bool first = true;
+    string resText;
+    for (const auto& pair : *actor->getStoredResources())
+      {
+      IGameObjectDefPtr resDef = smGameContext->getGameObjectFactory()->getGameObjectDef(pair.first);
+      if (resDef)
+        {
+        if (!first)
+          resText += ", ";
+        resText += resDef->getDisplayName() + ":" + std::to_string(pair.second);
+        first = false;
+        }
+      }
+    resourceText->setText(resText);
+    resourceText->invalidate();
+    }
+  else
+    {
+    setVisible(false, true);
+    focusActor.reset();
+    }
   }
 
 
 /*
- *  TODebugPanel
+ *  SMDebugPanel
  */
 
-void TODebugPanel::initialise(GameContext* context)
+void SMDebugPanel::initialise(GameContext* context)
   {
   UIPanel::initialise(context);
 
@@ -144,7 +113,7 @@ void TODebugPanel::initialise(GameContext* context)
   refreshTimer.setTimeOut(1000);
   }
 
-void TODebugPanel::updateDebugInfo(GameContext* context)
+void SMDebugPanel::updateDebugInfo(GameContext* context)
   {
   if (textComponent && isVisible() && refreshTimer.incrementTimer(context->getDeltaTime()))
     {
@@ -185,13 +154,13 @@ void HUDHandler::initialiseUI(GameContext* context)
 
 void HUDHandler::updateUI(GameContext* context)
   {
-  focusPanel->updateTowerInfo(context);
+  focusPanel->updateActorInfo(context);
   debugPanel->updateDebugInfo(context);
   }
 
-void HUDHandler::deselectTowerType()
+void HUDHandler::deselectUI()
   {
-  towerButtonGroup->forceDeselectAll();
+  buildingButtonGroup->forceDeselectAll();
   }
 
 void HUDHandler::toggleDebugPanel()
@@ -204,7 +173,7 @@ void HUDHandler::toggleDebugPanel()
 void HUDHandler::setupFocusPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
-  focusPanel.reset(new TowerFocusPanel(uiManager->getNextComponentID()));
+  focusPanel.reset(new ActorFocusPanel(uiManager->getNextComponentID()));
   focusPanel->setOffset(Vector2D(-10, 0));
   focusPanel->setSize(Vector2D(600, 100));
   focusPanel->setColour(Vector3D(0.3, 0.3, 0.25));
@@ -231,7 +200,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   subPanel->setPadding(5, 5);
   mainUIPanel->addChild(UIComponentPtr(subPanel));
 
-  towerButtonGroup.reset(new UIToggleButtonGroup());
+  buildingButtonGroup.reset(new UIToggleButtonGroup());
 
   int buildingNum = 0;
   std::vector<IGameObjectDefPtr> buildings;
@@ -247,7 +216,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
     button->setVerticalAlignment(alignmentStart);
     button->setHorizontalAlignment(alignmentStart);
     button->setHighlightWidth(3);
-    button->setGroup(towerButtonGroup);
+    button->setGroup(buildingButtonGroup);
     uint gameDefID = buildingDef->getID();
     button->setMouseClickCallback([this, gameDefID, button, context](uint x, uint y) -> bool
                                     {
@@ -265,7 +234,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
 void HUDHandler::setupDebugPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
-  debugPanel.reset(new TODebugPanel(uiManager->getNextComponentID()));
+  debugPanel.reset(new SMDebugPanel(uiManager->getNextComponentID()));
   debugPanel->setHorizontalAlignment(alignmentEnd);
   debugPanel->setSize(Vector2D(260, 260));
   debugPanel->setColour(Vector3D(0.2));
@@ -282,12 +251,12 @@ void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)
     gameContext->removeInputHandler(placementHandler);
     placementHandler.reset();
     }
-  deselectTowerType();
+  deselectUI();
   }
 
 void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID)
   {
-//  SMGameContext::cast(gameContext)->getSelectionManager()->deselectAll(gameContext);
+  SMGameContext::cast(gameContext)->getSelectionManager()->deselectAll(gameContext);
 
   if (placementHandler)
     {
