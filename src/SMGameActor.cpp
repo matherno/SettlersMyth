@@ -87,18 +87,21 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
   setLinkID(linkID);
 
   XMLElement* resListElem = element->FirstChildElement(SL_RESOURCELIST);
-  XMLElement* resourceElem = resListElem->FirstChildElement(SL_RESOURCE);
-  while (resourceElem)
+  if (resListElem)
     {
-    const string name = xmlGetStringAttribute(resourceElem, SL_NAME);
-    int amount = 0;
-    resourceElem->QueryAttribute(SL_AMOUNT, &amount);
-    IGameObjectDefPtr resGameObjDef = gameObjectFactory->findGameObjectDef(name);
-    if (resGameObjDef && gameObjectFactory->isTypeOrSubType(GameObjectType::resource, resGameObjDef->getType()))
-      storeResource(resGameObjDef->getID(), amount);
-    else
-      mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
-    resourceElem = resListElem->NextSiblingElement(SL_RESOURCE);
+    XMLElement* resourceElem = resListElem->FirstChildElement(SL_RESOURCE);
+    while (resourceElem)
+      {
+      const string name = xmlGetStringAttribute(resourceElem, SL_NAME);
+      int amount = 0;
+      resourceElem->QueryAttribute(SL_AMOUNT, &amount);
+      IGameObjectDefPtr resGameObjDef = gameObjectFactory->findGameObjectDef(name);
+      if (resGameObjDef && gameObjectFactory->isTypeOrSubType(GameObjectType::resource, resGameObjDef->getType()))
+        storeResource(resGameObjDef->getID(), amount);
+      else
+        mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
+      resourceElem = resListElem->NextSiblingElement(SL_RESOURCE);
+      }
     }
 
   for (auto behaviour : behaviours)
