@@ -106,6 +106,18 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
     SMGameContext::cast(gameContext)->displayPauseMenu();
     return true;
     }
+  else if (key == KEY_KEYPAD_ADD)
+    {
+    gameContext->setSpeed(gameContext->getSpeed() + 1);
+    return true;
+    }
+  else if (key == KEY_KEYPAD_MINUS)
+    {
+    uint speed = gameContext->getSpeed();
+    if (speed > 1)
+      gameContext->setSpeed(speed - 1);
+    return true;
+    }
 
   switch(getCharFromKeyCode(key))
     {

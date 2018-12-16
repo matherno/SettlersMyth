@@ -37,6 +37,7 @@ private:
   bool paused = false;
   bool shouldEnd = false;
   BoundingBoxManagerImpl boundingBoxManager;
+  uint speed = 1;
 
 public:
   GameContextImpl(RenderContextPtr renderContext) : GameContext(renderContext) {}
@@ -80,6 +81,10 @@ public:
   virtual Vector3D clipToWorldTransform(const Vector3D& clipSpacePos) const override;
   virtual Vector3D getViewDirection() const override;
   virtual Vector3D getViewDirectionAtCursor(uint cursorX, uint cursorY) const override;
+
+  virtual void setSpeed(uint speed) override { this->speed = speed; }
+  virtual uint getSpeed() const override { return speed; }
+
 
 protected:
   void removePendingActors();

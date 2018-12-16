@@ -122,6 +122,7 @@ void SMDebugPanel::updateDebugInfo(GameContext* context)
     text += "Game Time: " + mathernogl::formatTime(context->getGameTime()) + "\n";
     text += "Delta Time: " + std::to_string(toGameContext->getDeltaTime()) + " ms\n";
     text += "FPS: " + std::to_string(int(1.0f / ((float)toGameContext->getDeltaTime() / 1000.0f))) + "\n";
+    text += "Speed: " + std::to_string(toGameContext->getSpeed()) + "\n";
 
     textComponent->setText(text);
     textComponent->setVisible(isVisible(), true);

@@ -148,6 +148,8 @@ public:
   virtual Vector3D clipToWorldTransform(const Vector3D& clipSpacePos) const = 0;
   virtual Vector3D getViewDirection() const = 0;
   virtual Vector3D getViewDirectionAtCursor(uint cursorX, uint cursorY) const = 0;
+  virtual void setSpeed(uint speed) = 0;
+  virtual uint getSpeed() const = 0;
   };
 
 
