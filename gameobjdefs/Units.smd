@@ -1,4 +1,6 @@
 <gameobjectdef name="Settler" type="Settler">
     <render meshfile="units/Settler.obj"/>
-    <unit speed="2"/>
+    <unit speed="2">
+    	<pickup x="0" y="0.21" z="-0.13"/>
+    </unit>
 </gameobjectdef>

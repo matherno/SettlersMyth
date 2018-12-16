@@ -13,8 +13,8 @@
 
 class IGameObjectDef;
 class IGameObjectBehaviour;
-typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
 
+typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
 
 class SMGameActor : public GameActor, public ResourceStorage
   {
@@ -40,6 +40,7 @@ public:
   std::vector<IGameObjectBehaviourPtr>* getBehaviourList() { return &behaviours; }
   virtual Vector2D getMidPosition() const = 0;
   virtual Vector2D getSize() const = 0;
+  virtual double getRotation() const { return 0; };
   void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
   void processCommand(const SMActorCommand& command, GameContext* gameContext);
   void dropAllResources(GameContext* gameContext, Vector2D position);
@@ -49,8 +50,9 @@ public:
 protected:
   virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element);
   };
-typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
 
+typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
+typedef std::weak_ptr<SMGameActor> SMGameActorWkPtr;
 
 class SMStaticActor : public SMGameActor
   {
@@ -85,6 +87,7 @@ class SMDynamicActor : public SMGameActor
   {
 private:
   Vector2D position;
+  double elevation = 0;
   double rotation = 0;
 
 public:
@@ -92,10 +95,14 @@ public:
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;
   void setPosition(Vector2D position);
+  void setPosition(Vector3D position);
   void setRotation(double rotation);
+  void setElevation(double elevation);
   Vector2D getPosition() const { return position; }
+  double getElevation() const { return elevation; };
   virtual Vector2D getMidPosition() const override;
   virtual Vector2D getSize() const override;
+  virtual double getRotation() const override { return rotation; }
 
   inline static SMDynamicActor* cast(SMGameActor* actor){ return dynamic_cast<SMDynamicActor*>(actor); }
 

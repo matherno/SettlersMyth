@@ -5,6 +5,7 @@
 #include <Unit.h>
 #include <GameObjectDefFileHelper.h>
 #include <Behaviours/SettlerBehaviour.h>
+#include <Behaviours/CarryResourceBehaviour.h>
 #include "UnitDef.h"
 
 bool UnitDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
@@ -16,6 +17,7 @@ bool UnitDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorM
   if (xmlUnit)
     {
     xmlUnit->QueryAttribute(OD_SPEED, &speed);
+    pickupPos = xmlGetVec3Value(xmlUnit, OD_PICKUP);
     }
 
   return true;
@@ -34,5 +36,6 @@ void UnitDef::createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behavi
   {
   IGameObjectDef::createActorBehaviours(behaviourList);
   behaviourList->push_back(IGameObjectBehaviourPtr(new SettlerBehaviour()));
+  behaviourList->push_back(IGameObjectBehaviourPtr(new CarryResourceBehaviour()));
   }
 

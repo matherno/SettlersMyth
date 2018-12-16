@@ -31,6 +31,7 @@
 #define OD_RESOURCENAME "resource_name"
 #define OD_RESOURCEAMOUNT "resource_amount"
 #define OD_HARVESTTIME "harvest_time"
+#define OD_PICKUP "pickup"
 
 
 static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)

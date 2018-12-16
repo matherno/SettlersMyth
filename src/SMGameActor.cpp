@@ -265,7 +265,20 @@ void SMDynamicActor::setPosition(Vector2D position)
   {
   this->position = position;
   updateRenderableTransform();
-  updateBoundingBox();
+  }
+
+void SMDynamicActor::setPosition(Vector3D position)
+  {
+  this->position.x = position.x;
+  elevation = position.y;
+  this->position.y = -position.z;
+  updateRenderableTransform();
+  }
+
+void SMDynamicActor::setElevation(double elevation)
+  {
+  this->elevation = elevation;
+  updateRenderableTransform();
   }
 
 void SMDynamicActor::setRotation(double rotation)
@@ -281,8 +294,9 @@ void SMDynamicActor::updateRenderableTransform()
     {
     renderable->getTransform()->setIdentityMatrix();
     renderable->getTransform()->rotate(0, 1, 0, rotation);
-    renderable->getTransform()->translate(position.x, 0, -position.y);
+    renderable->getTransform()->translate(position.x, elevation, -position.y);
     }
+  updateBoundingBox();
   }
 
 Vector2D SMDynamicActor::getMidPosition() const
