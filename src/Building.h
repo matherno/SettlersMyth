@@ -10,7 +10,7 @@
 class Building : public SMStaticActor
   {
 private:
-  mathernogl::MappedList<UnitWkPtr> attachedUnits;
+  mathernogl::MappedList<UnitPtr> attachedUnits;
 
 public:
   Building(uint id, const IGameObjectDef* gameObjectDef);
@@ -18,10 +18,13 @@ public:
   void attachUnit(UnitPtr unit);
   void dettachUnit(uint unitID);
   void dettachAllUnits();
-  Unit* getIdleUnit();
-  Unit* getAttachedUnit(uint unitID);
-  const mathernogl::MappedList<UnitWkPtr>* getAttachedUnits() const { return &attachedUnits; }
+  UnitPtr getIdleUnit();
+  uint getIdleUnitCount();
+  UnitPtr getAttachedUnit(uint unitID);
+  const mathernogl::MappedList<UnitPtr>* getAttachedUnits() const { return &attachedUnits; }
   bool isUnitAttached(uint unitID) const;
+
+  void returnIdleUnits(SMGameActor* gameActor, GameContext* gameContext);
 
   static Building* cast(SMGameActor* gameActor){ return dynamic_cast<Building*>(gameActor); }
   };

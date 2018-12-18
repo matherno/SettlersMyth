@@ -21,7 +21,7 @@ bool ResourceStorage::takeResource(uint id, int amount)
   if (resourceCount(id) >= amount)
     {
     storedResources[id] -= amount;
-    totalCapacity -= amount;
+    totalResCount -= amount;
     return true;
     }
   return false;
@@ -32,7 +32,7 @@ bool ResourceStorage::storeResource(uint id, int amount)
   if (!canStoreResource(id, amount))
     return false;
   storedResources[id] = resourceCount(id) + amount;
-  totalCapacity += amount;
+  totalResCount += amount;
   return true;
   }
 
@@ -43,16 +43,22 @@ int ResourceStorage::takeAllResource(uint id, int maxAmount)
     {
     amountToTake = std::min(maxAmount, resourceCount(id));
     storedResources[id] -= amountToTake;
-    totalCapacity -= amountToTake;
+    totalResCount -= amountToTake;
     }
   return amountToTake;
+  }
+
+void ResourceStorage::clearAllResources()
+  {
+  storedResources.clear();
+  totalResCount = 0;
   }
 
 bool ResourceStorage::canStoreResource(uint id, int amount) const
   {
   if (maxCapacity < 0)
     return true;
-  if (!capacityPerResource && totalCapacity + amount > maxCapacity)
+  if (!capacityPerResource && totalResCount + amount > maxCapacity)
     return false;
   if (capacityPerResource && resourceCount(id) + amount > maxCapacity)
     return false;

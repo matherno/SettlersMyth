@@ -40,7 +40,8 @@ public:
   bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize) const;
   GridXY getMapSize() const { return mapSize; }
 
-
+  typedef std::function<bool(SMStaticActorPtr)> FindActorPredicate;
+  SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, FindActorPredicate predicate) const;
   SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, GameObjectType gameObjDefType) const;
   SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, string gameObjDefName) const;
 

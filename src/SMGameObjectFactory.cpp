@@ -5,6 +5,7 @@
 #include <GameObjectDefs/ResourceDepositDef.h>
 #include <GameObjectDefs/UnitDef.h>
 #include <GameObjectDefs/ResourceDef.h>
+#include <GameObjectDefs/BuildingManufacturerDef.h>
 #include "SMGameObjectFactory.h"
 #include "GameObjectDefFileHelper.h"
 #include "GameObjectDefs/BuildingHarvesterDef.h"
@@ -34,6 +35,13 @@ IGameObjectDefPtr GameObjectFactory::findGameObjectDef(string name) const
       return pair.second;
     }
   return nullptr;
+  }
+
+uint GameObjectFactory::findGameObjectDefID(string name) const
+  {
+  if (auto def = findGameObjectDef(name))
+    return def->getID();
+  return 0;
   }
 
 void GameObjectFactory::forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const
@@ -163,6 +171,8 @@ IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
   GameObjectType type = getTypeBasedOnTypeName(name);
   if (type == GameObjectType::harvester)
     return new BuildingHarvesterDef();
+  if (type == GameObjectType::manufacturer)
+    return new BuildingManufacturerDef();
   if (type == GameObjectType::deposit)
     return new ResourceDepositDef();
   if (isTypeOrSubType(GameObjectType::unit, type))

@@ -18,6 +18,7 @@ struct GridXY
   int manhattanDistance(const GridXY& pt) const { return abs(pt.x-x) + abs(pt.y-y); }
   double distance(const GridXY& pt) const { return sqrt(pow(pt.x-x, 2) + pow(pt.y-y, 2)); }
   Vector2D centre() const { return Vector2D(0.5f + x, 0.5f + y); }
+  Vector2D operator+ (const Vector2D& pt) const { return Vector2D(pt.x+x, pt.y+y); }
   GridXY operator+ (const GridXY& pt) const { return GridXY(pt.x+x, pt.y+y); }
   GridXY operator- (const GridXY& pt) const { return GridXY(pt.x+x, pt.y+y); }
   bool operator== (const GridXY& pt) const { return pt.x == x && pt.y == y; }

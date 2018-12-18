@@ -16,7 +16,4 @@ public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) override;
   virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) override;
-
-protected:
-  void returnIdlesToBase(SMGameActor* gameActor, GameContext* gameContext);
   };

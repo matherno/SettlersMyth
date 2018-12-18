@@ -17,7 +17,7 @@ void Building::dettachUnit(uint unitID)
   {
   if (isUnitAttached(unitID))
     {
-    if(auto unit = attachedUnits.get(unitID).lock())
+    if(auto unit = attachedUnits.get(unitID))
       unit->detachFromBuilding();
     attachedUnits.remove(unitID);
     }
@@ -25,33 +25,38 @@ void Building::dettachUnit(uint unitID)
 
 void Building::dettachAllUnits()
   {
-  for (auto& unitPtr : *attachedUnits.getList())
-    {
-    if (auto unit = unitPtr.lock())
-      unit->detachFromBuilding();
-    }
+  for (auto& unit : *attachedUnits.getList())
+    unit->detachFromBuilding();
   attachedUnits.clear();
   }
 
-Unit* Building::getIdleUnit()
+UnitPtr Building::getIdleUnit()
   {
-  for (auto& unitPtr : *attachedUnits.getList())
+  for (auto& unit : *attachedUnits.getList())
     {
-    if (auto unit = unitPtr.lock())
-      {
-      if(unit->isIdling())
-        return unit.get();
-      }
+    if(unit->isIdling())
+      return unit;
     }
   return nullptr;
   }
 
-Unit* Building::getAttachedUnit(uint unitID)
+uint Building::getIdleUnitCount()
+  {
+  uint count = 0;
+  for (auto& unit : *attachedUnits.getList())
+    {
+    if(unit->isIdling())
+      count++;
+    }
+  return count;
+  }
+
+UnitPtr Building::getAttachedUnit(uint unitID)
   {
   if (isUnitAttached(unitID))
     {
-    if(auto unit = attachedUnits.get(unitID).lock())
-      return unit.get();
+    if(auto unit = attachedUnits.get(unitID))
+      return unit;
     }
   return nullptr;
   }
@@ -60,3 +65,14 @@ bool Building::isUnitAttached(uint unitID) const
   {
   return attachedUnits.contains(unitID);
   }
+
+void Building::returnIdleUnits(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  Building* building = Building::cast(gameActor);
+  for (auto unit : *building->getAttachedUnits()->getList())
+    {
+    if(unit->isIdling() && building->getGridPosition() != GridXY(unit->getPosition()))
+      unit->processCommand(CMD_RETURN_TO_BASE, gameContext);
+    }
+  }
+

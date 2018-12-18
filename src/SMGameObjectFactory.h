@@ -7,6 +7,7 @@
 #include "SMGameActor.h"
 #include "SaveLoadFileHelper.h"
 #include "SMActorCommand.h"
+#include "SMObserverItem.h"
 
 
 /*
@@ -96,7 +97,7 @@ class SMGameActor;
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
 
 
-class IGameObjectBehaviour
+class IGameObjectBehaviour : public SMObserverItem
   {
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) = 0;
@@ -160,6 +161,7 @@ public:
   void getGameObjectDefs(GameObjectType type, std::vector<IGameObjectDefPtr>* defsList) const;
   IGameObjectDefPtr getGameObjectDef(uint id) const;
   IGameObjectDefPtr findGameObjectDef(string name) const;
+  uint findGameObjectDefID(string name) const;
   void forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const;
   void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
   SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor);

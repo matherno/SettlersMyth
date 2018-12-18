@@ -33,6 +33,7 @@ void SMGameActor::onUpdate(GameContext* gameContext)
 
 void SMGameActor::onDetached(GameContext* gameContext)
   {
+  notifyObserversDestroyed(gameContext);
   if (renderable)
     {
     renderable->cleanUp(gameContext->getRenderContext());
@@ -119,13 +120,14 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
     }
   }
 
-void SMGameActor::processCommand(const SMActorCommand& command, GameContext* gameContext)
+bool SMGameActor::processCommand(const SMActorCommand& command, GameContext* gameContext)
   {
   for (auto behaviour : behaviours)
     {
     if (behaviour->processCommand(this, gameContext, command))
-      return;
+      return true;
     }
+  return false;
   }
 
 void SMGameActor::updateBoundingBox()

@@ -10,9 +10,9 @@
 struct SMActorCommand
   {
   uint id = 0;
-  std::shared_ptr<void> extra = nullptr;
+  int extra = 0;
   SMActorCommand(){}
-  SMActorCommand(uint id, std::shared_ptr<void> extra = nullptr) : id (id), extra(extra) {}
+  SMActorCommand(uint id, int extra = 0) : id (id), extra(extra) {}
   };
 
 
@@ -22,3 +22,4 @@ struct SMActorCommand
 #define CMD_MANUFACTURE           101
 #define CMD_COLLECT               102
 #define CMD_RETURN_TO_BASE        103
+#define CMD_MOVE_TO_MANUF_SPOT    104

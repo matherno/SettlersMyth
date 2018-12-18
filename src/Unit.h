@@ -44,6 +44,7 @@ public:
   double getSpeed() const { return speed; }
 
   static Unit* cast(SMGameActor* gameActor){ return dynamic_cast<Unit*>(gameActor); }
+  static Unit* cast(SMObserverItem* obsItem){ return dynamic_cast<Unit*>(obsItem); }
   static std::shared_ptr<Unit> cast(SMGameActorPtr gameActor){ return std::dynamic_pointer_cast<Unit>(gameActor); }
   };
 

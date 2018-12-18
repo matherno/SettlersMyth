@@ -1,0 +1,7 @@
+<gameobjectdef name="Log" type="Resource">
+	<render meshfile="resources/Log.obj"/>
+</gameobjectdef>
+
+<gameobjectdef name="Plank" type="Resource">
+	<render meshfile="resources/Plank.obj"/>
+</gameobjectdef>

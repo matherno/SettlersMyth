@@ -6,6 +6,7 @@
 #include "SaveLoadFileHelper.h"
 #include "ResourceStorage.h"
 #include "SMActorCommand.h"
+#include "SMObserverItem.h"
 
 /*
 *   
@@ -16,7 +17,8 @@ class IGameObjectBehaviour;
 
 typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
 
-class SMGameActor : public GameActor, public ResourceStorage
+
+class SMGameActor : public GameActor, public ResourceStorage, public SMObserverItem
   {
 protected:
   uint smActorLinkID = 0;
@@ -42,7 +44,7 @@ public:
   virtual Vector2D getSize() const = 0;
   virtual double getRotation() const { return 0; };
   void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
-  void processCommand(const SMActorCommand& command, GameContext* gameContext);
+  bool processCommand(const SMActorCommand& command, GameContext* gameContext);
   void dropAllResources(GameContext* gameContext, Vector2D position);
   void updateBoundingBox();
   BoundingBoxPtr getBoundingBox() { return boundingBox; }
@@ -53,6 +55,7 @@ protected:
 
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
 typedef std::weak_ptr<SMGameActor> SMGameActorWkPtr;
+
 
 class SMStaticActor : public SMGameActor
   {
@@ -110,3 +113,5 @@ protected:
   void updateRenderableTransform();
   };
 typedef std::shared_ptr<SMDynamicActor> SMDynamicActorPtr;
+
+

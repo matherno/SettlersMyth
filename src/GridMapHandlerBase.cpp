@@ -121,10 +121,10 @@ bool GridMapHandlerBase::isRegionClear(const GridXY& gridPos, const GridXY& regi
   return true;
   }
 
-SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameContext, GridXY position, GameObjectType gameObjDefType) const
+
+SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameContext, GridXY position, GridMapHandlerBase::FindActorPredicate predicate) const
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  const auto gameObjectFactory = smGameContext->getGameObjectFactory();
 
   //  dreadful brute force method for noe
   SMStaticActorPtr closestActor;
@@ -132,11 +132,7 @@ SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameCon
   for (auto actorID : griddedActors)
     {
     SMStaticActorPtr actor = smGameContext->getStaticActor(actorID);
-    if (!actor)
-      continue;
-
-    auto type = actor->getDef()->getType();
-    if(!gameObjectFactory->isTypeOrSubType(gameObjDefType, type))
+    if (!actor || !predicate(actor))
       continue;
 
     GridMapPath path;
@@ -154,36 +150,23 @@ SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameCon
   return closestActor;
   }
 
+
+SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameContext, GridXY position, GameObjectType gameObjDefType) const
+  {
+  const auto gameObjectFactory = SMGameContext::cast(gameContext)->getGameObjectFactory();
+  return findClosestStaticActor(gameContext, position, [&](SMStaticActorPtr actor)
+    {
+    auto type = actor->getDef()->getType();
+    return gameObjectFactory->isTypeOrSubType(gameObjDefType, type);
+    });
+  }
+
 SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameContext, GridXY position, string gameObjDefName) const
   {
-  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  const auto gameObjectFactory = smGameContext->getGameObjectFactory();
-
-  //  dreadful brute force method for noe
-  SMStaticActorPtr closestActor;
-  double closestDistance = DBL_MAX;
-  for (auto actorID : griddedActors)
+  return findClosestStaticActor(gameContext, position, [&](SMStaticActorPtr actor)
     {
-    SMStaticActorPtr actor = smGameContext->getStaticActor(actorID);
-    if (!actor)
-      continue;
-
-    if(actor->getDef()->getUniqueName() != gameObjDefName)
-      continue;
-
-    GridMapPath path;
-    if (!getPathToTarget(position, actor->getGridPosition(), &path))
-      continue;
-
-    double thisDistance = path.getLength();
-    if (thisDistance < closestDistance)
-      {
-      closestDistance = thisDistance;
-      closestActor = actor;
-      }
-    }
-
-  return closestActor;
+    return actor->getDef()->getUniqueName() == gameObjDefName;
+    });
   }
 
 

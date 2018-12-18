@@ -60,6 +60,8 @@ void CarryResourceBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameCo
 
 void CarryResourceBehaviour::createResourceActor(SMGameActor* gameActor, GameContext* gameContext, uint gameObjDefID)
   {
+  if (auto resActor = resourceActor.lock())
+    SMGameContext::cast(gameContext)->destroySMActor(resActor->getID());
   resourceActor = SMGameContext::cast(gameContext)->createSMGameActor(gameObjDefID, Vector3D());
   }
 

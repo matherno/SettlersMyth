@@ -4,6 +4,7 @@
 
 #include "Unit.h"
 #include "SMGameContext.h"
+#include "Building.h"
 
 Unit::Unit(uint id, const IGameObjectDef* gameObjectDef) : SMDynamicActor(id, gameObjectDef)
   {
@@ -49,6 +50,12 @@ void Unit::onUpdate(GameContext* gameContext)
 
 void Unit::onDetached(GameContext* gameContext)
   {
+  if (attachedBuilding > 0)
+    {
+    auto building = Building::cast(SMGameContext::cast(gameContext)->getStaticActor(attachedBuilding).get());
+    if (building)
+      building->dettachUnit(getID());
+    }
   SMGameActor::onDetached(gameContext);
   }
 
