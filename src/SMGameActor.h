@@ -28,6 +28,7 @@ protected:
   XMLElement* xmlToLoadFrom = nullptr;
   BoundingBoxPtr boundingBox;
   uint boundingBoxID = 0;
+  uint meshIdx = 0;
 
 public:
   SMGameActor(uint id, const IGameObjectDef* gameObjectDef);

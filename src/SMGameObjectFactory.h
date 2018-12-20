@@ -135,7 +135,8 @@ public:
   virtual uint getID() const = 0;
   virtual string getIconFilePath() const = 0;
   virtual GameObjectType getType() const = 0;
-  virtual RenderablePtr constructRenderable(RenderContext* renderContext) const = 0;
+  virtual RenderablePtr constructRenderable(RenderContext* renderContext, uint meshIdx = 0) const = 0;
+  virtual uint getMeshCount() const = 0;
 
 protected:
   friend class GameObjectFactory;

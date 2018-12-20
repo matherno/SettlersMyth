@@ -13,16 +13,18 @@ SMGameActor::SMGameActor(uint id, const IGameObjectDef* gameObjectDef) : GameAct
 
 void SMGameActor::onAttached(GameContext* gameContext)
   {
-  renderable = gameObjectDef->constructRenderable(gameContext->getRenderContext());
   if (xmlToLoadFrom)
     {
     initialiseActorFromSave(gameContext, xmlToLoadFrom);
     }
   else
     {
+    meshIdx = (uint) mathernogl::RandomGenerator::randomInt(0, (int)gameObjectDef->getMeshCount() - 1);
     for (auto behaviour : behaviours)
       behaviour->initialise(this, gameContext);
     }
+
+  renderable = gameObjectDef->constructRenderable(gameContext->getRenderContext(), meshIdx);
   }
 
 void SMGameActor::onUpdate(GameContext* gameContext)
@@ -51,6 +53,7 @@ void SMGameActor::saveActor(XMLElement* element, GameContext* gameContext)
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   element->SetAttribute(SL_LINKID, getLinkID());
   element->SetAttribute(SL_GAMEOBJDEF_NAME, gameObjectDef->getUniqueName().c_str());
+  element->SetAttribute(SL_MESHIDX, meshIdx);
 
   // save resources
   XMLElement* resListElem = xmlCreateElement(element, SL_RESOURCELIST);
@@ -87,6 +90,8 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
   element->QueryUnsignedAttribute(SL_LINKID, &linkID);
   setLinkID(linkID);
 
+  element->QueryUnsignedAttribute(SL_MESHIDX, &meshIdx);
+
   XMLElement* resListElem = element->FirstChildElement(SL_RESOURCELIST);
   if (resListElem)
     {
@@ -108,15 +113,16 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
   for (auto behaviour : behaviours)
     {
     const string behaviourName = behaviour->getBehaviourName();
-    const string behaviourElemName = xmlCreateBehaviourElemName(behaviourName);
-    XMLElement* xmlBehaviourElement = nullptr;
     if (!behaviourName.empty())
-      xmlBehaviourElement = element->FirstChildElement(behaviourElemName.c_str());
-
-    if (xmlBehaviourElement)
+      {
+      const string behaviourElemName = xmlCreateBehaviourElemName(behaviourName);
+      XMLElement* xmlBehaviourElement = element->FirstChildElement(behaviourElemName.c_str());
       behaviour->initialiseFromSaved(this, gameContext, xmlBehaviourElement);
+      }
     else
+      {
       behaviour->initialise(this, gameContext);
+      }
     }
   }
 

@@ -29,24 +29,7 @@ bool ResourceDepositDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, str
 void ResourceDepositDef::createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behaviourList) const
   {
   IGameObjectDef::createActorBehaviours(behaviourList);
-
-  auto onInitFunc = [](SMGameActor* gameActor, GameContext* gameContext)
-    {
-    float xPos = mathernogl::RandomGenerator::randomFloat(0, 1);
-    float yPos = mathernogl::RandomGenerator::randomFloat(0, 1);
-    SMStaticActor* staticActor = SMStaticActor::cast(gameActor);
-    if (staticActor)
-      staticActor->setCellPos(Vector2D(xPos, yPos));
-    };
-
-  auto onUpdateFunc = [](SMGameActor* gameActor, GameContext* gameContext)
-    {
-    if (gameActor->totalResourceCount() == 0)
-      SMGameContext::cast(gameContext)->destroySMActor(gameActor->getID());
-    };
-
-  IGameObjectBehaviourPtr randomCellPos(new BehaviourHelper(onInitFunc, onUpdateFunc));
-  behaviourList->push_back(randomCellPos);
+  behaviourList->push_back(IGameObjectBehaviourPtr(new ResourceDepositeBehaviour()));
   }
 
 SMGameActorPtr ResourceDepositDef::createGameActor(GameContext* gameContext) const
@@ -63,3 +46,35 @@ SMGameActorPtr ResourceDepositDef::createGameActor(GameContext* gameContext) con
   return actor;
   }
 
+
+
+
+
+void ResourceDepositeBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  float xPos = mathernogl::RandomGenerator::randomFloat(0.15, 0.85);
+  float yPos = mathernogl::RandomGenerator::randomFloat(0.15, 0.85);
+  SMStaticActor* staticActor = SMStaticActor::cast(gameActor);
+  if (staticActor)
+    staticActor->setCellPos(Vector2D(xPos, yPos));
+  }
+
+void ResourceDepositeBehaviour::initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement)
+  {
+  }
+
+void ResourceDepositeBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  if (gameActor->totalResourceCount() == 0)
+    SMGameContext::cast(gameContext)->destroySMActor(gameActor->getID());
+  }
+
+void ResourceDepositeBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameContext)
+  {
+
+  }
+
+string ResourceDepositeBehaviour::getBehaviourName()
+  {
+  return "ResourceDeposit";
+  }

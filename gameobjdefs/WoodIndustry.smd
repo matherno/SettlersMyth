@@ -7,13 +7,17 @@
     <harvester>
         <deposit name="Tree" harvesttime="2000"/>  <!-- time in ms for gatherering 1 resource worth -->
     </harvester>
-    <render meshfile="buildings/Woodcutter.obj"/>
+    <render>
+        <meshfile>buildings/Woodcutter.obj</meshfile>
+    </render>
     <icon imagefile="icons/woodcutter.png"/>
     <construction time="10000">
     	<resource name="Log" amount="4"/>
     	<resource name="Thatch" amount="2"/>
     </construction>
 </gameobjectdef>
+
+
 
 <gameobjectdef name="Sawmill" type="Manufacturer">
     <grid x="3" y="2">
@@ -25,7 +29,9 @@
         <input name="Log" amount="1"/> 
         <output name="Plank" amount="1"/> 
     </manufacturer>
-    <render meshfile="buildings/Sawmill.obj"/>
+    <render>
+        <meshfile>buildings/Sawmill.obj</meshfile>
+    </render>
     <icon imagefile="icons/sawmill.png"/>
     <construction time="10000">
         <resource name="Log" amount="4"/>

@@ -19,7 +19,7 @@ bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, strin
   return true;
   }
 
-RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext) const
+RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
   {
   if (meshFilePath.empty())
     return nullptr;

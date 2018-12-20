@@ -22,15 +22,35 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
   size.x = xmlGrid->IntAttribute(OD_X, 1);
   size.y = xmlGrid->IntAttribute(OD_Y, 1);
 
+  meshFilePathList.clear();
   auto xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
   if (xmlRender)
-    meshFilePath = RES_DIR + xmlGetStringAttribute(xmlRender, OD_MESHFILE);
+    {
+    XMLElement* xmlMeshFile = xmlRender->FirstChildElement(OD_MESHFILE);
+    while (xmlMeshFile)
+      {
+      string meshFilePath = RES_DIR + xmlMeshFile->GetText();
+      if (!meshFilePath.empty())
+        meshFilePathList.push_back(meshFilePath);
+      xmlMeshFile = xmlMeshFile->NextSiblingElement(OD_MESHFILE);
+      }
+    }
+
+  if (meshFilePathList.size() == 0)
+    {
+    *errorMsg = "Static object missing mesh file";
+    return false;
+    }
+
   return true;
   }
 
 
-RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext) const
+RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
   {
+  string meshFilePath = "";
+  if (meshIdx < meshFilePathList.size())
+    meshFilePath = meshFilePathList[meshIdx];
   if (meshFilePath.empty())
     return nullptr;
 

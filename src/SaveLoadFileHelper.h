@@ -30,6 +30,7 @@
 #define SL_RESOURCE "resource"
 #define SL_NAME "name"
 #define SL_AMOUNT "amount"
+#define SL_MESHIDX "meshidx"
 
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"
