@@ -1,4 +1,4 @@
-//
+//SMInputHandler
 // Created by matt on 3/12/17.
 //
 
@@ -30,7 +30,7 @@ bool SMGameContext::initialise()
 //  postProcSilhoutting->initialise(getRenderContext());
 //  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
-  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 0, -45));
+  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 40, 180, -45));
   addInputHandler(smInputHandler);
 
 
