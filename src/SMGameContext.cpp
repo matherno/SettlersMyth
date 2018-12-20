@@ -189,14 +189,20 @@ bool SMGameContext::saveGame(string filePath)
 
   for (auto actor : *staticActors.getList())
     {
-    auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
-    actor->saveActor(element, this);
+    if (actor->isSavingAllowed())
+      {
+      auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
+      actor->saveActor(element, this);
+      }
     }
 
   for (auto actor : *dynamicActors.getList())
     {
-    auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
-    actor->saveActor(element, this);
+    if (actor->isSavingAllowed())
+      {
+      auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
+      actor->saveActor(element, this);
+      }
     }
 
   XMLError xmlError = doc.SaveFile(filePath.c_str());
@@ -235,13 +241,17 @@ bool SMGameContext::loadGame(string filePath)
   smInputHandler->setRotation(camRot);
   smInputHandler->setCameraNeedsRefresh();
 
+  std::vector<SMGameActorPtr> loadedActors;
   XMLElement* xmlGameActor = xmlSaveFile->FirstChildElement(SL_SMGAMEACTOR);
   while (xmlGameActor)
     {
-    auto smGameActor = gameObjectFactory.createGameActor(this, xmlGameActor);
+    SMGameActorPtr smGameActor = gameObjectFactory.createGameActor(this, xmlGameActor);
     addSMGameActor(smGameActor);
+    loadedActors.push_back(smGameActor);
     xmlGameActor = xmlGameActor->NextSiblingElement(SL_SMGAMEACTOR);
     }
+  for (SMGameActorPtr actor : loadedActors)
+    actor->finaliseLoading(this);
 
   return true;
   }
@@ -286,6 +296,21 @@ SMGameActorPtr SMGameContext::getSMGameActor(uint id)
   return nullptr;
   }
 
+SMGameActorPtr SMGameContext::getSMGameActorByLinkID(uint linkID)
+  {
+  for (SMGameActorPtr actor : *staticActors.getList())
+    {
+    if (actor->getLinkID() == linkID)
+      return actor;
+    }
+  for (SMGameActorPtr actor : *dynamicActors.getList())
+    {
+    if (actor->getLinkID() == linkID)
+      return actor;
+    }
+  return nullptr;
+  }
+
 void SMGameContext::forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr)> func)
   {
   for (SMStaticActorPtr staticActor : *staticActors.getList())
@@ -303,7 +328,8 @@ void SMGameContext::forEachSMActor(GameObjectType type, std::function<void(SMGam
 
 void SMGameContext::dropResource(uint id, int amount, Vector2D position)
   {
-  // tba
+  for (int i = 0; i < amount; ++i)
+    createSMGameActor(id, position);
   }
 
 

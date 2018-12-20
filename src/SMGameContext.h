@@ -70,6 +70,7 @@ public:
   SMStaticActorPtr getStaticActor(uint id);
   SMDynamicActorPtr getDynamicActor(uint id);
   SMGameActorPtr getSMGameActor(uint id);
+  SMGameActorPtr getSMGameActorByLinkID(uint linkID);
   void destroySMActor(uint id);
   void forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr actor)> func);
 
@@ -82,6 +83,5 @@ public:
 
 protected:
   void initSurface();
-  void setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize);
   void addSMGameActor(SMGameActorPtr gameActor);
   };

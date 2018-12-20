@@ -14,7 +14,10 @@ private:
 
 public:
   Building(uint id, const IGameObjectDef* gameObjectDef);
+  virtual void saveActor(XMLElement* element, GameContext* gameContext) override;
+  virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) override;
 
+public:
   void attachUnit(UnitPtr unit);
   void dettachUnit(uint unitID);
   void dettachAllUnits();

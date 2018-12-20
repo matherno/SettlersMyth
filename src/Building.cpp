@@ -3,9 +3,37 @@
 //
 
 #include "Building.h"
+#include "SMGameContext.h"
 
 Building::Building(uint id, const IGameObjectDef* gameObjectDef) : SMStaticActor(id, gameObjectDef)
   {}
+
+void Building::saveActor(XMLElement* element, GameContext* gameContext)
+  {
+  SMStaticActor::saveActor(element, gameContext);
+  XMLElement* xmlAttachedUnits = xmlCreateElement(element, SL_ATTACHEDUNITS);
+  for (SMGameActorPtr unit : *attachedUnits.getList())
+    xmlCreateElement(xmlAttachedUnits, SL_LINKID, unit->getLinkID());
+  }
+
+void Building::finaliseActorFromSave(GameContext* gameContext, XMLElement* element)
+  {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+  SMGameActor::finaliseActorFromSave(gameContext, element);
+  XMLElement* xmlAttachedUnits = element->FirstChildElement(SL_ATTACHEDUNITS);
+  if (!xmlAttachedUnits)
+    return;
+
+  XMLElement* xmlUnitLinkID = xmlAttachedUnits->FirstChildElement(SL_LINKID);
+  while (xmlUnitLinkID)
+    {
+    const uint unitLinkID = (uint) xmlUnitLinkID->IntText(0);
+    SMGameActorPtr linkedActor = smGameContext->getSMGameActorByLinkID(unitLinkID);
+    if (UnitPtr unit = Unit::cast(linkedActor))
+      attachUnit(unit);
+    xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
+    }
+  }
 
 void Building::attachUnit(UnitPtr unit)
   {

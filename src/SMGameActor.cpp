@@ -269,6 +269,14 @@ void SMDynamicActor::onUpdate(GameContext* gameContext)
   SMGameActor::onUpdate(gameContext);
   }
 
+void SMDynamicActor::saveActor(XMLElement* element, GameContext* gameContext)
+  {
+  SMGameActor::saveActor(element, gameContext);
+  xmlCreateElement(element, SL_POS, position);
+  xmlCreateElement(element, SL_ROT, rotation);
+  xmlCreateElement(element, SL_ELEV, elevation);
+  }
+
 void SMDynamicActor::setPosition(Vector2D position)
   {
   this->position = position;
@@ -315,4 +323,12 @@ Vector2D SMDynamicActor::getMidPosition() const
 Vector2D SMDynamicActor::getSize() const
   {
   return Vector2D(0.5, 0.5);
+  }
+
+void SMDynamicActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
+  {
+  position = xmlGetVec2Value(element, SL_POS);
+  rotation = xmlGetDblValue(element, SL_ROT);
+  elevation = xmlGetDblValue(element, SL_ELEV);
+  SMGameActor::initialiseActorFromSave(gameContext, element);
   }

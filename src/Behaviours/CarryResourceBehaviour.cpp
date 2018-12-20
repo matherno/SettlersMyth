@@ -62,7 +62,9 @@ void CarryResourceBehaviour::createResourceActor(SMGameActor* gameActor, GameCon
   {
   if (auto resActor = resourceActor.lock())
     SMGameContext::cast(gameContext)->destroySMActor(resActor->getID());
-  resourceActor = SMGameContext::cast(gameContext)->createSMGameActor(gameObjDefID, Vector3D());
+  auto actor = SMGameContext::cast(gameContext)->createSMGameActor(gameObjDefID, Vector3D());
+  actor->setAllowSaving(false);
+  resourceActor = actor;
   }
 
 void CarryResourceBehaviour::updateResourceActorTransform(SMGameActor* gameActor)

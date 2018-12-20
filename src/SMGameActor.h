@@ -29,6 +29,7 @@ protected:
   BoundingBoxPtr boundingBox;
   uint boundingBoxID = 0;
   uint meshIdx = 0;
+  bool savingEnabled = true;
 
 public:
   SMGameActor(uint id, const IGameObjectDef* gameObjectDef);
@@ -45,13 +46,17 @@ public:
   virtual Vector2D getSize() const = 0;
   virtual double getRotation() const { return 0; };
   void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
+  void finaliseLoading(GameContext* gameContext) { finaliseActorFromSave(gameContext, xmlToLoadFrom); };
   bool processCommand(const SMActorCommand& command, GameContext* gameContext);
   void dropAllResources(GameContext* gameContext, Vector2D position);
   void updateBoundingBox();
   BoundingBoxPtr getBoundingBox() { return boundingBox; }
+  void setAllowSaving(bool allowSaving) { savingEnabled = allowSaving; }
+  bool isSavingAllowed() const { return savingEnabled; }
 
 protected:
   virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element);
+  virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) {};     //  called after all loaded actors are initialised
   };
 
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
@@ -98,6 +103,8 @@ public:
   SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef);
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;
+  virtual void saveActor(XMLElement* element, GameContext* gameContext) override;
+
   void setPosition(Vector2D position);
   void setPosition(Vector3D position);
   void setRotation(double rotation);
@@ -112,6 +119,7 @@ public:
 
 protected:
   void updateRenderableTransform();
+  virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element) override;
   };
 typedef std::shared_ptr<SMDynamicActor> SMDynamicActorPtr;
 
