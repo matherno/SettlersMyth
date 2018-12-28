@@ -5,6 +5,8 @@
 #include <TowOff/RenderSystem/RenderableMesh.h>
 #include <Resources.h>
 #include <GameObjectDefFileHelper.h>
+#include <TowOff/RenderSystem/RenderableVoxels.h>
+#include <Utils.h>
 #include "DynamicObjectDef.h"
 
 bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
@@ -14,21 +16,45 @@ bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, strin
 
   auto xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
   if (xmlRender)
-    meshFilePath = RES_DIR + xmlGetStringAttribute(xmlRender, OD_MESHFILE);
+    {
+    const string meshFilePath = xmlGetStringAttribute(xmlRender, OD_MESHFILE);
+    const string voxelsFilePath = xmlGetStringAttribute(xmlRender, OD_VOXELFILE);
+    if (!meshFilePath.empty())
+      {
+      isMeshRenderable = true;
+      renderableFilePath = RES_DIR + meshFilePath;
+      }
+    else if (!voxelsFilePath.empty())
+      {
+      isMeshRenderable = false;
+      renderableFilePath = RES_DIR + voxelsFilePath;
+      }
+    }
 
   return true;
   }
 
 RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
   {
-  if (meshFilePath.empty())
+  if (renderableFilePath.empty())
     return nullptr;
 
-  RenderableMesh* renderable = new RenderableMesh(renderContext->getNextRenderableID());
-  renderable->setMeshStorage(renderContext->getSharedMeshStorage(meshFilePath));
-  renderable->initialise(renderContext);
-  renderable->setDrawStyleVertColours();
-  RenderablePtr ptr(renderable);
+  RenderablePtr ptr;
+  if (isMeshRenderable)
+    {
+    RenderableMesh* renderable = new RenderableMesh(renderContext->getNextRenderableID());
+    renderable->setMeshStorage(renderContext->getSharedMeshStorage(renderableFilePath));
+    renderable->setDrawStyleVertColours();
+    ptr.reset(renderable);
+    }
+  else
+    {
+    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID());
+    renderable->setVoxelStorage(renderContext->getSharedVoxelStorage(renderableFilePath));
+    renderable->setVoxelSize(DYNAMIC_VOXEL_SIZE);
+    ptr.reset(renderable);
+    }
+  ptr->initialise(renderContext);
   renderContext->getRenderableSet()->addRenderable(ptr);
   return ptr;
   }

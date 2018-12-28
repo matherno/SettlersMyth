@@ -9,6 +9,7 @@
 #include "SMGameContext.h"
 #include "Resources.h"
 #include "SaveLoadFileHelper.h"
+#include "Utils.h"
 
 #define LAND_HEIGHT 0
 
@@ -90,7 +91,7 @@ void SMGameContext::initSurface()
   const uint numCells = gridMapHandler->getMapSize().x;
   const float cellSize = 1;
   surfaceMesh.reset(new RenderableTerrain(renderContext->getNextRenderableID(), numCells, cellSize, DRAW_STAGE_OPAQUE_AFTER_EDGE));
-  surfaceMesh->setMultiColour(Vector3D(pow(0.2, 2.2), pow(0.4, 2.2), pow(0.2, 2.2)), Vector3D(pow(0.15, 2.2), pow(0.3, 2.2), pow(0.15, 2.2)));
+  surfaceMesh->setMultiColour(colToVec3(50, 85, 25, true), colToVec3(60, 105, 30, true));
   surfaceMesh->initialise(renderContext);
   surfaceMesh->getTransform()->translate(0, 0, numCells * cellSize * -1);
   renderContext->getRenderableSet()->addRenderable(surfaceMesh);

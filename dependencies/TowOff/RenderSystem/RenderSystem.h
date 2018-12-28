@@ -6,6 +6,7 @@
 #include <mathernogl/MathernoGL.h>
 #include "MeshStorage.h"
 #include "Font.h"
+#include "VoxelStorage.h"
 
 typedef mathernogl::Matrix4 Matrix4;
 typedef mathernogl::Vector4D Vector4D;
@@ -139,6 +140,7 @@ public:
   virtual TexturePtr createEmptyTexture(uint width, uint height, uint bytesPerPixel, TextureOptions options = TextureOptions()) = 0;
   virtual RenderableSetPtr createRenderableSet() = 0;
   virtual FontPtr getSharedFont(const string& fntFilePath, const string& glyphsFilePath, float sizeScaling = 1) = 0;
+  virtual VoxelStoragePtr getSharedVoxelStorage(const string& mgvFilePath) = 0;
   virtual void pushTransform(const Transform* transform) = 0;
   virtual void popTransform() = 0;
   virtual const Transform* getStackedTransform() = 0;

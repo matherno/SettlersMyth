@@ -28,6 +28,7 @@ private:
   std::unique_ptr<mathernogl::Window> window;
   uint nextRenderableID = 1;
   uint nextMeshStorageID = 1;
+  uint nextVoxelStorageID = 1;
   bool isRendering = false;
   RenderableSetPtr renderableSet;
   Matrix4 worldToCameraTransform;
@@ -88,6 +89,7 @@ public:
   virtual TexturePtr getSharedTexture(const string& imageFilePath, TextureOptions options = TextureOptions()) override;
   virtual TexturePtr createEmptyTexture(uint width, uint height, uint bytesPerPixel, TextureOptions options = TextureOptions()) override;
   virtual FontPtr getSharedFont(const string& fntFilePath, const string& glyphsFilePath, float sizeScaling = 1) override;
+  virtual VoxelStoragePtr getSharedVoxelStorage(const string& mgvFilePath) override;
 
   virtual RenderableSetPtr createRenderableSet() override;
 

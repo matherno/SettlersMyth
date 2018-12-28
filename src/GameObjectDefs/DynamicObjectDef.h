@@ -9,7 +9,8 @@
 class DynamicObjectDef : public GameObjectDefBase
   {
 public:
-  string meshFilePath;
+  string renderableFilePath;
+  bool isMeshRenderable = true;   // otherwise voxels
 
 public:
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;

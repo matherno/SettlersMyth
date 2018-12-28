@@ -1,9 +1,13 @@
 <gameobjectdef name="Tree" type="Deposit">
     <grid x="1" y="1"/>
     <render>
-    	<meshfile>deposits/TreeA.obj</meshfile>
-    	<meshfile>deposits/TreeB.obj</meshfile>
-    	<meshfile>deposits/TreeC.obj</meshfile>
+        <renderpart voxelfile="deposits/TreeA.mgv"/>
+    </render>
+    <render>
+        <renderpart voxelfile="deposits/TreeB.mgv"/>
+    </render>
+    <render>
+        <renderpart voxelfile="deposits/TreeC.mgv"/>
     </render>
     <icon imagefile="icons/tree.png"/>
     <deposit resource_name="Log" resource_amount="10"/>

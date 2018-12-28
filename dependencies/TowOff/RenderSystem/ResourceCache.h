@@ -15,6 +15,7 @@ private:
   std::list<ShaderProgramAndFiles> shaderPrograms;
 
   std::map<string, MeshStoragePtr> meshStorages;
+  std::map<string, VoxelStoragePtr> voxelStorages;
   std::map<string, TexturePtr> textures;
   std::map<string, mathernogl::FontDefinitionPtr> fontDefinitions;
 
@@ -33,6 +34,10 @@ public:
 
   mathernogl::FontDefinitionPtr getFontDefinition(const string& fntFilePath);
   void addFontDefinition(mathernogl::FontDefinitionPtr fontDef, const string& fntFilePath);
+
+  VoxelStoragePtr getVoxelStorage(const string& mgvFilePath);
+  void addVoxelStorage(VoxelStoragePtr voxelStorage, const string& mgvFilePath);
+  void forEachVoxelStorage(std::function<void(VoxelStoragePtr voxelStorage)> func);
 
   void clearAll();
   };

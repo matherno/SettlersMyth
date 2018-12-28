@@ -3,6 +3,8 @@
 //
 
 #include <TowOff/RenderSystem/RenderableMesh.h>
+#include <TowOff/RenderSystem/RenderableVoxels.h>
+#include <Utils.h>
 #include "StaticObjectDef.h"
 #include "GameObjectDefFileHelper.h"
 #include "Resources.h"
@@ -22,23 +24,34 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
   size.x = xmlGrid->IntAttribute(OD_X, 1);
   size.y = xmlGrid->IntAttribute(OD_Y, 1);
 
-  meshFilePathList.clear();
-  auto xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
-  if (xmlRender)
+  renderList.clear();
+  XMLElement* xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
+  while (xmlRender)
     {
-    XMLElement* xmlMeshFile = xmlRender->FirstChildElement(OD_MESHFILE);
-    while (xmlMeshFile)
+    XMLElement* xmlRenderPart = xmlRender->FirstChildElement(OD_RENDERPART);
+    const string meshFilePath = xmlGetStringAttribute(xmlRenderPart, OD_MESHFILE);
+    const string voxelFilePath = xmlGetStringAttribute(xmlRenderPart, OD_VOXELFILE);
+
+    DefRenderItem renderItem;
+    if (!meshFilePath.empty())
       {
-      string meshFilePath = RES_DIR + xmlMeshFile->GetText();
-      if (!meshFilePath.empty())
-        meshFilePathList.push_back(meshFilePath);
-      xmlMeshFile = xmlMeshFile->NextSiblingElement(OD_MESHFILE);
+      renderItem.filePath = RES_DIR + meshFilePath;
+      renderItem.isMeshFile = true;
       }
+    else if (!voxelFilePath.empty())
+      {
+      renderItem.filePath = RES_DIR + voxelFilePath;
+      renderItem.isMeshFile = false;
+      }
+    if (!renderItem.filePath.empty())
+      renderList.push_back(renderItem);
+
+    xmlRender = xmlRender->NextSiblingElement(OD_RENDER);
     }
 
-  if (meshFilePathList.size() == 0)
+  if (renderList.size() == 0)
     {
-    *errorMsg = "Static object missing mesh file";
+    *errorMsg = "Static object missing a render item";
     return false;
     }
 
@@ -48,17 +61,30 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
 
 RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
   {
-  string meshFilePath = "";
-  if (meshIdx < meshFilePathList.size())
-    meshFilePath = meshFilePathList[meshIdx];
-  if (meshFilePath.empty())
+  string filePath = "";
+  if (meshIdx < renderList.size())
+    filePath = renderList[meshIdx].filePath;
+  if (filePath.empty())
     return nullptr;
+  const bool isMeshFile = renderList[meshIdx].isMeshFile;
 
-  RenderableMesh* renderable = new RenderableMesh(renderContext->getNextRenderableID());
-  renderable->setMeshStorage(renderContext->getSharedMeshStorage(meshFilePath));
-  renderable->initialise(renderContext);
-  renderable->setDrawStyleVertColours();
-  RenderablePtr ptr(renderable);
+  RenderablePtr ptr;
+  if (isMeshFile)
+    {
+    RenderableMesh* renderable = new RenderableMesh(renderContext->getNextRenderableID());
+    renderable->setMeshStorage(renderContext->getSharedMeshStorage(filePath));
+    renderable->setDrawStyleVertColours();
+    ptr.reset(renderable);
+    }
+  else
+    {
+    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID());
+    renderable->setVoxelStorage(renderContext->getSharedVoxelStorage(filePath));
+    renderable->setVoxelSize(VOXEL_SIZE);
+    ptr.reset(renderable);
+    }
+
+  ptr->initialise(renderContext);
   renderContext->getRenderableSet()->addRenderable(ptr);
   return ptr;
   }

@@ -1,14 +1,14 @@
 <gameobjectdef name="Wood Cutter" type="Harvester">
-    <grid x="3" y="2">
+    <grid x="2" y="2">
         <output x="0" y="1"/>
         <!-- <lotentry x="1" y="1" xdir="0" ydir="-1"/> same as building entry if not defined -->
         <buildingentry x="1" y="1" xdir="0" ydir="-1"/>
     </grid>
     <harvester>
-        <deposit name="Tree" harvesttime="2000"/>  <!-- time in ms for gatherering 1 resource worth -->
+        <deposit name="Tree" harvesttime="2000"/>
     </harvester>
     <render>
-        <meshfile>buildings/Woodcutter.obj</meshfile>
+        <renderpart voxelfile="buildings/Woodcutter.mgv"/>
     </render>
     <icon imagefile="icons/woodcutter.png"/>
     <construction time="10000">
@@ -20,7 +20,7 @@
 
 
 <gameobjectdef name="Sawmill" type="Manufacturer">
-    <grid x="3" y="2">
+    <grid x="2" y="2">
         <output x="0" y="1"/>
         <buildingentry x="1" y="1" xdir="0" ydir="-1"/>
     </grid>
@@ -30,7 +30,7 @@
         <output name="Plank" amount="1"/> 
     </manufacturer>
     <render>
-        <meshfile>buildings/Sawmill.obj</meshfile>
+        <renderpart voxelfile="buildings/Sawmill.mgv"/>
     </render>
     <icon imagefile="icons/sawmill.png"/>
     <construction time="10000">

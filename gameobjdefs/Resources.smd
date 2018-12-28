@@ -1,5 +1,5 @@
 <gameobjectdef name="Log" type="Resource">
-	<render meshfile="resources/Log.obj"/>
+	<render voxelfile="resources/Log.mgv"/>
 </gameobjectdef>
 
 <gameobjectdef name="Plank" type="Resource">
