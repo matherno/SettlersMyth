@@ -69,7 +69,7 @@ void SMGameContext::processInputStage()
   double shadowMapFOV = shadowMapOffset * 1.5;
   Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
   static const uint shadowMapWidth = 1500;
-  getRenderContext()->configureShadowMap(false, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
+  getRenderContext()->configureShadowMap(true, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
   }
 
 void SMGameContext::processUpdateStage()

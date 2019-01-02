@@ -28,25 +28,30 @@ void submitVertex(float x, double y, double z, vec3 normal)
   EmitVertex();
   }
 
+vec3 rotatedNormal(float x, float y, float z)
+  {
+  return normalize(vec3(x, y, z) * mat3(inVertToWorld));
+  }
+
 void main()
   {
   vec3 normal;
 
-  normal = vec3(0, -1, 0);
+  normal = rotatedNormal(0, -1, 0);
   submitVertex(0.5,     -0.5,    -0.5, normal);
   submitVertex(-0.5,    -0.5,    -0.5, normal);
   submitVertex(0.5,     -0.5,    0.5, normal);
   submitVertex(-0.5,    -0.5,    0.5, normal);
   EndPrimitive();
 
-  normal = vec3(0, 1, 0);
+  normal = rotatedNormal(0, 1, 0);
   submitVertex(0.5,     0.5,    -0.5, normal);
   submitVertex(-0.5,    0.5,    -0.5, normal);
   submitVertex(0.5,     0.5,    0.5, normal);
   submitVertex(-0.5,    0.5,    0.5, normal);
   EndPrimitive();
 
-  normal = vec3(1, 0, 0);
+  normal = rotatedNormal(1, 0, 0);
   submitVertex(0.5,     0.5,     -0.5, normal);
   submitVertex(0.5,     -0.5,    -0.5, normal);
   submitVertex(0.5,     0.5,     0.5, normal);
@@ -54,7 +59,7 @@ void main()
   EndPrimitive();
 
 
-  normal = vec3(-1, 0, 0);
+  normal = rotatedNormal(-1, 0, 0);
   submitVertex(-0.5,     0.5,     -0.5, normal);
   submitVertex(-0.5,     -0.5,    -0.5, normal);
   submitVertex(-0.5,     0.5,     0.5, normal);
@@ -62,14 +67,14 @@ void main()
   EndPrimitive();
 
 
-  normal = vec3(0, 0, 1);
+  normal = rotatedNormal(0, 0, 1);
   submitVertex(0.5,     -0.5,    0.5, normal);
   submitVertex(-0.5,    -0.5,    0.5, normal);
   submitVertex(0.5,     0.5,     0.5, normal);
   submitVertex(-0.5,    0.5,     0.5, normal);
   EndPrimitive();
 
-  normal = vec3(0, 0, -1);
+  normal = rotatedNormal(0, 0, -1);
   submitVertex(0.5,     -0.5,    -0.5, normal);
   submitVertex(-0.5,    -0.5,    -0.5, normal);
   submitVertex(0.5,     0.5,     -0.5, normal);
