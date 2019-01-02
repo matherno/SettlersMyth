@@ -44,28 +44,11 @@ bool BuildingDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* er
     {
     buildingEntry.x = xmlBuildingEntry->IntAttribute(OD_X, 0);
     buildingEntry.y = xmlBuildingEntry->IntAttribute(OD_Y, 0);
-    buildingEntryDir.x = xmlBuildingEntry->IntAttribute(OD_XDIR, 0);
-    buildingEntryDir.y = xmlBuildingEntry->IntAttribute(OD_YDIR, 1);
     }
   else
     {
     *errorMsg = "No building entry definition found";
     return false;
-    }
-
-  //  lot entry
-  auto xmlLotEntry = xmlGrid->FirstChildElement(OD_LOTENTRY);
-  if (xmlLotEntry)
-    {
-    lotEntry.x = xmlLotEntry->IntAttribute(OD_X, 0);
-    lotEntry.y = xmlLotEntry->IntAttribute(OD_Y, 0);
-    lotEntryDir.x = xmlLotEntry->IntAttribute(OD_XDIR, 0);
-    lotEntryDir.y = xmlLotEntry->IntAttribute(OD_YDIR, 1);
-    }
-  else
-    {
-    lotEntry = buildingEntry;
-    lotEntryDir = buildingEntryDir;
     }
 
   //  construction

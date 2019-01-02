@@ -115,7 +115,7 @@ void WorldItemPlacementHandler::updateOutline()
     return;
 
   lineStrips->clearLineStrips();
-  for (double y : std::vector<double> { 0.01, 0.5 })
+  for (double y : std::vector<double> { 0.01, 1 })
     {
     lineStrips->startLineStrip(isOutlinePosValid ? outlineColourValid : outlineColourInvalid);
     lineStrips->addPoint(Vector3D(0, y, 0));

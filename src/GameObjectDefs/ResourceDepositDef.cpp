@@ -52,15 +52,6 @@ SMGameActorPtr ResourceDepositDef::createGameActor(GameContext* gameContext) con
 
 void ResourceDepositeBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
   {
-  float xPos = mathernogl::RandomGenerator::randomFloat(0.15, 0.85);
-  float yPos = mathernogl::RandomGenerator::randomFloat(0.15, 0.85);
-  SMStaticActor* staticActor = SMStaticActor::cast(gameActor);
-  if (staticActor)
-    staticActor->setCellPos(Vector2D(xPos, yPos));
-  }
-
-void ResourceDepositeBehaviour::initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement)
-  {
   }
 
 void ResourceDepositeBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
@@ -72,9 +63,4 @@ void ResourceDepositeBehaviour::update(SMGameActor* gameActor, GameContext* game
 void ResourceDepositeBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameContext)
   {
 
-  }
-
-string ResourceDepositeBehaviour::getBehaviourName()
-  {
-  return "ResourceDeposit";
   }

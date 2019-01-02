@@ -14,10 +14,7 @@ class BuildingDef : public StaticObjectDef
 public:
   std::vector<GridXY> inputSpots;
   std::vector<GridXY> outputSpots;
-  GridXY lotEntry;
-  GridXY lotEntryDir;
   GridXY buildingEntry;
-  GridXY buildingEntryDir;
   std::vector<std::pair<string, int>> constructionReq;
   int constructionTime = 0;
 

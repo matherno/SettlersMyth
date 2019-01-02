@@ -75,8 +75,6 @@ public:
   virtual void saveActor(XMLElement* element, GameContext* gameContext) override;
 
   void setGridPos(GridXY pos);
-  void setCellPos (Vector2D pos);
-  void setCellPos (Vector3D pos);
   Vector2D getCellPosition() const;
   GridXY getGridPosition() const;
   Vector2D getPosition() const;

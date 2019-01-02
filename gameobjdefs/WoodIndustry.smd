@@ -1,8 +1,7 @@
 <gameobjectdef name="Wood Cutter" type="Harvester">
-    <grid x="2" y="2">
+    <grid x="4" y="4">
         <output x="0" y="1"/>
-        <!-- <lotentry x="1" y="1" xdir="0" ydir="-1"/> same as building entry if not defined -->
-        <buildingentry x="1" y="1" xdir="0" ydir="-1"/>
+        <entry x="2" y="1"/>
     </grid>
     <harvester>
         <deposit name="Tree" harvesttime="2000"/>
@@ -20,9 +19,9 @@
 
 
 <gameobjectdef name="Sawmill" type="Manufacturer">
-    <grid x="2" y="2">
+    <grid x="4" y="4">
         <output x="0" y="1"/>
-        <buildingentry x="1" y="1" xdir="0" ydir="-1"/>
+        <entry x="1" y="1"/>
     </grid>
     <manufacturer process_time="5000">
         <manufacturespot x="0" y="1"/> 

@@ -2,6 +2,7 @@
 // Created by matt on 4/12/18.
 //
 
+#include <GameObjectDefs/BuildingDef.h>
 #include "Building.h"
 #include "SMGameContext.h"
 
@@ -102,5 +103,13 @@ void Building::returnIdleUnits(SMGameActor* gameActor, GameContext* gameContext)
     if(unit->isIdling() && building->getGridPosition() != GridXY(unit->getPosition()))
       unit->processCommand(CMD_RETURN_TO_BASE, gameContext);
     }
+  }
+
+GridXY Building::getEntryPosition() const
+  {
+  const BuildingDef* buildingDef = BuildingDef::cast(getDef());
+  if (buildingDef)
+    return buildingDef->buildingEntry + getGridPosition();
+  return getGridPosition();
   }
 

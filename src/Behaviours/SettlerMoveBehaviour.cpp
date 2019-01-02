@@ -37,7 +37,7 @@ bool SettlerMoveBehaviour::processCommand(SMGameActor* gameActor, GameContext* g
     if (!buildingActor)
       return false;
     transferResourcesToBase = true;
-    Unit::cast(gameActor)->setTarget(buildingActor->getGridPosition());
+    Unit::cast(gameActor)->setTarget(buildingActor->getEntryPosition().centre());
     startBehaviour(gameActor, gameContext, command.id);
     return true;
     }

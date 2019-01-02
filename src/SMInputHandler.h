@@ -11,12 +11,12 @@ class SMInputHandler : public InputHandler
   {
 private:
   Vector3D focalPosition;
-  float panSpeed = 40;
+  float panSpeed = 70;
   float yawSpeed = 120;
   float zoomSpeed = 3;
   float mousePanSpeed = 40;
-  float minZoom = 10;
-  float maxZoom = 50;
+  float minZoom = 20;
+  float maxZoom = 100;
   float rotation;
   float pitch;
   Matrix4 rotationMatrix;

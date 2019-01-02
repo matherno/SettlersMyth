@@ -142,7 +142,7 @@ void SMGameActor::updateBoundingBox()
     {
     Vector2D midPos = getMidPosition();
     Vector2D halfSize = getSize() * 0.5f;
-    double height = 1.3;
+    double height = 2.3;
     Vector3D lowerBound = Vector3D(midPos.x - halfSize.x, 0, -(midPos.y + halfSize.y));
     Vector3D upperBound = Vector3D(midPos.x + halfSize.x, height, -(midPos.y - halfSize.y));
     boundingBox->setBounds(lowerBound, upperBound);
@@ -164,7 +164,10 @@ void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
 
 
 SMStaticActor::SMStaticActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
-  {}
+  {
+  if(getSize().x == 1 && getSize().y == 1)
+    cellPos.set(0.5, 0.5);
+  }
 
 void SMStaticActor::setGridPos(GridXY pos)
   {
@@ -174,22 +177,6 @@ void SMStaticActor::setGridPos(GridXY pos)
     renderable->getTransform()->setIdentityMatrix();
     renderable->getTransform()->translate(getPosition3D());
     }
-  updateBoundingBox();
-  }
-
-void SMStaticActor::setCellPos(Vector2D pos)
-  {
-  this->cellPos.x = mathernogl::clampf(pos.x, 0, 1);
-  this->cellPos.y = mathernogl::clampf(pos.y, 0, 1);
-  setGridPos(gridPos);     // sets renderables transform
-  updateBoundingBox();
-  }
-
-void SMStaticActor::setCellPos(Vector3D pos)
-  {
-  this->cellPos.x = mathernogl::clampf((float)pos.x, 0, 1);
-  this->cellPos.y = mathernogl::clampf((float)-pos.z, 0, 1);
-  setGridPos(gridPos);     // sets renderables transform
   updateBoundingBox();
   }
 

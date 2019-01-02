@@ -7,8 +7,8 @@
 #include <TowOff/RenderSystem/RenderSystem.h>
 
 
-#define VOXEL_SIZE 0.0625
-#define DYNAMIC_VOXEL_SIZE 0.03125
+#define VOXEL_SIZE 0.125
+#define DYNAMIC_VOXEL_SIZE 0.0625
 
 
 

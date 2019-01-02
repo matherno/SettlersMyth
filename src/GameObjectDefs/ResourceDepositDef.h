@@ -26,8 +26,6 @@ class ResourceDepositeBehaviour : public IGameObjectBehaviour
   {
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;
-  virtual void initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) override;
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) override;
   virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) override;
-  virtual string getBehaviourName() override;
   };
