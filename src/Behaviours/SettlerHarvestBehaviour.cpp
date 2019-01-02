@@ -40,6 +40,11 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
       endBehaviour(gameActor, gameContext, true);
       }
     }
+  else if (unit->canNotReachTarget())
+    {
+    timer.reset();
+    endBehaviour(gameActor, gameContext, true);
+    }
   }
 
 
@@ -65,7 +70,7 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
 
   const GridXY& buildingPosition = buildingActor->getGridPosition();
   const string& depositName = harvesterDef->depositName;
-  targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, buildingPosition, depositName);
+  targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, unit->getPosition(), depositName);
 
   if (getTargetActor())
     {

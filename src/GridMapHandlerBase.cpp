@@ -79,7 +79,7 @@ void GridMapHandlerBase::setGridCells(uint id, const GridXY& gridPos, const Grid
       {
       GridXY pos = gridPos + GridXY(x, y);
       if (isOnMap(pos))
-        griddedActors[pos.x + pos.y * mapSize.x] = id;
+        griddedActors[gridPosToIndex(pos)] = id;
       }
     }
   }
@@ -88,7 +88,7 @@ uint GridMapHandlerBase::getIDAtGridPos(const GridXY& gridPos) const
   {
   if (!isOnMap(gridPos))
     return 0;
-  return griddedActors[gridPos.x + gridPos.y * mapSize.x];
+  return griddedActors[gridPosToIndex(gridPos)];
   }
 
 bool GridMapHandlerBase::isOnMap(const Vector2D& gridPos) const
@@ -105,7 +105,7 @@ bool GridMapHandlerBase::isCellClear(const GridXY& gridPos) const
   {
   if (!isOnMap(gridPos))
     return false;
-  return griddedActors[gridPos.x + gridPos.y * mapSize.x] == 0;
+  return griddedActors[gridPosToIndex(gridPos)] == 0;
   }
 
 bool GridMapHandlerBase::isRegionClear(const GridXY& gridPos, const GridXY& regionSize) const
@@ -126,7 +126,7 @@ SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameCon
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
 
-  //  dreadful brute force method for noe
+  //  dreadful brute force method for now
   SMStaticActorPtr closestActor;
   double closestDistance = DBL_MAX;
   for (auto actorID : griddedActors)
@@ -135,11 +135,11 @@ SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameCon
     if (!actor || !predicate(actor))
       continue;
 
-    GridMapPath path;
-    if (!getPathToTarget(position, actor->getGridPosition(), &path))
-      continue;
+//    GridMapPath path;
+//    if (!getPathToTarget(position, actor->getGridPosition(), &path))
+//      continue;
 
-    double thisDistance = path.getLength();
+    double thisDistance = (actor->getPosition() - position.centre()).magnitude();
     if (thisDistance < closestDistance)
       {
       closestDistance = thisDistance;
@@ -169,19 +169,35 @@ SMStaticActorPtr GridMapHandlerBase::findClosestStaticActor(GameContext* gameCon
     });
   }
 
-
-bool GridMapSimpleDirect::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path) const
+bool GridMapHandlerBase::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const
   {
-  path->addNode(startPos);
-  path->addNode(targetPos);
-  return true;
+  if (subGetPathToTarget(startPos, targetPos, path, maxPathLength))
+    {
+    path->setMapVersion(mapVersion);
+    return true;
+    }
+  path->setMapVersion(-1);
+  return false;
+  }
+
+bool GridMapHandlerBase::isPathInvalid(GridMapPath* path) const
+  {
+  return path->getMapVersion() != mapVersion;
   }
 
 
-bool GridMapSimpleManhattan::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path) const
+bool GridMapSimpleDirect::subGetPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const
+  {
+  path->addNode(startPos);
+  path->addNode(targetPos);
+  return path->getLength() <= maxPathLength;
+  }
+
+
+bool GridMapSimpleManhattan::subGetPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const
   {
   path->addNode(startPos);
   path->addNode(GridXY(startPos.x, targetPos.y));
   path->addNode(targetPos);
-  return true;
+  return path->getLength() <= maxPathLength;
   }

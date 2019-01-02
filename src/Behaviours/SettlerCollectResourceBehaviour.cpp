@@ -25,6 +25,10 @@ void SettlerCollectResourceBehaviour::update(SMGameActor* gameActor, GameContext
       unit->storeResource(resToCollect, 1);
     endBehaviour(gameActor, gameContext, true);
     }
+  else if (unit->canNotReachTarget())
+    {
+    endBehaviour(gameActor, gameContext, true);
+    }
   }
 
 bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, GameContext* gameContext, const SMActorCommand& command)
@@ -41,7 +45,7 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
     if (!attachedBuilding)
       return false;
 
-    targetBuilding = gridMapHandler->findClosestStaticActor(gameContext, attachedBuilding->getGridPosition(), [&](SMStaticActorPtr actor)
+    targetBuilding = gridMapHandler->findClosestStaticActor(gameContext, Unit::cast(gameActor)->getPosition(), [&](SMStaticActorPtr actor)
       {
       if (actor->getID() == attachedBuilding->getID())
         return false;
@@ -53,7 +57,7 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
     if (getTargetBuilding())
       {
       //todo reserve the resource to take from target, and the space in the attached building
-      Unit::cast(gameActor)->setTarget(getTargetBuilding()->getGridPosition());
+      Unit::cast(gameActor)->setTarget(getTargetBuilding()->getEntryPosition().centre());
       startBehaviour(gameActor, gameContext, command.id);
       }
     return true;
@@ -62,7 +66,7 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
   }
 
 
-SMStaticActor* SettlerCollectResourceBehaviour::getTargetBuilding()
+Building* SettlerCollectResourceBehaviour::getTargetBuilding()
   {
-  return targetBuilding.lock().get();
+  return Building::cast(targetBuilding.lock().get());
   }

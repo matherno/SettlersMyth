@@ -1,5 +1,6 @@
 #pragma once
 
+#include <TowOff/GameSystem/Timer.h>
 #include "SMGameActor.h"
 #include "GridMapHandlerBase.h"
 
@@ -17,6 +18,7 @@ protected:
   uint attachedBuilding = 0;
 
   bool gotTarget = false;
+  bool cantReachTarget = false;
   Vector2D targetPosition;
   std::unique_ptr<GridMapPath> pathToTarget;
   double speed = 1;   // units per second
@@ -38,6 +40,7 @@ public:
 
   bool hasGotTarget() const { return gotTarget; }
   bool hasReachedTarget() const;
+  bool canNotReachTarget() const;
   void setTarget(Vector2D target);
   void clearTarget();
   void setSpeed(double speed) { this->speed = speed; }

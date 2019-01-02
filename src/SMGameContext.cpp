@@ -10,6 +10,7 @@
 #include "Resources.h"
 #include "SaveLoadFileHelper.h"
 #include "Utils.h"
+#include "GridMapAStar.h"
 
 #define LAND_HEIGHT 0
 
@@ -23,7 +24,7 @@ bool SMGameContext::initialise()
   selectionManager.reset(new WorldItemSelectionManager(getNextActorID()));
   addActor(selectionManager);
 
-  gridMapHandler.reset(new GridMapSimpleDirect(GridXY(200, 200)));
+  gridMapHandler.reset(new GridMapAStar(GridXY(200, 200)));
   if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
     return false;
 
@@ -265,6 +266,7 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     staticActors.add(staticActor, staticActor->getID());
     auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
     gridMapHandler->setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
+    gridMapHandler->incrementMapVersion();
     }
 
   SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);

@@ -16,6 +16,6 @@ public:
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) override;
   virtual bool processCommand(SMGameActor* gameActor, GameContext* gameContext, const SMActorCommand& command) override;
 
-  SMStaticActor* getTargetBuilding();
+  Building* getTargetBuilding();
 
   };

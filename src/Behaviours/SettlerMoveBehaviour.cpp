@@ -21,10 +21,12 @@ void SettlerMoveBehaviour::update(SMGameActor* gameActor, GameContext* gameConte
       {
       if (transferResourcesToBase)
         unit->transferAllResourcesTo(buildingActor);
-
       const double angleRotation = -mathernogl::ccwAngleBetween(Vector2D(0, 1), targetFaceDirection);
       unit->setRotation(angleRotation);
-
+      endBehaviour(gameActor, gameContext);
+      }
+    else if (unit->canNotReachTarget())
+      {
       endBehaviour(gameActor, gameContext);
       }
     }

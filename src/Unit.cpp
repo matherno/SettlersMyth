@@ -6,27 +6,45 @@
 #include "SMGameContext.h"
 #include "Building.h"
 
+
 Unit::Unit(uint id, const IGameObjectDef* gameObjectDef) : SMDynamicActor(id, gameObjectDef)
   {
   }
 
 void Unit::onUpdate(GameContext* gameContext)
   {
-  if (gotTarget && !hasReachedTarget())
+  if (gotTarget && !cantReachTarget && !hasReachedTarget())
     {
     SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+    const GridMapHandlerBase* gridMapHandler = smGameContext->getGridMapHandler();
 
+    //  if path is now invalid (map has changed...) kill it
+    if (pathToTarget && gridMapHandler->isPathInvalid(pathToTarget.get()))
+      {
+      pathToTarget.reset();
+      }
+
+    //  if we don't have a path, obtain one
     if (!pathToTarget)
       {
       pathToTarget.reset(new GridMapPath());
-      smGameContext->getGridMapHandler()->getPathToTarget(getPosition(), targetPosition, pathToTarget.get());
-      if (pathToTarget->nodeCount() > 1 && pathToTarget->getTopPathNode() == getPosition())
-        pathToTarget->popTopPathNode();   // if first node is the cell we are in, pop it off
+      if (gridMapHandler->getPathToTarget(getPosition(), targetPosition, pathToTarget.get()))
+        {
+        cantReachTarget = false;
+        if (pathToTarget->nodeCount() > 1 && pathToTarget->getTopPathNode() == getPosition())
+          pathToTarget->popTopPathNode();   // if first node is the cell we are in, pop it off
+        }
+      else
+        {
+        cantReachTarget = true;
+        pathToTarget = nullptr;
+        }
       }
 
-    if (pathToTarget->nodeCount() > 0)
+    //  move towards target along the obtained path
+    if (pathToTarget && pathToTarget->nodeCount() > 0)
       {
-      Vector2D nodePosition =  pathToTarget->getTopPathNode().centre();
+      Vector2D nodePosition = pathToTarget->getTopPathNode().centre();
       if (pathToTarget->nodeCount() == 1)
         nodePosition = targetPosition;
 
@@ -66,6 +84,11 @@ bool Unit::hasReachedTarget() const
   return fabs(getPosition().x - targetPosition.x) < 1e-10 && fabs(getPosition().y - targetPosition.y) < 1e-10;
   }
 
+bool Unit::canNotReachTarget() const
+  {
+  return gotTarget && cantReachTarget;
+  }
+
 void Unit::setTarget(Vector2D target)
   {
   gotTarget = true;
@@ -76,4 +99,5 @@ void Unit::setTarget(Vector2D target)
 void Unit::clearTarget()
   {
   gotTarget = false;
+  cantReachTarget = false;
   }
