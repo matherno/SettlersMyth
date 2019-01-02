@@ -15,6 +15,7 @@ public:
   uint outputResAmount = 0;
   uint manufactureTime = 0;
   GridXY manufactureSpot;
+  GridXY manufactureDir;
 
 public:
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;

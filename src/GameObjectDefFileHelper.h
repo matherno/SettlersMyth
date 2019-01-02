@@ -36,6 +36,7 @@
 #define OD_PICKUP "pickup"
 #define OD_MANUFACTURER "manufacturer"
 #define OD_MANUF_SPOT "manufacturespot"
+#define OD_MANUF_DIR "manufacturedir"
 
 
 static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)

@@ -10,6 +10,7 @@ class SettlerMoveBehaviour : public SettlerBehaviourBase
   {
 private:
   bool transferResourcesToBase = false;
+  GridXY targetFaceDirection;   //  will rotate settler to face this direction when reached target
 
 public:
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) override;

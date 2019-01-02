@@ -21,6 +21,10 @@ void SettlerMoveBehaviour::update(SMGameActor* gameActor, GameContext* gameConte
       {
       if (transferResourcesToBase)
         unit->transferAllResourcesTo(buildingActor);
+
+      const double angleRotation = -mathernogl::ccwAngleBetween(Vector2D(0, 1), targetFaceDirection);
+      unit->setRotation(angleRotation);
+
       endBehaviour(gameActor, gameContext);
       }
     }
@@ -37,6 +41,8 @@ bool SettlerMoveBehaviour::processCommand(SMGameActor* gameActor, GameContext* g
     if (!buildingActor)
       return false;
     transferResourcesToBase = true;
+    targetFaceDirection.x = 0;
+    targetFaceDirection.y = 1;
     Unit::cast(gameActor)->setTarget(buildingActor->getEntryPosition().centre());
     startBehaviour(gameActor, gameContext, command.id);
     return true;
@@ -51,6 +57,7 @@ bool SettlerMoveBehaviour::processCommand(SMGameActor* gameActor, GameContext* g
     if (!manufDef)
       return false;
     Unit::cast(gameActor)->setTarget(buildingActor->getGridPosition() + manufDef->manufactureSpot.centre());
+    targetFaceDirection = manufDef->manufactureDir;
     transferResourcesToBase = false;
     startBehaviour(gameActor, gameContext, command.id);
     return true;
