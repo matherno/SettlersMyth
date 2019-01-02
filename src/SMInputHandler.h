@@ -15,18 +15,16 @@ private:
   float yawSpeed = 120;
   float zoomSpeed = 3;
   float mousePanSpeed = 40;
-  float mousePitchSpeed = 15;
-  float mouseYawSpeed = 50;
+  float mouseYawSpeed = 30;
   float minZoom = 20;
   float maxZoom = 100;
-  float minPitch = -80;
-  float maxPitch = -10;
   float rotation;
   float pitch;
   Matrix4 rotationMatrix;
   float zoomOffset;
   bool paused = false;
   bool cameraNeedsRefresh = true;
+  double aspectRatio = 1;
 
 public:
   SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset = 0, float rotation = 0, float pitch = -45);

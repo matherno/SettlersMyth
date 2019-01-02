@@ -15,6 +15,7 @@ SMInputHandler::SMInputHandler(uint id, const Vector3D& focalPosition, float zoo
 void SMInputHandler::refreshCamera(Camera* camera)
   {
   *camera->getWorldToCamera() = mathernogl::matrixTranslate(focalPosition * -1) * rotationMatrix * mathernogl::matrixTranslate(0, 0, -zoomOffset);
+  *camera->getCameraToClip() = mathernogl::matrixOrthogonal(zoomOffset, aspectRatio, -300);
   camera->setValid(false);
   cameraNeedsRefresh = false;
   }
@@ -22,9 +23,9 @@ void SMInputHandler::refreshCamera(Camera* camera)
 void SMInputHandler::onAttached(GameContext* gameContext)
   {
   Camera* camera = gameContext->getCamera();
+  aspectRatio = gameContext->getRenderContext()->getWindow()->getAspectRatio();
   refreshRotationMatrix();
   refreshCamera(camera);
-  *camera->getCameraToClip() = mathernogl::matrixPerspective(1, gameContext->getRenderContext()->getWindow()->getAspectRatio(), -1, -300);
   camera->setValid(false);
   }
 
@@ -41,7 +42,6 @@ void SMInputHandler::onUpdate(GameContext* gameContext)
     Camera* camera = gameContext->getCamera();
     refreshRotationMatrix();
     refreshCamera(camera);
-    *camera->getCameraToClip() = mathernogl::matrixPerspective(1, gameContext->getRenderContext()->getWindow()->getAspectRatio(), -1, -300);
     camera->setValid(false);
     }
   }
@@ -181,12 +181,8 @@ bool SMInputHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mou
   if (gameContext->getInputManager()->isMouseDown(MOUSE_MIDDLE))
     {
     SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-    pitch += ((float) prevMouseY - (float) mouseY) * gameContext->getDeltaTime() * mousePitchSpeed * 0.001;
-    pitch = mathernogl::clampf(pitch, minPitch, maxPitch);
-
     float rotateSpeed = mouseYawSpeed * gameContext->getDeltaTime() * smGameContext->getSettings()->getCameraRotSpeed() * 0.001f;
     rotation += ((float) prevMouseX - (float) mouseX) * rotateSpeed;
-
     refreshRotationMatrix();
     refreshCamera(gameContext->getCamera());
     return true;

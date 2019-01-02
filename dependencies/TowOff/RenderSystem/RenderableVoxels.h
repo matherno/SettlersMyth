@@ -19,6 +19,7 @@ public:
   virtual void initialise(RenderContext* renderContext) override;
   virtual void cleanUp(RenderContext* renderContext) override;
   virtual void render(RenderContext* renderContext) override;
+  virtual void renderShadowMap(RenderContext* renderContext) override;
 
   void setVoxelStorage(VoxelStoragePtr storage);
   void setVoxelSize(double size);

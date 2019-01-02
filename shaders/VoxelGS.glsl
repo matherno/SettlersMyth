@@ -8,9 +8,12 @@ uniform float inVoxelSize = 1;
 uniform mat4 inVertToWorld = mat4(1);
 uniform mat4 inWorldToCamera = mat4(1);
 uniform mat4 inCameraToClip = mat4(1);
+uniform mat4 inShadowMapProjection;
+uniform int inUseShadowMap = 0;
 
 flat in int colourIdx[];
 
+centroid out vec4 shadowMapPos;
 flat out int colourIdxFS;
 flat out vec3 normalFS;
 
@@ -23,6 +26,9 @@ void submitVertex(float x, double y, double z, vec3 normal)
 
   vec4 worldVertex = vec4(vert, 1) * inVertToWorld;
   gl_Position = worldVertex * inWorldToCamera * inCameraToClip;
+
+  if (inUseShadowMap >= 1)
+    shadowMapPos = worldVertex * inShadowMapProjection;
 
   colourIdxFS = colourIdx[0];
   EmitVertex();

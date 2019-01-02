@@ -2,7 +2,12 @@
 
 uniform vec3 inColours[32];
 uniform vec3 inLightDir = vec3(-0.5, -0.2, -0.3);
+uniform sampler2DShadow inShadowMap;
+uniform mat4 inShadowMapProjection;
+uniform int inUseShadowMap = 0;
+uniform vec2 inScreenSize;
 
+centroid in vec4 shadowMapPos;
 flat in int colourIdxFS;
 flat in vec3 normalFS;
 
@@ -48,6 +53,34 @@ vec3 colourAt(int index)
   return vec3(0, 0, 0);
   }
 
+float gaussian[9] = float[]
+  (
+  0.077847,	0.123317,	0.077847,
+  0.123317,	0.195346,	0.123317,
+  0.077847,	0.123317,	0.077847
+  );
+
+float shadowLightFactor()
+  {
+  vec2 pixelSize = vec2(1.0, 1.0) / inScreenSize;
+  if (inUseShadowMap < 1)
+    return 1;
+  float factor = 0;
+  for (int kernelI = 0; kernelI < 3; ++kernelI)
+    {
+    for (int kernelJ = 0; kernelJ < 3; ++kernelJ)
+      {
+      vec4 adjustedCoord = shadowMapPos;
+      adjustedCoord.x += pixelSize.x * (kernelI - 1);
+      adjustedCoord.y += pixelSize.y * (kernelJ - 1);
+      if (adjustedCoord.x > 0 && adjustedCoord.x < 1 && adjustedCoord.y > 0 && adjustedCoord.y < 1)
+        factor += textureProj(inShadowMap, adjustedCoord) * gaussian[kernelI + kernelJ * 3];
+      else
+        factor += gaussian[kernelI + kernelJ * 3];
+      }
+    }
+  return min(factor + 0.5, 1);
+  }
 
 void main()
   {
@@ -64,5 +97,5 @@ void main()
 
   colour *= clamp(lightFactor, 0, 1);
 
-  outputColour = vec4(colour, 1);
+  outputColour = vec4(colour * shadowLightFactor(), 1);
   }

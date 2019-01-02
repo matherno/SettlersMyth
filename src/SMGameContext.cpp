@@ -32,7 +32,7 @@ bool SMGameContext::initialise()
 //  postProcSilhoutting->initialise(getRenderContext());
 //  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
-  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 50, 180, -45));
+  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 50, 135, -45));
   addInputHandler(smInputHandler);
 
 
@@ -64,7 +64,7 @@ void SMGameContext::processInputStage()
   {
   GameContextImpl::processInputStage();
 
-  static const Vector3D lightDir = Vector3D(0.2, -0.5, -0.5).getUniform();
+  static const Vector3D lightDir = Vector3D(-1.5, -3, -1).getUniform();
   double shadowMapOffset = smInputHandler->getZoomOffset();
   double shadowMapFOV = shadowMapOffset * 1.5;
   Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
