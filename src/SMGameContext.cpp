@@ -188,6 +188,7 @@ bool SMGameContext::saveGame(string filePath)
   xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_POS, smInputHandler->getFocalPosition());
   xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_ZOOM, smInputHandler->getZoomOffset());
   xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_ROT, smInputHandler->getRotation());
+  xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_PITCH, smInputHandler->getPitch());
 
   for (auto actor : *staticActors.getList())
     {
@@ -238,9 +239,11 @@ bool SMGameContext::loadGame(string filePath)
   Vector3D camPos = xmlGetVec3Value(xmlSaveFile, SL_CAMERA_POS);
   double camZoom = xmlGetDblValue(xmlSaveFile, SL_CAMERA_ZOOM);
   double camRot = xmlGetDblValue(xmlSaveFile, SL_CAMERA_ROT);
+  double camPitch = xmlGetDblValue(xmlSaveFile, SL_CAMERA_PITCH);
   smInputHandler->setFocalPosition(camPos);
   smInputHandler->setZoomOffset(camZoom);
   smInputHandler->setRotation(camRot);
+  smInputHandler->setPitch(camPitch);
   smInputHandler->setCameraNeedsRefresh();
 
   std::vector<SMGameActorPtr> loadedActors;

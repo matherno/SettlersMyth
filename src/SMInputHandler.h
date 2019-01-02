@@ -15,14 +15,17 @@ private:
   float yawSpeed = 120;
   float zoomSpeed = 3;
   float mousePanSpeed = 40;
+  float mousePitchSpeed = 15;
+  float mouseYawSpeed = 50;
   float minZoom = 20;
   float maxZoom = 100;
+  float minPitch = -80;
+  float maxPitch = -10;
   float rotation;
   float pitch;
   Matrix4 rotationMatrix;
   float zoomOffset;
   bool paused = false;
-  bool fogOfWarShown = true;
   bool cameraNeedsRefresh = true;
 
 public:
@@ -40,6 +43,7 @@ public:
   void setZoomSpeed(float speed) { zoomSpeed = speed; }
   void setZoomLimits(float min, float max) { minZoom = min; maxZoom = max; }
   void setRotation(float rot) { rotation = rot; }
+  void setPitch(float pitch) { this->pitch = pitch; }
   void refreshCamera(Camera* camera);
 
   virtual void onAttached(GameContext* gameContext) override;
@@ -51,6 +55,7 @@ public:
   virtual bool onMouseScroll(GameContext* gameContext, double scrollOffset, uint mouseX, uint mouseY) override;
   virtual bool onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY) override;
   virtual bool onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY) override;
+  virtual bool onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY) override;
 
 protected:
   void refreshRotationMatrix();

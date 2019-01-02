@@ -134,9 +134,6 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
 
 bool SMInputHandler::onMousePressed(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {
-  if (button == MOUSE_LEFT)
-    {
-    }
   return false;
   }
 
@@ -179,6 +176,24 @@ bool SMInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset
   return true;
   }
 
+bool SMInputHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
+  {
+  if (gameContext->getInputManager()->isMouseDown(MOUSE_MIDDLE))
+    {
+    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+    pitch += ((float) prevMouseY - (float) mouseY) * gameContext->getDeltaTime() * mousePitchSpeed * 0.001;
+    pitch = mathernogl::clampf(pitch, minPitch, maxPitch);
+
+    float rotateSpeed = mouseYawSpeed * gameContext->getDeltaTime() * smGameContext->getSettings()->getCameraRotSpeed() * 0.001f;
+    rotation += ((float) prevMouseX - (float) mouseX) * rotateSpeed;
+
+    refreshRotationMatrix();
+    refreshCamera(gameContext->getCamera());
+    return true;
+    }
+  return false;
+  }
+
 void SMInputHandler::performMouseCameraMovement(GameContext* gameContext)
   {
   SMGameContext* toGameContext = SMGameContext::cast(gameContext);
@@ -209,3 +224,4 @@ void SMInputHandler::performMouseCameraMovement(GameContext* gameContext)
     refreshCamera(gameContext->getCamera());
     }
   }
+

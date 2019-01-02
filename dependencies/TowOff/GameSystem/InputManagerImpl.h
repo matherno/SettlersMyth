@@ -25,6 +25,7 @@ public:
   virtual bool containsHandler(uint id) const override;
   virtual void processInput(GameContext* gameContext) override;
   virtual bool isKeyDown(uint key) const override;
+  virtual bool isMouseDown(uint button) const override;
   virtual Vector2D getMousePos() const override;
 
   void fireUpdateEvents(GameContext* gameContext);

@@ -38,6 +38,7 @@
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"
 #define SL_CAMERA_ROT  "cam_rot"
+#define SL_CAMERA_PITCH  "cam_pitch"
 
 
 typedef tinyxml2::XMLElement XMLElement;

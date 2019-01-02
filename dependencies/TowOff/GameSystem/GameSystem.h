@@ -70,6 +70,7 @@ public:
   virtual uint getNextHandlerID() = 0;
   virtual bool containsHandler(uint id) const = 0;
   virtual bool isKeyDown(uint key) const = 0;
+  virtual bool isMouseDown(uint button) const = 0;
   virtual Vector2D getMousePos() const = 0;
 protected:
   virtual void addHandler(InputHandlerPtr handler) = 0;
