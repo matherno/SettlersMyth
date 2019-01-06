@@ -32,24 +32,31 @@ public:
   };
 
 
-class GridMapHandlerBase
+class GridMapHandler
   {
 protected:
-  std::vector<uint> griddedActors;
+  struct GridMapCell
+    {
+    uint actorID = 0;
+    uint connectionID = 0;
+    };
+
+  std::vector<GridMapCell> griddedActors;
   const GridXY mapSize;
   long mapVersion = 0;
 
 public:
-  GridMapHandlerBase(GridXY size);
+  GridMapHandler(GridXY size);
   void setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize);
   uint getIDAtGridPos(const GridXY& gridPos) const;
+  uint getConnectionIDAtGridPos(const GridXY& gridPos) const;
   bool isOnMap(const Vector2D& gridPos) const;
   bool isOnMap(const GridXY& gridPos) const;
   bool isCellClear(const GridXY& gridPos) const;
   bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize) const;
   GridXY getMapSize() const { return mapSize; }
   int gridPosToIndex(GridXY gridPos) const { return gridPos.x + gridPos.y * mapSize.x; }
-  void incrementMapVersion() { ++mapVersion; }
+  GridXY indexToGridPos(uint index) const { return GridXY(index % mapSize.x, index / mapSize.y); }
 
   typedef std::function<bool(SMStaticActorPtr)> FindActorPredicate;
   SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, FindActorPredicate predicate) const;
@@ -57,32 +64,19 @@ public:
   SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, string gameObjDefName) const;
 
   /*
-   * Obtains the closest path from start position to target, adding the nodes to given path, including starting position
+   *  Obtains the closest path from start position to target, adding the nodes to given path, including starting position
    */
-  virtual bool getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength = DEFAULT_MAX_PATH) const;
-  virtual bool isPathInvalid(GridMapPath* path) const;
+  bool getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength = DEFAULT_MAX_PATH) const;
+  bool isPathInvalid(GridMapPath* path) const;
+
+  /*
+   *  Determines if a path can be traced from start to target
+   */
+  bool canReachTarget(GridXY startPos, GridXY targetPos) const;
 
 protected:
-  virtual bool subGetPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const = 0;
+  void updateCellConnectionIDs();
+  void recurseSetCellConnectionID(GridXY pos, uint connectionID);
+  bool getPathToTargetAStar(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const;
   };
 
-
-
-class GridMapSimpleDirect : public GridMapHandlerBase
-  {
-public:
-  GridMapSimpleDirect(const GridXY& size) : GridMapHandlerBase(size) {}
-
-protected:
-  virtual bool subGetPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const override;
-  };
-
-
-class GridMapSimpleManhattan : public GridMapHandlerBase
-  {
-public:
-  GridMapSimpleManhattan(const GridXY& size) : GridMapHandlerBase(size) {}
-
-protected:
-  virtual bool subGetPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const override;
-  };

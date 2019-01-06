@@ -26,7 +26,7 @@ public:
   UnitPtr getAttachedUnit(uint unitID);
   const mathernogl::MappedList<UnitPtr>* getAttachedUnits() const { return &attachedUnits; }
   bool isUnitAttached(uint unitID) const;
-  GridXY getEntryPosition() const;
+  virtual GridXY getEntryPosition() const override;
 
   void returnIdleUnits(SMGameActor* gameActor, GameContext* gameContext);
 

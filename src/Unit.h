@@ -2,7 +2,7 @@
 
 #include <TowOff/GameSystem/Timer.h>
 #include "SMGameActor.h"
-#include "GridMapHandlerBase.h"
+#include "GridMapHandler.h"
 
 /*
 *   

@@ -10,9 +10,10 @@
 #include "Resources.h"
 #include "SaveLoadFileHelper.h"
 #include "Utils.h"
-#include "GridMapAStar.h"
 
 #define LAND_HEIGHT 0
+
+#define DEFAULT_MAP_SIZE 200
 
 bool SMGameContext::initialise()
   {
@@ -24,7 +25,7 @@ bool SMGameContext::initialise()
   selectionManager.reset(new WorldItemSelectionManager(getNextActorID()));
   addActor(selectionManager);
 
-  gridMapHandler.reset(new GridMapAStar(GridXY(200, 200)));
+  gridMapHandler.reset(new GridMapHandler(GridXY(DEFAULT_MAP_SIZE, DEFAULT_MAP_SIZE)));
   if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
     return false;
 
@@ -32,7 +33,7 @@ bool SMGameContext::initialise()
 //  postProcSilhoutting->initialise(getRenderContext());
 //  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
-  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(50, 0, -50), 50, 135, -45));
+  smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(DEFAULT_MAP_SIZE / 2.0, 0, -DEFAULT_MAP_SIZE / 2.0), 50, 135, -45));
   addInputHandler(smInputHandler);
 
 
@@ -269,7 +270,6 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     staticActors.add(staticActor, staticActor->getID());
     auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
     gridMapHandler->setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
-    gridMapHandler->incrementMapVersion();
     }
 
   SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);

@@ -15,7 +15,7 @@ class SMGameContext;
 #include "SMGameActor.h"
 #include "SMGameObjectFactory.h"
 #include "Grid.h"
-#include "GridMapHandlerBase.h"
+#include "GridMapHandler.h"
 
 #define DRAW_STAGE_POST_PROC_EDGE     (DRAW_STAGE_OPAQUE + 1)
 #define DRAW_STAGE_OPAQUE_AFTER_EDGE  (DRAW_STAGE_POST_PROC_EDGE + 1)
@@ -37,7 +37,7 @@ private:
   std::shared_ptr<PauseMenuHandler> pauseMenuHandler;
   std::shared_ptr<WorldItemSelectionManager> selectionManager;
   GameObjectFactory gameObjectFactory;
-  std::unique_ptr<GridMapHandlerBase> gridMapHandler;
+  std::unique_ptr<GridMapHandler> gridMapHandler;
 
   mathernogl::MappedList<SMStaticActorPtr> staticActors;
   mathernogl::MappedList<SMDynamicActorPtr> dynamicActors;
@@ -55,7 +55,7 @@ public:
   HUDHandler* getHUDHandler(){ return &hudHandler; }
   SMSettings* getSettings(){ return settingsHandler.get(); }
   const GameObjectFactory* getGameObjectFactory() const { return &gameObjectFactory; }
-  const GridMapHandlerBase* getGridMapHandler() const { return gridMapHandler.get(); }
+  const GridMapHandler* getGridMapHandler() const { return gridMapHandler.get(); }
   WorldItemSelectionManager* getSelectionManager() { return selectionManager.get(); }
   Vector3D getCameraFocalPosition() const;
   Vector2D terrainHitTest(uint mouseX, uint mouseY);

@@ -16,7 +16,7 @@ void Unit::onUpdate(GameContext* gameContext)
   if (gotTarget && !cantReachTarget && !hasReachedTarget())
     {
     SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-    const GridMapHandlerBase* gridMapHandler = smGameContext->getGridMapHandler();
+    const GridMapHandler* gridMapHandler = smGameContext->getGridMapHandler();
 
     //  if path is now invalid (map has changed...) kill it
     if (pathToTarget && gridMapHandler->isPathInvalid(pathToTarget.get()))

@@ -81,6 +81,7 @@ public:
   Vector3D getPosition3D() const;
   virtual Vector2D getMidPosition() const override;
   virtual Vector2D getSize() const override;
+  virtual GridXY getEntryPosition() const { return getGridPosition(); }
 
   inline static SMStaticActor* cast(SMGameActor* actor){ return dynamic_cast<SMStaticActor*>(actor); }
 

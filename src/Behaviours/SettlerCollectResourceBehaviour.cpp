@@ -38,7 +38,7 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
 
   if (command.id == CMD_COLLECT)
     {
-    const GridMapHandlerBase* gridMapHandler = SMGameContext::cast(gameContext)->getGridMapHandler();
+    const GridMapHandler* gridMapHandler = SMGameContext::cast(gameContext)->getGridMapHandler();
     const GameObjectFactory* gameObjectFactory = SMGameContext::cast(gameContext)->getGameObjectFactory();
     resToCollect = (uint) command.extra;
     auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
