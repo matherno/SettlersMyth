@@ -17,7 +17,6 @@
 </gameobjectdef>
 
 
-
 <gameobjectdef name="Sawmill" type="Manufacturer">
     <grid x="4" y="4">
         <output x="0" y="1"/>
@@ -39,3 +38,40 @@
     </construction>
 </gameobjectdef>
 
+
+<gameobjectdef name="Stone Miner" type="Harvester">
+    <grid x="3" y="3">
+        <output x="0" y="1"/>
+        <entry x="1" y="2"/>
+    </grid>
+    <harvester>
+        <deposit name="Stone Mound" harvesttime="3000"/>
+    </harvester>
+    <render>
+        <renderpart voxelfile="buildings/Stoneminer.mgv"/>
+    </render>
+    <icon imagefile="icons/woodcutter.png"/>
+    <construction time="10000">
+        <resource name="Log" amount="4"/>
+        <resource name="Thatch" amount="2"/>
+    </construction>
+</gameobjectdef>
+
+
+<gameobjectdef name="Thatcher" type="Harvester">
+    <grid x="3" y="2">
+        <output x="0" y="1"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <harvester>
+        <deposit name="Reeds" harvesttime="2000"/>
+    </harvester>
+    <render>
+        <renderpart voxelfile="buildings/Thatcher.mgv"/>
+    </render>
+    <icon imagefile="icons/woodcutter.png"/>
+    <construction time="10000">
+        <resource name="Log" amount="4"/>
+        <resource name="Thatch" amount="2"/>
+    </construction>
+</gameobjectdef>

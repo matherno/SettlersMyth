@@ -3,5 +3,13 @@
 </gameobjectdef>
 
 <gameobjectdef name="Plank" type="Resource">
-	<render meshfile="resources/Plank.obj"/>
+	<render voxelfile="resources/Plank.mgv"/>
+</gameobjectdef>
+
+<gameobjectdef name="Stone" type="Resource">
+	<render voxelfile="resources/Stone.mgv"/>
+</gameobjectdef>
+
+<gameobjectdef name="Thatch" type="Resource">
+	<render voxelfile="resources/Thatch.mgv"/>
 </gameobjectdef>
