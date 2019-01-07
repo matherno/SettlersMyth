@@ -18,26 +18,6 @@ bool BuildingDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* er
     return false;
     }
 
-  //  output spots
-  auto xmlOutput = xmlGrid->FirstChildElement(OD_OUTPUT);
-  while (xmlOutput)
-    {
-    int x = xmlOutput->IntAttribute(OD_X, 0);
-    int y = xmlOutput->IntAttribute(OD_Y, 0);
-    outputSpots.emplace_back(x, y);
-    xmlOutput = xmlOutput->NextSiblingElement(OD_OUTPUT);
-    }
-
-  //  input spots
-  auto xmlInput = xmlGrid->FirstChildElement(OD_INPUT);
-  while (xmlInput)
-    {
-    int x = xmlInput->IntAttribute(OD_X, 0);
-    int y = xmlInput->IntAttribute(OD_Y, 0);
-    inputSpots.emplace_back(x, y);
-    xmlInput = xmlInput->NextSiblingElement(OD_INPUT);
-    }
-
   //  building entry
   auto xmlBuildingEntry = xmlGrid->FirstChildElement(OD_BUILDINGENTRY);
   if (xmlBuildingEntry)

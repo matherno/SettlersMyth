@@ -3,6 +3,7 @@
 //
 
 #include <Behaviours/HarvesterBehaviour.h>
+#include <Behaviours/ResourceStackBehaviour.h>
 #include "BuildingHarvesterDef.h"
 #include "GameObjectDefFileHelper.h"
 
@@ -32,5 +33,6 @@ void BuildingHarvesterDef::createActorBehaviours(std::vector<IGameObjectBehaviou
   {
   IGameObjectDef::createActorBehaviours(behaviourList);
   behaviourList->push_back(IGameObjectBehaviourPtr(new HarvesterBehaviour()));
+  behaviourList->push_back(IGameObjectBehaviourPtr(new ResourceStackBehaviour()));
   }
 

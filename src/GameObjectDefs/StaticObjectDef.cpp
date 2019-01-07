@@ -24,6 +24,16 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
   size.x = xmlGrid->IntAttribute(OD_X, 1);
   size.y = xmlGrid->IntAttribute(OD_Y, 1);
 
+  //  resource stack spots
+  auto xmlResStack = xmlGrid->FirstChildElement(OD_RESSTACK);
+  while (xmlResStack)
+    {
+    int x = xmlResStack->IntAttribute(OD_X, 0);
+    int y = xmlResStack->IntAttribute(OD_Y, 0);
+    resourceStackSpots.emplace_back(x, y);
+    xmlResStack = xmlResStack->NextSiblingElement(OD_RESSTACK);
+    }
+
   renderList.clear();
   XMLElement* xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
   while (xmlRender)

@@ -1,6 +1,6 @@
 <gameobjectdef name="Wood Cutter" type="Harvester">
     <grid x="4" y="4">
-        <output x="0" y="1"/>
+        <resourcestack x="3" y="2"/>
         <entry x="2" y="3"/>
     </grid>
     <harvester>
@@ -19,7 +19,8 @@
 
 <gameobjectdef name="Sawmill" type="Manufacturer">
     <grid x="4" y="4">
-        <output x="0" y="1"/>
+        <resourcestack x="2" y="3"/>
+        <resourcestack x="1" y="2"/>
         <entry x="1" y="3"/>
     </grid>
     <manufacturer process_time="5000">
@@ -41,7 +42,7 @@
 
 <gameobjectdef name="Stone Miner" type="Harvester">
     <grid x="3" y="3">
-        <output x="0" y="1"/>
+        <resourcestack x="0" y="2"/>
         <entry x="1" y="2"/>
     </grid>
     <harvester>
@@ -60,7 +61,7 @@
 
 <gameobjectdef name="Thatcher" type="Harvester">
     <grid x="3" y="2">
-        <output x="0" y="1"/>
+        <resourcestack x="2" y="1"/>
         <entry x="1" y="1"/>
     </grid>
     <harvester>

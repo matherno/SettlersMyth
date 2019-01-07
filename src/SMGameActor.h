@@ -42,6 +42,7 @@ public:
 
   const IGameObjectDef* getDef() const { return gameObjectDef; }
   std::vector<IGameObjectBehaviourPtr>* getBehaviourList() { return &behaviours; }
+  virtual GridXY getGridPosition() const = 0;
   virtual Vector2D getMidPosition() const = 0;
   virtual Vector2D getSize() const = 0;
   virtual double getRotation() const { return 0; };
@@ -76,10 +77,10 @@ public:
 
   void setGridPos(GridXY pos);
   Vector2D getCellPosition() const;
-  GridXY getGridPosition() const;
   Vector2D getPosition() const;
   Vector3D getPosition3D() const;
   virtual Vector2D getMidPosition() const override;
+  virtual GridXY getGridPosition() const override;
   virtual Vector2D getSize() const override;
   virtual GridXY getEntryPosition() const { return getGridPosition(); }
 
@@ -110,6 +111,7 @@ public:
   void setElevation(double elevation);
   Vector2D getPosition() const { return position; }
   double getElevation() const { return elevation; };
+  virtual GridXY getGridPosition() const override { return getPosition(); }
   virtual Vector2D getMidPosition() const override;
   virtual Vector2D getSize() const override;
   virtual double getRotation() const override { return rotation; }

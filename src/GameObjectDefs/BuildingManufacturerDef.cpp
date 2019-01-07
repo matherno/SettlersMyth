@@ -4,6 +4,7 @@
 
 #include <GameObjectDefFileHelper.h>
 #include <Behaviours/ManufacturerBehaviour.h>
+#include <Behaviours/ResourceStackBehaviour.h>
 #include "BuildingManufacturerDef.h"
 
 
@@ -62,5 +63,6 @@ void BuildingManufacturerDef::createActorBehaviours(std::vector<IGameObjectBehav
   {
   IGameObjectDef::createActorBehaviours(behaviourList);
   behaviourList->push_back(IGameObjectBehaviourPtr(new ManufacturerBehaviour()));
+  behaviourList->push_back(IGameObjectBehaviourPtr(new ResourceStackBehaviour()));
   }
 

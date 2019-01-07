@@ -1,15 +1,51 @@
 <gameobjectdef name="Log" type="Resource">
 	<render voxelfile="resources/Log.mgv"/>
+	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.2" elev="0" rot="0"/>
+	<stackpos x="0.8" y="0.5" elev="0" rot="90"/>
+	<stackpos x="0.35" y="0.65"  elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.35" elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.5" elev="0.38" rot="0"/>
+	<stackpos x="0.75" y="0.5" elev="0.19" rot="90"/>
+	<stackpos x="0.7" y="0.5" elev="0.38" rot="90"/>
 </gameobjectdef>
 
 <gameobjectdef name="Plank" type="Resource">
 	<render voxelfile="resources/Plank.mgv"/>
+	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.2" elev="0" rot="0"/>
+	<stackpos x="0.8" y="0.5" elev="0" rot="90"/>
+	<stackpos x="0.35" y="0.65"  elev="0.09" rot="20"/>
+	<stackpos x="0.35" y="0.35" elev="0.09" rot="20"/>
+	<stackpos x="0.35" y="0.5" elev="0.19" rot="18"/>
+	<stackpos x="0.75" y="0.5" elev="0.09" rot="100"/>
+	<stackpos x="0.7" y="0.5" elev="0.19" rot="90"/>
 </gameobjectdef>
 
 <gameobjectdef name="Stone" type="Resource">
 	<render voxelfile="resources/Stone.mgv"/>
+	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.2" elev="0" rot="0"/>
+	<stackpos x="0.8" y="0.5" elev="0" rot="90"/>
+	<stackpos x="0.35" y="0.65"  elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.35" elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.5" elev="0.38" rot="0"/>
+	<stackpos x="0.75" y="0.5" elev="0.19" rot="90"/>
+	<stackpos x="0.7" y="0.5" elev="0.38" rot="90"/>
 </gameobjectdef>
 
 <gameobjectdef name="Thatch" type="Resource">
 	<render voxelfile="resources/Thatch.mgv"/>
+	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
+	<stackpos x="0.35" y="0.2" elev="0" rot="0"/>
+	<stackpos x="0.8" y="0.5" elev="0" rot="90"/>
+	<stackpos x="0.35" y="0.65"  elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.35" elev="0.19" rot="0"/>
+	<stackpos x="0.35" y="0.5" elev="0.38" rot="0"/>
+	<stackpos x="0.75" y="0.5" elev="0.19" rot="90"/>
+	<stackpos x="0.7" y="0.5" elev="0.38" rot="90"/>
 </gameobjectdef>
