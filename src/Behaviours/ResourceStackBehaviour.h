@@ -28,5 +28,5 @@ public:
   virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) override;
 
 protected:
-  void resfreshResourceStackActors(SMGameActor* gameActor, GameContext* gameContext, uint stackIdx);
+  void refreshResourceStackActors(SMGameActor* gameActor, GameContext* gameContext, uint stackIdx);
   };

@@ -39,7 +39,7 @@ void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameCon
       {
       //  update stack and recreate actors
       resourceStacks[stackIdx].amount = storedResAmount;
-      resfreshResourceStackActors(gameActor, gameContext, (uint) stackIdx);
+      refreshResourceStackActors(gameActor, gameContext, (uint) stackIdx);
       }
     else if (!gotStack && storedResAmount > 0)
       {
@@ -50,7 +50,7 @@ void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameCon
           {
           resourceStacks[i].id = storedResID;
           resourceStacks[i].amount = storedResAmount;
-          resfreshResourceStackActors(gameActor, gameContext, i);
+          refreshResourceStackActors(gameActor, gameContext, i);
           break;
           }
         }
@@ -64,7 +64,7 @@ void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameCon
     if (stack.amount > 0 && gameActor->resourceCount(stack.id) == 0)
       {
       stack.amount = 0;
-      resfreshResourceStackActors(gameActor, gameContext, i);
+      refreshResourceStackActors(gameActor, gameContext, i);
       }
     }
   }
@@ -75,7 +75,7 @@ void ResourceStackBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameCo
     {
     ResourceStack& stack = resourceStacks[i];
     stack.amount = 0;
-    resfreshResourceStackActors(gameActor, gameContext, i);
+    refreshResourceStackActors(gameActor, gameContext, i);
     }
   resourceStacks.clear();
   }
@@ -95,7 +95,7 @@ static double getResourceRotInStack(const ResourceDef* resourceDef, int resNum)
   return resourceDef->stackPosAndRots[resNum].second;
   }
 
-void ResourceStackBehaviour::resfreshResourceStackActors(SMGameActor* gameActor, GameContext* gameContext, uint stackIdx)
+void ResourceStackBehaviour::refreshResourceStackActors(SMGameActor* gameActor, GameContext* gameContext, uint stackIdx)
   {
   ResourceStack& stack = resourceStacks[stackIdx];
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
