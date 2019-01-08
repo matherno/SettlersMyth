@@ -71,7 +71,20 @@ GridMapHandler::GridMapHandler(GridXY size) : mapSize(size)
     }
   }
 
-void GridMapHandler::setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize)
+void GridMapHandler::startGridTransaction()
+  {
+  ASSERT(!performingGridTransaction, "Starting a grid transaction, whilst one is already in progress")
+  performingGridTransaction = true;
+  }
+
+void GridMapHandler::endGridTransaction()
+  {
+  performingGridTransaction = false;
+  mapVersion++;
+  updateCellConnectionIDs();
+  }
+
+void GridMapHandler::setGridCells(const GridXY& gridPos, const GridXY& regionSize, uint actorID, bool isObstacle)
   {
   for (int x = 0; x < regionSize.x; ++x)
     {
@@ -79,11 +92,33 @@ void GridMapHandler::setGridCells(uint id, const GridXY& gridPos, const GridXY& 
       {
       GridXY pos = gridPos + GridXY(x, y);
       if (isOnMap(pos))
-        griddedActors[gridPosToIndex(pos)].actorID = id;
+        {
+        const int idx = gridPosToIndex(pos);
+        griddedActors[idx].actorID = actorID;
+        griddedActors[idx].isObstacle = isObstacle;
+        }
       }
     }
-  mapVersion++;
-  updateCellConnectionIDs();
+
+  if (!performingGridTransaction)
+    {
+    mapVersion++;
+    updateCellConnectionIDs();
+    }
+  }
+
+void GridMapHandler::setGridCellIsObstacle(const GridXY& gridPos, bool isObstacle)
+  {
+  if (!isOnMap(gridPos))
+    return;
+
+  griddedActors[gridPosToIndex(gridPos)].isObstacle = isObstacle;
+
+  if (!performingGridTransaction)
+    {
+    mapVersion++;
+    updateCellConnectionIDs();
+    }
   }
 
 uint GridMapHandler::getIDAtGridPos(const GridXY& gridPos) const
@@ -117,6 +152,13 @@ bool GridMapHandler::isCellClear(const GridXY& gridPos) const
   return griddedActors[gridPosToIndex(gridPos)].actorID == 0;
   }
 
+bool GridMapHandler::isCellObstacle(const GridXY& gridPos) const
+  {
+  if (!isOnMap(gridPos))
+    return true;
+  return griddedActors[gridPosToIndex(gridPos)].isObstacle;
+  }
+
 bool GridMapHandler::isRegionClear(const GridXY& gridPos, const GridXY& regionSize) const
   {
   for (int x = 0; x < regionSize.x; ++x)
@@ -137,7 +179,7 @@ SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext
 
   //  if position is not clear, then we need to check adjacent cells instead
   std::list<GridXY> possibleStartPositions;
-  if (isCellClear(position))
+  if (!isCellObstacle(position))
     {
     possibleStartPositions.push_back(position);
     }
@@ -150,7 +192,7 @@ SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext
           GridXY(position.x-1, position.y),
         })
       {
-      if (isCellClear(pos))
+      if (!isCellObstacle(pos))
         possibleStartPositions.push_back(pos);
       }
     }
@@ -201,7 +243,7 @@ SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext
 bool GridMapHandler::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const
   {
   path->setMapVersion(-1);
-  if (isCellClear(startPos))
+  if (!isCellObstacle(startPos))
     {
     if(canReachTarget(startPos, targetPos) && getPathToTargetAStar(startPos, targetPos, path, maxPathLength))
       {
@@ -218,7 +260,7 @@ bool GridMapHandler::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapP
         GridXY(startPos.x-1, startPos.y),
       })
     {
-    if (isCellClear(pos) && canReachTarget(pos, targetPos) && getPathToTargetAStar(pos, targetPos, path, maxPathLength))
+    if (!isCellObstacle(pos) && canReachTarget(pos, targetPos) && getPathToTargetAStar(pos, targetPos, path, maxPathLength))
       {
       path->setMapVersion(mapVersion);
       return true;
@@ -239,7 +281,7 @@ bool GridMapHandler::canReachTarget(GridXY startPos, GridXY targetPos) const
   if (startConnectionID == 0)
     return false;
 
-  if (isCellClear(targetPos))
+  if (!isCellObstacle(targetPos))
     return startConnectionID == getConnectionIDAtGridPos(targetPos);
 
   //  can still reach target if it is not a clear cell
@@ -298,7 +340,7 @@ void GridMapHandler::recurseSetCellConnectionID(GridXY pos, uint connectionID)
       if (xOffset == 0 && yOffset == 0)
         continue;
       const GridXY neighbourPos = pos + GridXY(xOffset, yOffset);
-      if (getConnectionIDAtGridPos(neighbourPos) == 0 && isCellClear(neighbourPos))
+      if (getConnectionIDAtGridPos(neighbourPos) == 0 && !isCellObstacle(neighbourPos))
         recurseSetCellConnectionID(neighbourPos, connectionID);
       }
     }
@@ -392,7 +434,7 @@ bool GridMapHandler::getPathToTargetAStar(GridXY startPos, GridXY targetPos, Gri
 
         //  check that this node is a valid clear map position, and it hasn't been closed
         const int exploreNodeIdx = gridPosToIndex(pos);
-        if (exploreNodeIdx < 0 || !isCellClear(pos) || closedNodeList.contains(exploreNodeIdx))
+        if (exploreNodeIdx < 0 || isCellObstacle(pos) || closedNodeList.contains(exploreNodeIdx))
           continue;
 
         const double exploreHCost = currClosedNode->hCost + hCostFunc(pos, currClosedNode->pos);

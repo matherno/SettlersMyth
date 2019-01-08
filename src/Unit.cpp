@@ -28,7 +28,12 @@ void Unit::onUpdate(GameContext* gameContext)
     if (!pathToTarget)
       {
       pathToTarget.reset(new GridMapPath());
-      if (gridMapHandler->getPathToTarget(getPosition(), targetPosition, pathToTarget.get()))
+      if (getGridPosition() == GridXY(targetPosition))
+        {
+        cantReachTarget = false;
+        pathToTarget->addNode(targetPosition);
+        }
+      else if (gridMapHandler->getPathToTarget(getPosition(), targetPosition, pathToTarget.get()))
         {
         cantReachTarget = false;
         if (pathToTarget->nodeCount() > 1 && pathToTarget->getTopPathNode() == getPosition())

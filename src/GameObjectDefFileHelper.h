@@ -24,6 +24,7 @@
 #define OD_INPUT "input"
 #define OD_RESSTACK "resourcestack"
 #define OD_STACKPOS "stackpos"
+#define OD_CLEARPOS "clearpos"
 #define OD_BUILDINGENTRY "entry"
 #define OD_CONSTRUCTION "construction"
 #define OD_AMOUNT "amount"

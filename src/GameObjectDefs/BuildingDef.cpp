@@ -24,6 +24,7 @@ bool BuildingDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* er
     {
     buildingEntry.x = xmlBuildingEntry->IntAttribute(OD_X, 0);
     buildingEntry.y = xmlBuildingEntry->IntAttribute(OD_Y, 0);
+    clearGridCells.emplace_back(buildingEntry);
     }
   else
     {
@@ -45,7 +46,6 @@ bool BuildingDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* er
       xmlResource = xmlResource->NextSiblingElement(OD_RESOURCENAME);
       }
     }
-
 
   return true;
   }

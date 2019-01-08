@@ -34,6 +34,16 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
     xmlResStack = xmlResStack->NextSiblingElement(OD_RESSTACK);
     }
 
+  //  clear cells (non-obstacle) cells
+  auto xmlClearCell = xmlGrid->FirstChildElement(OD_CLEARPOS);
+  while (xmlClearCell)
+    {
+    int x = xmlClearCell->IntAttribute(OD_X, 0);
+    int y = xmlClearCell->IntAttribute(OD_Y, 0);
+    clearGridCells.emplace_back(x, y);
+    xmlClearCell = xmlClearCell->NextSiblingElement(OD_CLEARPOS);
+    }
+
   renderList.clear();
   XMLElement* xmlRender = xmlGameObjectDef->FirstChildElement(OD_RENDER);
   while (xmlRender)

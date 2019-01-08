@@ -149,7 +149,7 @@ void SMGameContext::destroySMActor(uint id)
     {
     staticActors.remove(id);
     const StaticObjectDef* staticObjDef = StaticObjectDef::cast(staticActor->getDef());
-    gridMapHandler->setGridCells(0, staticActor->getGridPosition(), staticObjDef->getSize());
+    gridMapHandler->setGridCells(staticActor->getGridPosition(), staticObjDef->getSize(), 0, false);
     actor = staticActor;
     }
 
@@ -268,8 +268,12 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
   if (staticActor)
     {
     staticActors.add(staticActor, staticActor->getID());
-    auto staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
-    gridMapHandler->setGridCells(staticActor->getID(), staticActor->getGridPosition(), staticObjectDef->getSize());
+    const StaticObjectDef* staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
+    gridMapHandler->startGridTransaction();
+    gridMapHandler->setGridCells(staticActor->getGridPosition(), staticObjectDef->getSize(), staticActor->getID(), true);
+    for (GridXY pos : staticObjectDef->clearGridCells)
+      gridMapHandler->setGridCellIsObstacle(staticActor->getGridPosition() + pos, false);
+    gridMapHandler->endGridTransaction();
     }
 
   SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);

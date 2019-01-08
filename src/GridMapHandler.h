@@ -39,20 +39,26 @@ protected:
     {
     uint actorID = 0;
     uint connectionID = 0;
+    bool isObstacle = false;
     };
 
   std::vector<GridMapCell> griddedActors;
   const GridXY mapSize;
   long mapVersion = 0;
+  bool performingGridTransaction = false;
 
 public:
   GridMapHandler(GridXY size);
-  void setGridCells(uint id, const GridXY& gridPos, const GridXY& regionSize);
+  void startGridTransaction();
+  void endGridTransaction();
+  void setGridCells(const GridXY& gridPos, const GridXY& regionSize, uint actorID, bool isObstacle);
+  void setGridCellIsObstacle(const GridXY& gridPos, bool isObstacle);
   uint getIDAtGridPos(const GridXY& gridPos) const;
   uint getConnectionIDAtGridPos(const GridXY& gridPos) const;
   bool isOnMap(const Vector2D& gridPos) const;
   bool isOnMap(const GridXY& gridPos) const;
   bool isCellClear(const GridXY& gridPos) const;
+  bool isCellObstacle(const GridXY& gridPos) const;
   bool isRegionClear(const GridXY& gridPos, const GridXY& regionSize) const;
   GridXY getMapSize() const { return mapSize; }
   int gridPosToIndex(GridXY gridPos) const { return gridPos.x + gridPos.y * mapSize.x; }

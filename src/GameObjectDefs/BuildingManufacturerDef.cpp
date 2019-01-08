@@ -18,6 +18,7 @@ bool BuildingManufacturerDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef
     xmlManuf->QueryAttribute(OD_PROCESSTIME, &manufactureTime);
     manufactureSpot = xmlGetGridXYValue(xmlManuf, OD_MANUF_SPOT);
     manufactureDir = xmlGetGridXYValue(xmlManuf, OD_MANUF_DIR);
+    clearGridCells.emplace_back(manufactureSpot);
 
     //  inputs
     int inputResCount = 0;

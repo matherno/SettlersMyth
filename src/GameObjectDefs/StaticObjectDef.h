@@ -21,6 +21,7 @@ private:
 public:
   GridXY size;
   std::vector<GridXY> resourceStackSpots;
+  std::vector<GridXY> clearGridCells;    //  cells that units can move through
 
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;
   virtual RenderablePtr constructRenderable(RenderContext* renderContext, uint meshIdx = 0) const override;
