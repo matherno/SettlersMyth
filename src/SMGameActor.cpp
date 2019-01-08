@@ -106,7 +106,7 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
         storeResource(resGameObjDef->getID(), amount);
       else
         mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
-      resourceElem = resListElem->NextSiblingElement(SL_RESOURCE);
+      resourceElem = resourceElem->NextSiblingElement(SL_RESOURCE);
       }
     }
 
