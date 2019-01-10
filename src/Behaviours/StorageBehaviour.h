@@ -4,14 +4,15 @@
 #include <TowOff/GameSystem/Timer.h>
 
 /*
-*
+*   
 */
 
-class HarvesterBehaviour : public IGameObjectBehaviour
+class StorageBehaviour : public IGameObjectBehaviour
   {
 private:
   Timer sendUnitTimer;
-  uint resourceID = 0;
+  std::vector<uint> resourcesToStore;
+  int nextResToCollect = 0;
 
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;

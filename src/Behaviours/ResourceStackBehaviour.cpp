@@ -7,7 +7,7 @@
 #include <GameObjectDefs/ResourceDef.h>
 #include "ResourceStackBehaviour.h"
 
-#define MAX_STACK_SIZE 9
+#define MAX_STACK_SIZE 9u
 
 
 void ResourceStackBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
@@ -22,10 +22,10 @@ void ResourceStackBehaviour::initialise(SMGameActor* gameActor, GameContext* gam
 
 void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
   {
-  for (auto pair : *gameActor->getStoredResources())
+  gameActor->forEachResource([&](uint id, uint amount)
     {
-    const uint storedResID = pair.first;
-    const uint storedResAmount = (uint)std::min(pair.second, MAX_STACK_SIZE);
+    const uint storedResID = id;
+    const uint storedResAmount = (uint)std::min(amount, MAX_STACK_SIZE);
     int stackIdx = -1;
     for (uint i = 0; i < resourceStacks.size(); ++i)
       {
@@ -55,7 +55,7 @@ void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameCon
           }
         }
       }
-    }
+    });
 
   //  extra check that there are no current stacks that shouldn't be there
   for (uint i = 0; i < resourceStacks.size(); ++i)

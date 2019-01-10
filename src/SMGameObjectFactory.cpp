@@ -6,6 +6,7 @@
 #include <GameObjectDefs/UnitDef.h>
 #include <GameObjectDefs/ResourceDef.h>
 #include <GameObjectDefs/BuildingManufacturerDef.h>
+#include <GameObjectDefs/BuildingStorageDef.h>
 #include "SMGameObjectFactory.h"
 #include "GameObjectDefFileHelper.h"
 #include "GameObjectDefs/BuildingHarvesterDef.h"
@@ -173,10 +174,15 @@ IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
     return new BuildingHarvesterDef();
   if (type == GameObjectType::manufacturer)
     return new BuildingManufacturerDef();
+  if (type == GameObjectType::storage)
+    return new BuildingStorageDef();
+
   if (type == GameObjectType::deposit)
     return new ResourceDepositDef();
+
   if (isTypeOrSubType(GameObjectType::unit, type))
     return new UnitDef();
+
   if (type == GameObjectType::resource)
     return new ResourceDef();
 

@@ -14,14 +14,10 @@ void CarryResourceBehaviour::initialise(SMGameActor* gameActor, GameContext* gam
 void CarryResourceBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
   {
   uint gotResourceID = 0;
-  for (auto pair : *gameActor->getStoredResources())
+  gameActor->forEachResource([&](uint id, uint amount)
     {
-    if (pair.second > 0)
-      {
-      gotResourceID = pair.first;
-      break;
-      }
-    }
+    gotResourceID = id;
+    });
 
   if (gotResourceID == 0)
     {

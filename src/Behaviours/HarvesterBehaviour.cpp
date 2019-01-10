@@ -12,6 +12,8 @@ void HarvesterBehaviour::initialise(SMGameActor* gameActor, GameContext* gameCon
   {
   sendUnitTimer.setTimeOut(2000);
   sendUnitTimer.reset();
+
+  resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(gameActor, gameContext);
   }
 
 void HarvesterBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
@@ -25,9 +27,13 @@ void HarvesterBehaviour::update(SMGameActor* gameActor, GameContext* gameContext
       return;
       }
 
-    UnitPtr unit = building->getIdleUnit();
-    if (unit)
-      unit->processCommand(SMActorCommand(CMD_HARVEST), gameContext);
+    if (gameActor->canStoreResource(resourceID, 1))
+      {
+      UnitPtr unit = building->getIdleUnit();
+      if (unit)
+        unit->processCommand(SMActorCommand(CMD_HARVEST), gameContext);
+      }
+
     building->returnIdleUnits(gameActor, gameContext);
     sendUnitTimer.reset();
     }

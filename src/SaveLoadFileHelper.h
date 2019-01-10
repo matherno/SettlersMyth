@@ -153,6 +153,14 @@ static GridXY xmlGetGridXYValue(tinyxml2::XMLElement* parent, string name)
   return value;
   }
 
+static int xmlGetGridIntValue(tinyxml2::XMLElement* parent, string name)
+  {
+  auto element = parent->FirstChildElement(name.c_str());
+  if (element)
+    return element->IntText();
+  return 0;
+  }
+
 static string xmlGetValue(tinyxml2::XMLElement* parent, string name)
   {
   auto element = parent->FirstChildElement(name.c_str());

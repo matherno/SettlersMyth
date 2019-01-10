@@ -67,3 +67,4 @@ void BuildingManufacturerDef::createActorBehaviours(std::vector<IGameObjectBehav
   behaviourList->push_back(IGameObjectBehaviourPtr(new ResourceStackBehaviour()));
   }
 
+

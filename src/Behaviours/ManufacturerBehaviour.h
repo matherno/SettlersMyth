@@ -28,6 +28,6 @@ protected:
 
 private:
   uint getNextResourceToCollect(SMGameActor* gameActor);
-  bool gotEnoughInputResources(SMGameActor* gameActor, GameContext* gameContext);
+  bool canStartManufacturing(SMGameActor* gameActor, GameContext* gameContext);
   void resetManufacturing();
   };

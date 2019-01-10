@@ -23,3 +23,4 @@ struct SMActorCommand
 #define CMD_COLLECT               102
 #define CMD_RETURN_TO_BASE        103
 #define CMD_MOVE_TO_MANUF_SPOT    104
+#define CMD_COLLECT_NOT_STORAGE   105

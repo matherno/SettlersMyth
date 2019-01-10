@@ -34,7 +34,9 @@ void ResourceDepositDef::createActorBehaviours(std::vector<IGameObjectBehaviourP
 
 SMGameActorPtr ResourceDepositDef::createGameActor(GameContext* gameContext) const
   {
-  return StaticObjectDef::createGameActor(gameContext);
+  SMGameActorPtr actor = StaticObjectDef::createGameActor(gameContext);
+  actor->setupStackCount(1, resourceAmount);
+  return actor;
   }
 
 

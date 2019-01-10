@@ -57,17 +57,14 @@ void SMGameActor::saveActor(XMLElement* element, GameContext* gameContext)
 
   // save resources
   XMLElement* resListElem = xmlCreateElement(element, SL_RESOURCELIST);
-  for (auto pair : *getStoredResources())
+  for (const ResourceStack& stack : *getResourceStacks())
     {
-    const int amount = pair.second;
-    if (amount == 0)
-      continue;
-    IGameObjectDefPtr resGameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(pair.first);
+    IGameObjectDefPtr resGameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(stack.id);
     if (resGameObjDef)
       {
       XMLElement* resourceElem = xmlCreateElement(resListElem, SL_RESOURCE);
       resourceElem->SetAttribute(SL_NAME, resGameObjDef->getUniqueName().c_str());
-      resourceElem->SetAttribute(SL_AMOUNT, amount);
+      resourceElem->SetAttribute(SL_AMOUNT, stack.amount);
       }
     }
 
@@ -151,14 +148,11 @@ void SMGameActor::updateBoundingBox()
 
 void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
   {
-  for (const auto& pair : *getStoredResources())
+  forEachResource([&](uint id, uint amount)
     {
-    if (pair.second > 0)
-      {
-      SMGameContext::cast(gameContext)->dropResource(pair.first, pair.second, position);
-      takeAllResource(pair.first);
-      }
-    }
+    SMGameContext::cast(gameContext)->dropResource(id, amount, position);
+    });
+  clearAllResources();
   }
 
 

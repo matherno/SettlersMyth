@@ -4,31 +4,40 @@
 #include <mathernogl/Types.h>
 #include <TowOff/GameSystem/GameSystem.h>
 
+#define DEFAULT_RES_PER_STACK   9
+
 /*
 *   
 */
 
+struct ResourceStack
+  {
+  uint id = 0;
+  uint amount = 0;
+  };
 
 class ResourceStorage
   {
 private:
-  std::map<uint, int> storedResources;
-  int maxCapacity = -1;                 //  -1 for infinite capacity
-  bool capacityPerResource = false;     //  if true, then maxCapacity applies to each resource, rather than max total resources
-  int totalResCount = 0;
+  std::vector<ResourceStack> resourceStacks;
+  uint totalResCount = 0;
+  uint maxResPerStack = 9;
 
 public:
-  const std::map<uint, int>* getStoredResources() const;
-  virtual int resourceCount(uint id) const;
-  virtual int totalResourceCount() const { return totalResCount; }
-  virtual int getMaxCapacity() const { return maxCapacity; }
-  virtual bool isCapacityPerResource() const { return capacityPerResource; }
-  virtual bool canStoreResource(uint id, int amount) const;
-  virtual void transferAllResourcesTo(ResourceStorage* receiver);
+  ResourceStorage();
 
-  virtual bool takeResource(uint id, int amount);
-  virtual bool storeResource(uint id, int amount);
-  virtual int takeAllResource(uint id, int maxAmount = 99999);
+  const std::vector<ResourceStack>* getResourceStacks() const;
+  virtual void forEachResource(std::function<void(uint id, uint amount)> func) const;
+  virtual uint resourceCount(uint id) const;
+  virtual uint totalResourceCount() const { return totalResCount; }
+  virtual bool canStoreResource(uint id, uint amount) const;
+  virtual void transferAllResourcesTo(ResourceStorage* receiver);
+  virtual bool takeResource(uint id, uint amount);
+  virtual bool storeResource(uint id, uint amount);
+  virtual uint takeAllResource(uint id, uint maxAmount = 99999);
   virtual void clearAllResources();
-  virtual void setMaxCapacity(int capacity, bool perResource) { maxCapacity = capacity; capacityPerResource = perResource; }
+
+  virtual void setupStackCount(uint stackCount, uint maxResPerStack = DEFAULT_RES_PER_STACK);
+  virtual uint getStackCount() const { return resourceStacks.size(); }
+  virtual uint getMaxResPerStack() const { return maxResPerStack; }
   };

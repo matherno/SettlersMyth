@@ -54,5 +54,6 @@ SMGameActorPtr BuildingDef::createGameActor(GameContext* gameContext) const
   {
   Building* actor = new Building(gameContext->getNextActorID(), this);
   createActorBehaviours(actor->getBehaviourList());
+  actor->setupStackCount(resourceStackSpots.size());
   return SMGameActorPtr(actor);
   }

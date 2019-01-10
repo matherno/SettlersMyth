@@ -82,3 +82,43 @@
         <resource name="Thatch" amount="2"/>
     </construction>
 </gameobjectdef>
+
+<gameobjectdef name="Storage Pit" type="Storage">
+    <grid x="4" y="2">
+        <resourcestack x="2" y="0"/>
+        <resourcestack x="2" y="1"/>
+        <resourcestack x="3" y="0"/>
+        <resourcestack x="3" y="1"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <render>
+        <renderpart voxelfile="buildings/StoragePitSmall.mgv"/>
+    </render>
+    <icon imagefile="icons/woodcutter.png"/>
+    <construction time="10000">
+        <resource name="Log" amount="4"/>
+        <resource name="Thatch" amount="2"/>
+    </construction>
+</gameobjectdef>
+
+<gameobjectdef name="Large Storage Pit" type="Storage">
+    <grid x="4" y="4">
+        <resourcestack x="2" y="0"/>
+        <resourcestack x="2" y="1"/>
+        <resourcestack x="2" y="2"/>
+        <resourcestack x="2" y="3"/>
+        <resourcestack x="3" y="0"/>
+        <resourcestack x="3" y="1"/>
+        <resourcestack x="3" y="2"/>
+        <resourcestack x="3" y="3"/>
+        <entry x="1" y="3"/>
+    </grid>
+    <render>
+        <renderpart voxelfile="buildings/StoragePitLarge.mgv"/>
+    </render>
+    <icon imagefile="icons/woodcutter.png"/>
+    <construction time="10000">
+        <resource name="Log" amount="4"/>
+        <resource name="Thatch" amount="2"/>
+    </construction>
+</gameobjectdef>

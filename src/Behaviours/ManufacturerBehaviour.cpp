@@ -54,7 +54,7 @@ void ManufacturerBehaviour::update(SMGameActor* gameActor, GameContext* gameCont
     {
     //  start manufacture process if can
     manufactureCooldownTimer.reset();
-    if (gotEnoughInputResources(gameActor, gameContext))
+    if (canStartManufacturing(gameActor, gameContext))
       {
       UnitPtr manufactureUnit = building->getIdleUnit();
       if (manufactureUnit && manufactureUnit->processCommand(CMD_MOVE_TO_MANUF_SPOT, gameContext))
@@ -123,40 +123,41 @@ uint ManufacturerBehaviour::getNextResourceToCollect(SMGameActor* gameActor)
     return 0;
     }
 
-  int numLoops = 0;
-  uint resID = 0;
-  do
+  uint resToCollect = 0;
+  int numResChecked = 0;
+  while (numResChecked < resCollectCycle.size())
     {
-    resID = resCollectCycle[resCollectIdx];
-    ++resCollectIdx;
+    resToCollect = resCollectCycle[resCollectIdx];
+    resCollectIdx++;
     if (resCollectIdx >= resCollectCycle.size())
       resCollectIdx = 0;
-    ++numLoops;
-    } while (!building->canStoreResource(resID, 1) && numLoops < resCollectCycle.size());
-
-  return resID;
-  }
-
-bool ManufacturerBehaviour::gotEnoughInputResources(SMGameActor* gameActor, GameContext* gameContext)
-  {
-  Building* building = Building::cast(gameActor);
-  if (!building)
-    {
-    ASSERT(false, "");
-    return false;
+    numResChecked++;
+    if (gameActor->canStoreResource(resToCollect, 1))
+      break;
+    else
+      resToCollect = 0;
     }
 
-  const BuildingManufacturerDef* manufDef = BuildingManufacturerDef::cast(building->getDef());
+  return resToCollect;
+  }
+
+bool ManufacturerBehaviour::canStartManufacturing(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  const BuildingManufacturerDef* manufDef = BuildingManufacturerDef::cast(gameActor->getDef());
   if (!manufDef)
     {
     ASSERT(false, "");
     return false;
     }
 
+  const uint outputResID = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDefID(manufDef->outputResName);
+  if(!gameActor->canStoreResource(outputResID, manufDef->outputResAmount))
+    return false;
+
   for (auto pair : manufDef->inputs)
     {
     const uint resID = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDefID(pair.first);
-    if (building->resourceCount(resID) < pair.second)
+    if (gameActor->resourceCount(resID) < pair.second)
       return false;
     }
   return true;

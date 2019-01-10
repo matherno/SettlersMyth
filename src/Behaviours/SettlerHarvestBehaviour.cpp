@@ -17,11 +17,7 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
   if (!buildingActor)
     return;
 
-  auto harvesterDef = BuildingHarvesterDef::cast(buildingActor->getDef());
-  if (!harvesterDef)
-    return;
-
-  if (!getTargetActor() || getTargetActor()->getStoredResources()->empty())
+  if (!getTargetActor() || getTargetActor()->totalResourceCount() == 0)
     {
     endBehaviour(gameActor, gameContext, true);
     return;
@@ -33,7 +29,7 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
     {
     if (timer.incrementTimer(gameContext->getDeltaTime()))
       {
-      const uint resourceID = getTargetActor()->getStoredResources()->begin()->first;
+      const uint resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(buildingActor, gameContext);
       if(getTargetActor()->takeResource(resourceID, 1))
         unit->storeResource(resourceID, 1);
       timer.reset();
@@ -68,8 +64,8 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
   Unit* unit = Unit::cast(gameActor);
   unit->dropAllResources(gameContext, unit->getPosition());
 
-  const GridXY& buildingPosition = buildingActor->getGridPosition();
   const string& depositName = harvesterDef->depositName;
+  const GridXY& buildingPosition = buildingActor->getGridPosition();
   targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, unit->getPosition(), depositName);
 
   if (getTargetActor())

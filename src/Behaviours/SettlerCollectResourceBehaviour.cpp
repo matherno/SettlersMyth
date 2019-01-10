@@ -36,7 +36,7 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
   if (SettlerBehaviourBase::processCommand(gameActor, gameContext, command))
     return true;
 
-  if (command.id == CMD_COLLECT)
+  if (command.id == CMD_COLLECT || command.id == CMD_COLLECT_NOT_STORAGE)
     {
     const GridMapHandler* gridMapHandler = SMGameContext::cast(gameContext)->getGridMapHandler();
     const GameObjectFactory* gameObjectFactory = SMGameContext::cast(gameContext)->getGameObjectFactory();
@@ -45,12 +45,16 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
     if (!attachedBuilding)
       return false;
 
-    targetBuilding = gridMapHandler->findClosestStaticActor(gameContext, Unit::cast(gameActor)->getPosition(), [&](SMStaticActorPtr actor)
+    targetBuilding = gridMapHandler->findClosestStaticActor(gameContext, Unit::cast(gameActor)->getPosition(),
+      [&](SMStaticActorPtr actor)
       {
       if (actor->getID() == attachedBuilding->getID())
         return false;
       if (gameObjectFactory->isTypeOrSubType(GameObjectType::deposit, actor->getDef()->getType()))
         return false;
+      if (command.id == CMD_COLLECT_NOT_STORAGE && gameObjectFactory->isTypeOrSubType(GameObjectType::storage, actor->getDef()->getType()))
+        return false;
+
       return actor->resourceCount(resToCollect) > 0;
       });
 

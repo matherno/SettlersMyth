@@ -67,17 +67,18 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
 
     bool first = true;
     string resText;
-    for (const auto& pair : *actor->getStoredResources())
+    actor->forEachResource([&](uint id, uint amount)
       {
-      IGameObjectDefPtr resDef = smGameContext->getGameObjectFactory()->getGameObjectDef(pair.first);
+      IGameObjectDefPtr resDef = smGameContext->getGameObjectFactory()->getGameObjectDef(id);
       if (resDef)
         {
         if (!first)
           resText += ", ";
-        resText += resDef->getDisplayName() + ":" + std::to_string(pair.second);
+        resText += resDef->getDisplayName() + ":" + std::to_string(amount);
         first = false;
         }
-      }
+      });
+
     resourceText->setText(resText);
     resourceText->invalidate();
     }

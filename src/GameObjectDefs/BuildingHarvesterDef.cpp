@@ -4,8 +4,10 @@
 
 #include <Behaviours/HarvesterBehaviour.h>
 #include <Behaviours/ResourceStackBehaviour.h>
+#include <SMGameContext.h>
 #include "BuildingHarvesterDef.h"
 #include "GameObjectDefFileHelper.h"
+#include "ResourceDepositDef.h"
 
 bool BuildingHarvesterDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
   {
@@ -34,5 +36,17 @@ void BuildingHarvesterDef::createActorBehaviours(std::vector<IGameObjectBehaviou
   IGameObjectDef::createActorBehaviours(behaviourList);
   behaviourList->push_back(IGameObjectBehaviourPtr(new HarvesterBehaviour()));
   behaviourList->push_back(IGameObjectBehaviourPtr(new ResourceStackBehaviour()));
+  }
+
+
+/*static*/ uint BuildingHarvesterDef::getHarvesterDepositResourceID(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  const BuildingHarvesterDef* harvesterDef = BuildingHarvesterDef::cast(gameActor->getDef());
+  if (harvesterDef)
+    {
+    const ResourceDepositDef* depositDef = ResourceDepositDef::cast(SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDef(harvesterDef->depositName).get());
+    if (depositDef)
+      return SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDefID(depositDef->resourceName);
+    }
   }
 

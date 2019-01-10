@@ -15,7 +15,9 @@ public:
 public:
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;
   virtual GameObjectType getType() const override { return GameObjectType::harvester; }
+
   static const BuildingHarvesterDef* cast(const IGameObjectDef* def) { return dynamic_cast<const BuildingHarvesterDef*>(def); }
+  static uint getHarvesterDepositResourceID(SMGameActor* gameActor, GameContext* gameContext);
 
 protected:
   virtual void createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behaviourList) const override;

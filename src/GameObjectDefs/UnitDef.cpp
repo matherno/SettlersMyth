@@ -30,7 +30,7 @@ SMGameActorPtr UnitDef::createGameActor(GameContext* gameContext) const
   {
   Unit* actor = new Unit(gameContext->getNextActorID(), this);
   actor->setSpeed(speed);
-  actor->setMaxCapacity(1, false);
+  actor->setupStackCount(1, 1);
   createActorBehaviours(actor->getBehaviourList());
   return SMGameActorPtr(actor);
   }
