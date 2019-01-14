@@ -22,50 +22,22 @@ void ResourceStackBehaviour::initialise(SMGameActor* gameActor, GameContext* gam
 
 void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
   {
-  gameActor->forEachResource([&](uint id, uint amount)
-    {
-    const uint storedResID = id;
-    const uint storedResAmount = (uint)std::min(amount, MAX_STACK_SIZE);
-    int stackIdx = -1;
-    for (uint i = 0; i < resourceStacks.size(); ++i)
-      {
-      ResourceStack& stack = resourceStacks[i];
-      if (stack.id == storedResID)
-        stackIdx = i;
-      }
-    const bool gotStack = stackIdx >= 0;
+  const std::vector<ResourceStack>* storedStacks = gameActor->getResourceStacks();
 
-    if (gotStack && storedResAmount != resourceStacks[stackIdx].amount)
+  int stackIdx = 0;
+  for (const ResourceStack& stack : *storedStacks)
+    {
+    const uint storedResID = stack.id;
+    const uint storedResAmount = (uint)std::min(stack.amount, MAX_STACK_SIZE);
+
+    if (resourceStacks[stackIdx].id != storedResID || resourceStacks[stackIdx].amount != storedResAmount)
       {
       //  update stack and recreate actors
+      resourceStacks[stackIdx].id = storedResID;
       resourceStacks[stackIdx].amount = storedResAmount;
       refreshResourceStackActors(gameActor, gameContext, (uint) stackIdx);
       }
-    else if (!gotStack && storedResAmount > 0)
-      {
-      //  create stack if there is a spare spot and create actors
-      for (uint i = 0; i < resourceStacks.size(); ++i)
-        {
-        if (resourceStacks[i].amount == 0)
-          {
-          resourceStacks[i].id = storedResID;
-          resourceStacks[i].amount = storedResAmount;
-          refreshResourceStackActors(gameActor, gameContext, i);
-          break;
-          }
-        }
-      }
-    });
-
-  //  extra check that there are no current stacks that shouldn't be there
-  for (uint i = 0; i < resourceStacks.size(); ++i)
-    {
-    ResourceStack& stack = resourceStacks[i];
-    if (stack.amount > 0 && gameActor->resourceCount(stack.id) == 0)
-      {
-      stack.amount = 0;
-      refreshResourceStackActors(gameActor, gameContext, i);
-      }
+    stackIdx++;
     }
   }
 
@@ -73,7 +45,7 @@ void ResourceStackBehaviour::cleanUp(SMGameActor* gameActor, GameContext* gameCo
   {
   for (uint i = 0; i < resourceStacks.size(); ++i)
     {
-    ResourceStack& stack = resourceStacks[i];
+    Stack& stack = resourceStacks[i];
     stack.amount = 0;
     refreshResourceStackActors(gameActor, gameContext, i);
     }
@@ -97,7 +69,7 @@ static double getResourceRotInStack(const ResourceDef* resourceDef, int resNum)
 
 void ResourceStackBehaviour::refreshResourceStackActors(SMGameActor* gameActor, GameContext* gameContext, uint stackIdx)
   {
-  ResourceStack& stack = resourceStacks[stackIdx];
+  Stack& stack = resourceStacks[stackIdx];
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
 
   //  cleanup existing actors

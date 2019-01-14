@@ -9,18 +9,17 @@
 class ResourceStackBehaviour : public IGameObjectBehaviour
   {
 private:
-  struct ResourceStack
+  struct Stack
     {
     uint id = 0;
     uint amount = 0;
     std::list<SMGameActorPtr> resourceActors;
     GridXY pos;
-    ResourceStack() {}
-    ResourceStack(GridXY pos) : pos(pos) {}
+    Stack() {}
+    Stack(GridXY pos) : pos(pos) {}
     };
 
-  bool carryingResource = false;
-  std::vector<ResourceStack> resourceStacks;
+  std::vector<Stack> resourceStacks;
 
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;
