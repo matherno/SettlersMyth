@@ -47,7 +47,7 @@
 
 static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)
   {
-  const char* attribute;
+  const char* attribute = nullptr;
   element->QueryStringAttribute(attributeName.c_str(), &attribute);
   if (attribute)
     return std::string(attribute);
