@@ -290,6 +290,8 @@ bool GridMapHandler::canReachTarget(GridXY startPos, GridXY targetPos) const
     {
     for (int yOffset = -1; yOffset <= 1; ++yOffset)
       {
+      if (abs(xOffset) + abs(yOffset) > 1)
+        continue;   //  diagonal neighbour
       const GridXY pos = targetPos + GridXY(xOffset, yOffset);
       if (startConnectionID == getConnectionIDAtGridPos(pos))
         return true;
@@ -337,8 +339,8 @@ void GridMapHandler::recurseSetCellConnectionID(GridXY pos, uint connectionID)
     {
     for (int yOffset = -1; yOffset <= 1; ++yOffset)
       {
-      if (xOffset == 0 && yOffset == 0)
-        continue;
+      if (abs(xOffset) + abs(yOffset) != 1)
+        continue;   //  diagonal neighbour
       const GridXY neighbourPos = pos + GridXY(xOffset, yOffset);
       if (getConnectionIDAtGridPos(neighbourPos) == 0 && !isCellObstacle(neighbourPos))
         recurseSetCellConnectionID(neighbourPos, connectionID);
@@ -423,6 +425,15 @@ bool GridMapHandler::getPathToTargetAStar(GridXY startPos, GridXY targetPos, Gri
         {
         if (xOffset == 0 && yOffset == 0)
           continue;
+
+        //  if adjacent cell is diagonal, don't consider it if it is between two obstacle cells
+        const bool isDiagonalFromCurrent = abs(xOffset) + abs(yOffset) > 1;
+        if (isDiagonalFromCurrent)
+          {
+          if (isCellObstacle(currClosedNode->pos + GridXY(xOffset, 0)) || isCellObstacle(currClosedNode->pos + GridXY(0, yOffset)))
+            continue;
+          }
+
         const GridXY pos = currClosedNode->pos + GridXY(xOffset, yOffset);
         if (pos == targetPos)
           {
