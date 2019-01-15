@@ -1,5 +1,5 @@
 <gameobjectdef name="Tree" type="Deposit">
-    <grid x="1" y="1"/>
+    <grid x="1" y="1" height="2.0"/>
     <render>
         <renderpart voxelfile="deposits/TreeA.mgv"/>
     </render>
@@ -14,7 +14,7 @@
 </gameobjectdef>
 
 <gameobjectdef name="Stone Mound" type="Deposit">
-    <grid x="1" y="1"/>
+    <grid x="1" y="1" height="1.1"/>
     <render>
         <renderpart voxelfile="deposits/StoneA.mgv"/>
     </render>
@@ -29,7 +29,7 @@
 </gameobjectdef>
 
 <gameobjectdef name="Reeds" type="Deposit">
-    <grid x="1" y="1"/>
+    <grid x="1" y="1" height="1.1"/>
     <render>
         <renderpart voxelfile="deposits/ReedsA.mgv"/>
     </render>

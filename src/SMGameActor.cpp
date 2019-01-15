@@ -135,15 +135,15 @@ bool SMGameActor::processCommand(const SMActorCommand& command, GameContext* gam
 
 void SMGameActor::updateBoundingBox()
   {
-  if (boundingBox)
-    {
-    Vector2D midPos = getMidPosition();
-    Vector2D halfSize = getSize() * 0.5f;
-    double height = 2.3;
-    Vector3D lowerBound = Vector3D(midPos.x - halfSize.x, 0, -(midPos.y + halfSize.y));
-    Vector3D upperBound = Vector3D(midPos.x + halfSize.x, height, -(midPos.y - halfSize.y));
-    boundingBox->setBounds(lowerBound, upperBound);
-    }
+  if (!boundingBox)
+    return;
+
+  Vector2D midPos = getMidPosition();
+  Vector2D halfSize = getSize() * 0.5f;
+  double height = getHeight();
+  Vector3D lowerBound = Vector3D(midPos.x - halfSize.x, 0, -(midPos.y + halfSize.y));
+  Vector3D upperBound = Vector3D(midPos.x + halfSize.x, height, -(midPos.y - halfSize.y));
+  boundingBox->setBounds(lowerBound, upperBound);
   }
 
 void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
@@ -232,8 +232,15 @@ Vector2D SMStaticActor::getSize() const
   {
   if (StaticObjectDef::cast(getDef()))
     return StaticObjectDef::cast(getDef())->getSize();
+  return Vector2D(1, 1);
   }
 
+double SMStaticActor::getHeight() const
+  {
+  if (StaticObjectDef::cast(getDef()))
+    return StaticObjectDef::cast(getDef())->height;
+  return 2;
+  }
 
 
 SMDynamicActor::SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)

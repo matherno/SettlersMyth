@@ -46,6 +46,7 @@ public:
   virtual Vector2D getMidPosition() const = 0;
   virtual Vector2D getSize() const = 0;
   virtual double getRotation() const { return 0; };
+  virtual double getHeight() const { return 1; };
   void setXMLToLoadFrom(XMLElement* xmlElement){ xmlToLoadFrom = xmlElement; }
   void finaliseLoading(GameContext* gameContext) { finaliseActorFromSave(gameContext, xmlToLoadFrom); };
   bool processCommand(const SMActorCommand& command, GameContext* gameContext);
@@ -83,6 +84,7 @@ public:
   virtual GridXY getGridPosition() const override;
   virtual Vector2D getSize() const override;
   virtual GridXY getEntryPosition() const { return getGridPosition(); }
+  virtual double getHeight() const override;
 
   inline static SMStaticActor* cast(SMGameActor* actor){ return dynamic_cast<SMStaticActor*>(actor); }
 

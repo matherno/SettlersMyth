@@ -23,6 +23,7 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
 
   size.x = xmlGrid->IntAttribute(OD_X, 1);
   size.y = xmlGrid->IntAttribute(OD_Y, 1);
+  height = xmlGrid->DoubleAttribute(OD_HEIGHT, 2);
 
   //  resource stack spots
   auto xmlResStack = xmlGrid->FirstChildElement(OD_RESSTACK);

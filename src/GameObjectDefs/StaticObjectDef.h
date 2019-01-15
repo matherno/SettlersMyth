@@ -20,6 +20,7 @@ private:
 
 public:
   GridXY size;
+  double height = 2;
   std::vector<GridXY> resourceStackSpots;
   std::vector<GridXY> clearGridCells;    //  cells that units can move through
 

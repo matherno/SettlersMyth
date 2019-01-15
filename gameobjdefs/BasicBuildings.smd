@@ -1,5 +1,5 @@
 <gameobjectdef name="Wood Cutter" type="Harvester">
-    <grid x="4" y="4">
+    <grid x="4" y="4" height="2.3">
         <resourcestack x="3" y="2"/>
         <clearpos x="2" y="3"/>
         <clearpos x="2" y="2"/>
@@ -21,7 +21,7 @@
 
 
 <gameobjectdef name="Sawmill" type="Manufacturer">
-    <grid x="4" y="4">
+    <grid x="4" y="4" height="2.4">
         <resourcestack x="3" y="3"/>
         <resourcestack x="2" y="3"/>
         <clearpos x="1" y="3"/>
@@ -46,7 +46,7 @@
 
 
 <gameobjectdef name="Stone Miner" type="Harvester">
-    <grid x="3" y="3">
+    <grid x="3" y="3" height="1.9">
         <resourcestack x="0" y="2"/>
         <clearpos x="1" y="2"/>
         <entry x="1" y="1"/>
@@ -66,7 +66,7 @@
 
 
 <gameobjectdef name="Thatcher" type="Harvester">
-    <grid x="3" y="2">
+    <grid x="3" y="2" height="2.0">
         <resourcestack x="2" y="1"/>
         <entry x="1" y="1"/>
     </grid>
@@ -84,7 +84,7 @@
 </gameobjectdef>
 
 <gameobjectdef name="Storage Pit" type="Storage">
-    <grid x="4" y="2">
+    <grid x="4" y="2" height="1.7">
         <resourcestack x="2" y="0"/>
         <resourcestack x="2" y="1"/>
         <resourcestack x="3" y="0"/>
@@ -102,7 +102,7 @@
 </gameobjectdef>
 
 <gameobjectdef name="Large Storage Pit" type="Storage">
-    <grid x="4" y="4">
+    <grid x="4" y="4" height="1.7">
         <resourcestack x="2" y="0"/>
         <resourcestack x="2" y="1"/>
         <resourcestack x="2" y="2"/>
