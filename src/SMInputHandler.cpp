@@ -193,12 +193,24 @@ bool SMInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset
 
 bool SMInputHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY)
   {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   if (gameContext->getInputManager()->isMouseDown(MOUSE_MIDDLE))
     {
-    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
     float rotateSpeed = mouseYawSpeed * gameContext->getDeltaTime() * smGameContext->getSettings()->getCameraRotSpeed() * 0.001f;
     rotation += ((float) prevMouseX - (float) mouseX) * rotateSpeed;
     refreshRotationMatrix();
+    refreshCamera(gameContext->getCamera());
+    return true;
+    }
+  else if (gameContext->getInputManager()->isMouseDown(MOUSE_RIGHT))
+    {
+    float speed = panSpeed * gameContext->getDeltaTime() * smGameContext->getSettings()->getCameraPanSpeed() * 0.00005f;
+    speed *= zoomOffset / maxZoom;
+    Vector3D translation;
+    translation.x += ((float) prevMouseX - (float) mouseX) * speed;
+    translation.z += ((float) prevMouseY - (float) mouseY) * speed;
+    translation *= mathernogl::matrixYaw(rotation);
+    focalPosition += translation;
     refreshCamera(gameContext->getCamera());
     return true;
     }
