@@ -101,32 +101,47 @@ void SMInputHandler::refreshRotationMatrix()
 
 bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
   {
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+
   if (key == KEY_ESC)
     {
-    SMGameContext::cast(gameContext)->displayPauseMenu();
+    smGameContext->displayPauseMenu();
     return true;
     }
   else if (key == KEY_KEYPAD_ADD)
     {
-    gameContext->setSpeed(gameContext->getSpeed() + 1);
+    smGameContext->setSpeed(smGameContext->getSpeed() + 1);
     return true;
     }
   else if (key == KEY_KEYPAD_MINUS)
     {
-    uint speed = gameContext->getSpeed();
+    uint speed = smGameContext->getSpeed();
     if (speed > 1)
-      gameContext->setSpeed(speed - 1);
+      smGameContext->setSpeed(speed - 1);
     return true;
+    }
+  else if (key == KEY_DELETE)
+    {
+    if (smGameContext->getSelectionManager()->selectionCount() > 0)
+      {
+      auto selectedActors = smGameContext->getSelectionManager()->getSelectedActors();
+      std::list<uint> selActorIDs;
+      for (SMGameActorPtr actor : *selectedActors->getList())
+        selActorIDs.push_back(actor->getID());
+      for (uint id : selActorIDs)
+        smGameContext->destroySMActor(id);
+      return true;
+      }
     }
 
   switch(getCharFromKeyCode(key))
     {
     case 'P':
       paused = !paused;
-      gameContext->setPaused(paused);
+      smGameContext->setPaused(paused);
       return true;
     case 'T':
-      SMGameContext::cast(gameContext)->getHUDHandler()->toggleDebugPanel();
+      smGameContext->getHUDHandler()->toggleDebugPanel();
       return true;
     }
   return false;

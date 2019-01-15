@@ -41,6 +41,8 @@ public:
   void selectActorScreenRect(GameContext* gameContext, const Vector2D& screenPoint1, const Vector2D& screenPoint2);
   bool isActorSelected(uint actorID) const;
   SMGameActorPtr getFirstSelectedActor();
+  const mathernogl::MappedList<SMGameActorPtr>* getSelectedActors() const { return &selectedActors; }
+  uint selectionCount() const { return selectedActors.count(); }
 
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onUpdate(GameContext* gameContext) override;
