@@ -313,3 +313,8 @@ void SMDynamicActor::initialiseActorFromSave(GameContext* gameContext, XMLElemen
   elevation = xmlGetDblValue(element, SL_ELEV);
   SMGameActor::initialiseActorFromSave(gameContext, element);
   }
+
+void SMDynamicActor::lookAt(Vector2D position)
+  {
+  setRotation(-mathernogl::ccwAngleBetween(Vector2D(0, 1), (position - getPosition()).getUniform()));
+  }

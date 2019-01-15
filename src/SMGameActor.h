@@ -109,6 +109,7 @@ public:
   void setPosition(Vector3D position);
   void setRotation(double rotation);
   void setElevation(double elevation);
+  void lookAt(Vector2D position);
   Vector2D getPosition() const { return position; }
   double getElevation() const { return elevation; };
   virtual GridXY getGridPosition() const override { return getPosition(); }

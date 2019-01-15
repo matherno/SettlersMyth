@@ -27,6 +27,8 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
 
   if (unit->hasReachedTarget())
     {
+    unit->lookAt(getTargetActor()->getPosition());
+
     if (timer.incrementTimer(gameContext->getDeltaTime()))
       {
       const uint resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(buildingActor, gameContext);
@@ -43,6 +45,18 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
     }
   }
 
+static const float harvestOffsetAmt = 0.475;
+static const std::vector<Vector2D> depositHarvestOffsets =
+  {
+  Vector2D(harvestOffsetAmt,  0),
+  Vector2D(harvestOffsetAmt,  harvestOffsetAmt),
+  Vector2D(harvestOffsetAmt,  -harvestOffsetAmt),
+  Vector2D(-harvestOffsetAmt, 0),
+  Vector2D(-harvestOffsetAmt, harvestOffsetAmt),
+  Vector2D(-harvestOffsetAmt, -harvestOffsetAmt),
+  Vector2D(0,                 harvestOffsetAmt),
+  Vector2D(0,                 -harvestOffsetAmt),
+  };
 
 bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext* gameContext, const SMActorCommand& command)
   {
@@ -53,11 +67,11 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
     return false;
 
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  auto buildingActor = getAttachedBuilding(gameActor, gameContext);
+  SMGameActor* buildingActor = getAttachedBuilding(gameActor, gameContext);
   if (!buildingActor)
     return false;
 
-  auto harvesterDef = BuildingHarvesterDef::cast(buildingActor->getDef());
+  const BuildingHarvesterDef* harvesterDef = BuildingHarvesterDef::cast(buildingActor->getDef());
   if (!harvesterDef)
     return false;
 
@@ -66,13 +80,14 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
 
   const string& depositName = harvesterDef->depositName;
   const GridXY& buildingPosition = buildingActor->getGridPosition();
+  const Vector2D harvestOffset = depositHarvestOffsets[mathernogl::RandomGenerator::randomInt(0, (int)depositHarvestOffsets.size() - 1)];
   targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, unit->getPosition(), depositName);
 
   if (getTargetActor())
     {
     timer.setTimeOut(harvesterDef->harvestTime);
     timer.reset();
-    unit->setTarget(getTargetActor()->getPosition());
+    unit->setTarget(getTargetActor()->getPosition() + harvestOffset);
     startBehaviour(gameActor, gameContext, command.id);
     return true;
     }
