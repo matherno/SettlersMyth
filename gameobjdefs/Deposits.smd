@@ -24,7 +24,7 @@
     <render>
         <renderpart voxelfile="deposits/StoneC.mgv"/>
     </render>
-    <icon imagefile="icons/tree.png"/>
+    <icon imagefile="icons/stonemound.png"/>
     <deposit resource_name="Stone" resource_amount="10"/>
 </gameobjectdef>
 
@@ -39,6 +39,6 @@
     <render>
         <renderpart voxelfile="deposits/ReedsC.mgv"/>
     </render>
-    <icon imagefile="icons/tree.png"/>
+    <icon imagefile="icons/reeds.png"/>
     <deposit resource_name="Thatch" resource_amount="3"/>
 </gameobjectdef>

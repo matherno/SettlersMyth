@@ -210,14 +210,14 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   for (auto buildingDef : buildings)
     {
     UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
-    button->setOffset(Vector2D(50 + buildingNum * 80, 20));
-    button->setSize(Vector2D(60, 60));
+    button->setOffset(Vector2D(50 + buildingNum * 65, 20));
+    button->setSize(Vector2D(52, 52));
     if (!buildingDef->getIconFilePath().empty())
       button->setButtonTexture(context->getRenderContext()->getSharedTexture(buildingDef->getIconFilePath()));
-    button->setButtonHighlightColour(Vector3D(0.3, 0.3, 1));
+    button->setButtonHighlightColour(Vector3D(0.5, 0.5, 0.6), Vector3D(0.2));
     button->setVerticalAlignment(alignmentStart);
     button->setHorizontalAlignment(alignmentStart);
-    button->setHighlightWidth(3);
+    button->setHighlightWidth(2);
     button->setGroup(buildingButtonGroup);
     uint gameDefID = buildingDef->getID();
     button->setMouseClickCallback([this, gameDefID, button, context](uint x, uint y) -> bool

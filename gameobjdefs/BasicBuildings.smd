@@ -57,7 +57,7 @@
     <render>
         <renderpart voxelfile="buildings/Stoneminer.mgv"/>
     </render>
-    <icon imagefile="icons/woodcutter.png"/>
+    <icon imagefile="icons/stoneminer.png"/>
     <construction time="10000">
         <resource name="Log" amount="4"/>
         <resource name="Thatch" amount="2"/>
@@ -76,7 +76,7 @@
     <render>
         <renderpart voxelfile="buildings/Thatcher.mgv"/>
     </render>
-    <icon imagefile="icons/woodcutter.png"/>
+    <icon imagefile="icons/thatcher.png"/>
     <construction time="10000">
         <resource name="Log" amount="4"/>
         <resource name="Thatch" amount="2"/>
@@ -94,7 +94,7 @@
     <render>
         <renderpart voxelfile="buildings/StoragePitSmall.mgv"/>
     </render>
-    <icon imagefile="icons/woodcutter.png"/>
+    <icon imagefile="icons/storagepit.png"/>
     <construction time="10000">
         <resource name="Log" amount="4"/>
         <resource name="Thatch" amount="2"/>
@@ -116,7 +116,7 @@
     <render>
         <renderpart voxelfile="buildings/StoragePitLarge.mgv"/>
     </render>
-    <icon imagefile="icons/woodcutter.png"/>
+    <icon imagefile="icons/storagepitlarge.png"/>
     <construction time="10000">
         <resource name="Log" amount="4"/>
         <resource name="Thatch" amount="2"/>
