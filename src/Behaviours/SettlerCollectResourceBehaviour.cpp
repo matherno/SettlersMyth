@@ -12,8 +12,20 @@ void SettlerCollectResourceBehaviour::update(SMGameActor* gameActor, GameContext
     return;
 
   auto target = getTargetBuilding();
+  auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
+
   if (!target)
     {
+    if (attachedBuilding)
+      attachedBuilding->freeResourceSpace(collectResSpaceReserve);
+    endBehaviour(gameActor, gameContext, true);
+    return;
+    }
+
+  if (!attachedBuilding)
+    {
+    if (target)
+      target->unlockResource(collectResLock);
     endBehaviour(gameActor, gameContext, true);
     return;
     }
@@ -21,12 +33,17 @@ void SettlerCollectResourceBehaviour::update(SMGameActor* gameActor, GameContext
   Unit* unit = Unit::cast(gameActor);
   if (unit->hasReachedTarget())
     {
-    if(target->takeResource(resToCollect, 1))
-      unit->storeResource(resToCollect, 1);
+    attachedBuilding->freeResourceSpace(collectResSpaceReserve);
+    if(target->takeLockedResource(collectResLock))
+      unit->storeResource(collectResLock.resID, collectResLock.resAmount);
+    targetBuilding.reset();
     endBehaviour(gameActor, gameContext, true);
     }
   else if (unit->canNotReachTarget())
     {
+    attachedBuilding->freeResourceSpace(collectResSpaceReserve);
+    target->unlockResource(collectResLock);
+    targetBuilding.reset();
     endBehaviour(gameActor, gameContext, true);
     }
   }
@@ -40,9 +57,13 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
     {
     const GridMapHandler* gridMapHandler = SMGameContext::cast(gameContext)->getGridMapHandler();
     const GameObjectFactory* gameObjectFactory = SMGameContext::cast(gameContext)->getGameObjectFactory();
-    resToCollect = (uint) command.extra;
+    const uint resToCollect = (uint) command.extra;
+
     auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
     if (!attachedBuilding)
+      return false;
+    collectResSpaceReserve = attachedBuilding->reserveResourceSpace(resToCollect, 1);
+    if (!collectResSpaceReserve.isValid())
       return false;
 
     targetBuilding = gridMapHandler->findClosestStaticActor(gameContext, Unit::cast(gameActor)->getPosition(),
@@ -60,8 +81,9 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
 
     if (getTargetBuilding())
       {
-      //todo reserve the resource to take from target, and the space in the attached building
       Unit::cast(gameActor)->setTarget(getTargetBuilding()->getEntryPosition().centre());
+      collectResLock = getTargetBuilding()->lockResource(resToCollect, 1);
+      ASSERT(collectResLock.isValid(), "");
       startBehaviour(gameActor, gameContext, command.id);
       }
     return true;
@@ -73,4 +95,13 @@ bool SettlerCollectResourceBehaviour::processCommand(SMGameActor* gameActor, Gam
 Building* SettlerCollectResourceBehaviour::getTargetBuilding()
   {
   return Building::cast(targetBuilding.lock().get());
+  }
+
+void SettlerCollectResourceBehaviour::onCancelBehaviour(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  if (getTargetBuilding())
+    getTargetBuilding()->unlockResource(collectResLock);
+  if (getAttachedBuilding(gameActor, gameContext))
+    getAttachedBuilding(gameActor, gameContext)->freeResourceSpace(collectResSpaceReserve);
+  SettlerBehaviourBase::onCancelBehaviour(gameActor, gameContext);
   }

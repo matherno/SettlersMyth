@@ -77,7 +77,7 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
         resText += resDef->getDisplayName() + ":" + std::to_string(amount);
         first = false;
         }
-      });
+      }, true);
 
     resourceText->setText(resText);
     resourceText->invalidate();

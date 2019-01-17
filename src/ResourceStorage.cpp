@@ -2,6 +2,7 @@
 // Created by matt on 1/12/18.
 //
 
+#include <set>
 #include "ResourceStorage.h"
 
 
@@ -16,7 +17,7 @@ const std::vector<ResourceStack>* ResourceStorage::getResourceStacks() const
   return &resourceStacks;
   }
 
-uint ResourceStorage::resourceCount(uint id) const
+uint ResourceStorage::resourceCount(uint id, bool includeLocked) const
   {
   if (id == 0)
     return 0;
@@ -26,7 +27,11 @@ uint ResourceStorage::resourceCount(uint id) const
     if (stack.id == id)
       count += stack.amount;
     }
-  return count;
+
+  const uint amountLocked = includeLocked ? 0 : lockedResourceCount(id);
+  if (count <= amountLocked)
+    return 0;
+  return count - amountLocked;
   }
 
 bool ResourceStorage::takeResource(uint id, uint amount)
@@ -111,6 +116,9 @@ void ResourceStorage::clearAllResources()
     stack.amount = 0;
     stack.id = 0;
     }
+  ASSERT(resourceLocks.count() == 0, "");
+  resourceLocks.clear();
+  resAmountLocked.clear();
   totalResCount = 0;
   }
 
@@ -119,21 +127,24 @@ bool ResourceStorage::canStoreResource(uint id, uint amount) const
   if (id == 0)
     return false;
 
+  uint totalSpaceFree = 0;
   for (const ResourceStack& stack : resourceStacks)
     {
     if (stack.id == id || stack.id == 0 || stack.amount == 0)
-      {
-      uint spaceFree = maxResPerStack - stack.amount;
-      if (amount <= spaceFree)
-        return true;
-      amount -= spaceFree;
-      }
+      totalSpaceFree += maxResPerStack - stack.amount;
     }
-  return false;
+
+  totalSpaceFree -= reservedResourceSpaceCount(id);
+
+  return totalSpaceFree >= amount;
   }
 
 void ResourceStorage::transferAllResourcesTo(ResourceStorage* receiver)
   {
+  ASSERT(resourceLocks.count() == 0, "");
+  resourceLocks.clear();
+  resAmountLocked.clear();
+
   for (ResourceStack& stack : resourceStacks)
     {
     if (stack.id > 0 && stack.amount > 0)
@@ -154,21 +165,105 @@ void ResourceStorage::setupStackCount(uint stackCount, uint maxResPerStack)
     stack.amount = std::min(stack.amount, maxResPerStack);
   }
 
-void ResourceStorage::forEachResource(std::function<void(uint id, uint amount)> func) const
+void ResourceStorage::forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked) const
   {
-  std::map<uint, uint> resourceAmounts;
+  std::set<uint> resourceAmounts;
   for (const ResourceStack& stack : resourceStacks)
     {
     if (stack.id > 0 && stack.amount > 0)
-      {
-      if (resourceAmounts.count(stack.id) == 0)
-        resourceAmounts[stack.id] = stack.amount;
-      else
-        resourceAmounts[stack.id] += stack.amount;
-      }
+      resourceAmounts.insert(stack.id);
     }
 
-  for (auto& pair : resourceAmounts)
-    func(pair.first, pair.second);
+  for (uint id : resourceAmounts)
+    func(id, resourceCount(id, includeLocked));
   }
 
+ResourceLock ResourceStorage::lockResource(uint id, uint amount)
+  {
+  if (resourceCount(id) >= amount)
+    {
+    if (resAmountLocked.count(id) == 0)
+      resAmountLocked[id] = amount;
+    else
+      resAmountLocked[id] += amount;
+
+    ResourceLock lock(nextLockID++, id, amount);
+    resourceLocks.add(lock, lock.lockID);
+    return lock;
+    }
+  return ResourceLock();
+  }
+
+void ResourceStorage::unlockResource(const ResourceLock& lock)
+  {
+  if(lock.isValid() && resourceLocks.contains(lock.lockID))
+    {
+    resourceLocks.remove(lock.lockID);
+    if (resAmountLocked.count(lock.resID) > 0 && resAmountLocked[lock.resID] >= lock.resAmount)
+      resAmountLocked[lock.resID] -= lock.resAmount;
+    else
+      resAmountLocked[lock.resID] = 0;
+    }
+  }
+
+bool ResourceStorage::takeLockedResource(const ResourceLock& lock)
+  {
+  if(lock.isValid() && resourceLocks.contains(lock.lockID))
+    {
+    unlockResource(lock);
+    return takeResource(lock.resID, lock.resAmount);
+    }
+  return false;
+  }
+
+uint ResourceStorage::lockedResourceCount(uint id) const
+  {
+  if(resAmountLocked.count(id) == 0)
+    return 0;
+  return resAmountLocked.at(id);
+  }
+
+ResourceReserve ResourceStorage::reserveResourceSpace(uint id, uint amount)
+  {
+  if (canStoreResource(id, amount))
+    {
+    if (resAmountReserved.count(id) == 0)
+      resAmountReserved[id] = amount;
+    else
+      resAmountReserved[id] += amount;
+
+    ResourceReserve reserveHandle(nextReserveID++, id, amount);
+    resourceReserves.add(reserveHandle, reserveHandle.reserveID);
+    return reserveHandle;
+    }
+  return ResourceReserve();
+  }
+
+void ResourceStorage::freeResourceSpace(const ResourceReserve& reserve)
+  {
+  if(reserve.isValid() && resourceReserves.contains(reserve.reserveID))
+    {
+    resourceReserves.remove(reserve.reserveID);
+    if (resAmountReserved.count(reserve.resID) > 0 && resAmountReserved[reserve.resID] >= reserve.resAmount)
+      resAmountReserved[reserve.resID] -= reserve.resAmount;
+    else
+      resAmountReserved[reserve.resID] = 0;
+    }
+  }
+
+bool ResourceStorage::fillResourceSpace(const ResourceReserve& reserve)
+  {
+  if(reserve.isValid() && resourceReserves.contains(reserve.reserveID))
+    {
+    freeResourceSpace(reserve);
+    return storeResource(reserve.resID, reserve.resAmount);
+    }
+  return false;
+  }
+
+uint ResourceStorage::reservedResourceSpaceCount(uint id) const
+  {
+  if(resAmountReserved.count(id) == 0)
+    return 0;
+  return resAmountReserved.at(id);
+  }

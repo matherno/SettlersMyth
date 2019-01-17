@@ -13,6 +13,8 @@ class SettlerHarvestBehaviour : public SettlerBehaviourBase
   {
 private:
   std::weak_ptr<SMStaticActor> targetActor;
+  ResourceLock depositResLock;
+  ResourceReserve baseResReserve;
 
 public:
   virtual void update(SMGameActor* gameActor, GameContext* gameContext) override;
@@ -20,4 +22,5 @@ public:
 
 protected:
   SMStaticActor* getTargetActor();
+  virtual void onCancelBehaviour(SMGameActor* gameActor, GameContext* gameContext) override;
   };

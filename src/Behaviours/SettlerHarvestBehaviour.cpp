@@ -13,12 +13,15 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
   if (!isBehaviourActive())
     return;
 
-  auto buildingActor = getAttachedBuilding(gameActor, gameContext);
-  if (!buildingActor)
-    return;
+  auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
 
-  if (!getTargetActor() || getTargetActor()->totalResourceCount() == 0)
+  if (!attachedBuilding || !getTargetActor())
     {
+    if (getTargetActor())
+      getTargetActor()->unlockResource(depositResLock);
+    if (attachedBuilding)
+      attachedBuilding->freeResourceSpace(baseResReserve);
+    targetActor.reset();
     endBehaviour(gameActor, gameContext, true);
     return;
     }
@@ -31,16 +34,20 @@ void SettlerHarvestBehaviour::update(SMGameActor* gameActor, GameContext* gameCo
 
     if (timer.incrementTimer(gameContext->getDeltaTime()))
       {
-      const uint resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(buildingActor, gameContext);
-      if(getTargetActor()->takeResource(resourceID, 1))
-        unit->storeResource(resourceID, 1);
+      attachedBuilding->freeResourceSpace(baseResReserve);
+      if(getTargetActor()->takeLockedResource(depositResLock))
+        unit->storeResource(depositResLock.resID, depositResLock.resAmount);
       timer.reset();
+      targetActor.reset();
       endBehaviour(gameActor, gameContext, true);
       }
     }
   else if (unit->canNotReachTarget())
     {
+    attachedBuilding->freeResourceSpace(baseResReserve);
+    getTargetActor()->unlockResource(depositResLock);
     timer.reset();
+    targetActor.reset();
     endBehaviour(gameActor, gameContext, true);
     }
   }
@@ -67,24 +74,39 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
     return false;
 
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  SMGameActor* buildingActor = getAttachedBuilding(gameActor, gameContext);
-  if (!buildingActor)
+  SMGameActor* attachedBuilding = getAttachedBuilding(gameActor, gameContext);
+  if (!attachedBuilding)
     return false;
 
-  const BuildingHarvesterDef* harvesterDef = BuildingHarvesterDef::cast(buildingActor->getDef());
+  const BuildingHarvesterDef* harvesterDef = BuildingHarvesterDef::cast(attachedBuilding->getDef());
   if (!harvesterDef)
+    return false;
+
+  const uint resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(attachedBuilding, gameContext);
+  const string& depositName = harvesterDef->depositName;
+  const GridXY& buildingPosition = attachedBuilding->getGridPosition();
+  const Vector2D harvestOffset = depositHarvestOffsets[mathernogl::RandomGenerator::randomInt(0, (int)depositHarvestOffsets.size() - 1)];
+
+  baseResReserve = attachedBuilding->reserveResourceSpace(resourceID, 1);
+  if (!baseResReserve.isValid())
     return false;
 
   Unit* unit = Unit::cast(gameActor);
   unit->dropAllResources(gameContext, unit->getPosition());
 
-  const string& depositName = harvesterDef->depositName;
-  const GridXY& buildingPosition = buildingActor->getGridPosition();
-  const Vector2D harvestOffset = depositHarvestOffsets[mathernogl::RandomGenerator::randomInt(0, (int)depositHarvestOffsets.size() - 1)];
-  targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, unit->getPosition(), depositName);
+  targetActor = smGameContext->getGridMapHandler()->findClosestStaticActor(gameContext, unit->getPosition(),
+                  [&](SMStaticActorPtr actor)
+                    {
+                    if (actor->getDef()->getUniqueName() != depositName)
+                      return false;
+                    return actor->resourceCount(resourceID) > 0;
+                    });
 
   if (getTargetActor())
     {
+    depositResLock = getTargetActor()->lockResource(resourceID, 1);
+    ASSERT(depositResLock.isValid(), "");
+
     timer.setTimeOut(harvesterDef->harvestTime);
     timer.reset();
     unit->setTarget(getTargetActor()->getPosition() + harvestOffset);
@@ -99,4 +121,14 @@ bool SettlerHarvestBehaviour::processCommand(SMGameActor* gameActor, GameContext
 SMStaticActor* SettlerHarvestBehaviour::getTargetActor()
   {
   return targetActor.lock().get();
+  }
+
+void SettlerHarvestBehaviour::onCancelBehaviour(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  if (getTargetActor())
+    getTargetActor()->unlockResource(depositResLock);
+  auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
+  if (attachedBuilding)
+    attachedBuilding->freeResourceSpace(baseResReserve);
+  SettlerBehaviourBase::onCancelBehaviour(gameActor, gameContext);
   }

@@ -14,21 +14,28 @@ void SettlerMoveBehaviour::update(SMGameActor* gameActor, GameContext* gameConte
     return;
 
   auto buildingActor = getAttachedBuilding(gameActor, gameContext);
-  if (buildingActor)
+  if (!buildingActor)
     {
-    Unit* unit = Unit::cast(gameActor);
-    if (unit->hasReachedTarget())
+    endBehaviour(gameActor, gameContext);
+    return;
+    }
+
+  Unit* unit = Unit::cast(gameActor);
+  if (unit->hasReachedTarget())
+    {
+    if (transferResourcesToBase)
       {
-      if (transferResourcesToBase)
-        unit->transferAllResourcesTo(buildingActor);
-      const double angleRotation = -mathernogl::ccwAngleBetween(Vector2D(0, 1), targetFaceDirection);
-      unit->setRotation(angleRotation);
-      endBehaviour(gameActor, gameContext);
+      freeReservedResSpace(gameActor, gameContext);
+      unit->transferAllResourcesTo(buildingActor);
       }
-    else if (unit->canNotReachTarget())
-      {
-      endBehaviour(gameActor, gameContext);
-      }
+    const double angleRotation = -mathernogl::ccwAngleBetween(Vector2D(0, 1), targetFaceDirection);
+    unit->setRotation(angleRotation);
+    endBehaviour(gameActor, gameContext);
+    }
+  else if (unit->canNotReachTarget())
+    {
+    freeReservedResSpace(gameActor, gameContext);
+    endBehaviour(gameActor, gameContext);
     }
   }
 
@@ -39,13 +46,21 @@ bool SettlerMoveBehaviour::processCommand(SMGameActor* gameActor, GameContext* g
 
   if (command.id == CMD_RETURN_TO_BASE)
     {
-    auto buildingActor = getAttachedBuilding(gameActor, gameContext);
-    if (!buildingActor)
+    auto attachedBuilding = getAttachedBuilding(gameActor, gameContext);
+    if (!attachedBuilding)
       return false;
+
+    gameActor->forEachResource([&](uint id, uint amount)
+        {
+        ResourceReserve reserve = attachedBuilding->reserveResourceSpace(id, amount);
+        if (reserve.isValid())
+          baseResSpaceReserves.push_back(reserve);
+        });
+
     transferResourcesToBase = true;
     targetFaceDirection.x = 0;
     targetFaceDirection.y = 1;
-    Unit::cast(gameActor)->setTarget(buildingActor->getEntryPosition().centre());
+    Unit::cast(gameActor)->setTarget(attachedBuilding->getEntryPosition().centre());
     startBehaviour(gameActor, gameContext, command.id);
     return true;
     }
@@ -65,5 +80,21 @@ bool SettlerMoveBehaviour::processCommand(SMGameActor* gameActor, GameContext* g
     return true;
     }
   return false;
+  }
+
+void SettlerMoveBehaviour::freeReservedResSpace(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  SMGameActor* attachedBuilding = getAttachedBuilding(gameActor, gameContext);
+  if (!attachedBuilding)
+    return;
+  for (ResourceReserve reserve : baseResSpaceReserves)
+    attachedBuilding->freeResourceSpace(reserve);
+  baseResSpaceReserves.clear();
+  }
+
+void SettlerMoveBehaviour::onCancelBehaviour(SMGameActor* gameActor, GameContext* gameContext)
+  {
+  freeReservedResSpace(gameActor, gameContext);
+  SettlerBehaviourBase::onCancelBehaviour(gameActor, gameContext);
   }
 

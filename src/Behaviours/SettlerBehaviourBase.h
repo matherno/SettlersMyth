@@ -24,6 +24,7 @@ public:
 
 protected:
   Building* getAttachedBuilding(SMGameActor* gameActor, GameContext* gameContext);
+  virtual void onCancelBehaviour(SMGameActor* gameActor, GameContext* gameContext) {};
   virtual void startBehaviour(SMGameActor* gameActor, GameContext* gameContext, uint commandID);
   virtual void endBehaviour(SMGameActor* gameActor, GameContext* gameContext, bool returnToBase = false);
   virtual bool isBehaviourActive() const { return performingCommand; };
