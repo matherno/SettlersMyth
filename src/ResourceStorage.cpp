@@ -17,10 +17,14 @@ const std::vector<ResourceStack>* ResourceStorage::getResourceStacks() const
   return &resourceStacks;
   }
 
-uint ResourceStorage::resourceCount(uint id, bool includeLocked) const
+uint ResourceStorage::resourceCount(uint id, bool includeLocked, bool includeInputs) const
   {
   if (id == 0)
     return 0;
+
+  if (!includeInputs && inputResources.count(id) > 0)
+    return 0;
+
   uint count = 0;
   for (const ResourceStack& stack : resourceStacks)
     {
@@ -34,9 +38,9 @@ uint ResourceStorage::resourceCount(uint id, bool includeLocked) const
   return count - amountLocked;
   }
 
-bool ResourceStorage::takeResource(uint id, uint amount)
+bool ResourceStorage::takeResource(uint id, uint amount, bool canTakeInput)
   {
-  if (resourceCount(id) >= amount)
+  if (resourceCount(id, false, canTakeInput) >= amount)
     {
     totalResCount -= amount;
 
@@ -93,6 +97,8 @@ uint ResourceStorage::takeAllResource(uint id, uint maxAmount)
   if (id == 0)
     return 0;
 
+  ASSERT(inputResources.size() == 0, "Not handled");
+
   uint amountTaken = 0;
   for (auto iter = resourceStacks.rbegin(); iter != resourceStacks.rend(); ++iter)
     {
@@ -141,7 +147,8 @@ bool ResourceStorage::canStoreResource(uint id, uint amount) const
 
 void ResourceStorage::transferAllResourcesTo(ResourceStorage* receiver)
   {
-  ASSERT(resourceLocks.count() == 0, "");
+  ASSERT(inputResources.size() == 0, "Not handled");
+  ASSERT(resourceLocks.count() == 0, "Not handled");
   resourceLocks.clear();
   resAmountLocked.clear();
 
@@ -266,4 +273,9 @@ uint ResourceStorage::reservedResourceSpaceCount(uint id) const
   if(resAmountReserved.count(id) == 0)
     return 0;
   return resAmountReserved.at(id);
+  }
+
+void ResourceStorage::registerResourceAsInput(uint id)
+  {
+  inputResources.insert(id);
   }

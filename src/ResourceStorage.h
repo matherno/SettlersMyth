@@ -44,6 +44,7 @@ private:
   mathernogl::MappedList<ResourceReserve> resourceReserves;
   std::map<uint, uint> resAmountLocked;
   std::map<uint, uint> resAmountReserved;
+  std::set<uint> inputResources;
   uint totalResCount = 0;
   uint maxResPerStack = 9;
   uint nextLockID = 1;
@@ -54,11 +55,11 @@ public:
 
   const std::vector<ResourceStack>* getResourceStacks() const;
   virtual void forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked = false) const;
-  virtual uint resourceCount(uint id, bool includeLocked = false) const;
+  virtual uint resourceCount(uint id, bool includeLocked = false, bool includeInputs = false) const;
   virtual uint totalResourceCount() const { return totalResCount; }
   virtual bool canStoreResource(uint id, uint amount) const;
   virtual void transferAllResourcesTo(ResourceStorage* receiver);
-  virtual bool takeResource(uint id, uint amount);
+  virtual bool takeResource(uint id, uint amount, bool canTakeInput = false);
   virtual bool storeResource(uint id, uint amount);
   virtual uint takeAllResource(uint id, uint maxAmount = 99999);
   virtual void clearAllResources();
@@ -78,4 +79,7 @@ public:
   virtual void freeResourceSpace(const ResourceReserve& reserve);
   virtual bool fillResourceSpace(const ResourceReserve& reserve);
   virtual uint reservedResourceSpaceCount(uint id) const;
+
+  //  input resources are resources that are required by this resource storage, and can't be taken
+  virtual void registerResourceAsInput(uint id);
   };

@@ -58,7 +58,7 @@ bool SettlerManufactureBehaviour::processCommand(SMGameActor* gameActor, GameCon
   for (auto pair : manufDef->inputs)
     {
     const uint resID = gameObjectFactory->findGameObjectDefID(pair.first);
-    if (buildingActor->resourceCount(resID) < pair.second)
+    if (buildingActor->resourceCount(resID, false, true) < pair.second)
       gotAllResources = false;
     }
   if (!gotAllResources)
@@ -68,7 +68,7 @@ bool SettlerManufactureBehaviour::processCommand(SMGameActor* gameActor, GameCon
   for (auto pair : manufDef->inputs)
     {
     const uint resID = gameObjectFactory->findGameObjectDefID(pair.first);
-    buildingActor->takeResource(resID, pair.second);
+    buildingActor->takeResource(resID, pair.second, true);
     }
 
   //  start manufacture timer

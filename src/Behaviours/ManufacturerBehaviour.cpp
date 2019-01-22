@@ -27,6 +27,7 @@ void ManufacturerBehaviour::initialise(SMGameActor* gameActor, GameContext* game
       {
       for (int resNum = 0; resNum < pair.second; ++resNum)
         resCollectCycle.push_back(resID);
+      gameActor->registerResourceAsInput(resID);
       }
     }
   std::shuffle(resCollectCycle.begin(), resCollectCycle.end(), std::default_random_engine());
@@ -157,7 +158,7 @@ bool ManufacturerBehaviour::canStartManufacturing(SMGameActor* gameActor, GameCo
   for (auto pair : manufDef->inputs)
     {
     const uint resID = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameObjectDefID(pair.first);
-    if (gameActor->resourceCount(resID) < pair.second)
+    if (gameActor->resourceCount(resID, false, true) < pair.second)
       return false;
     }
   return true;
