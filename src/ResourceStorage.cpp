@@ -172,7 +172,7 @@ void ResourceStorage::setupStackCount(uint stackCount, uint maxResPerStack)
     stack.amount = std::min(stack.amount, maxResPerStack);
   }
 
-void ResourceStorage::forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked) const
+void ResourceStorage::forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked, bool includeInputs) const
   {
   std::set<uint> resourceAmounts;
   for (const ResourceStack& stack : resourceStacks)
@@ -182,7 +182,7 @@ void ResourceStorage::forEachResource(std::function<void(uint id, uint amount)> 
     }
 
   for (uint id : resourceAmounts)
-    func(id, resourceCount(id, includeLocked));
+    func(id, resourceCount(id, includeLocked, includeInputs));
   }
 
 ResourceLock ResourceStorage::lockResource(uint id, uint amount)

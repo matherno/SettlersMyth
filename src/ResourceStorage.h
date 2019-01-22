@@ -54,7 +54,7 @@ public:
   ResourceStorage();
 
   const std::vector<ResourceStack>* getResourceStacks() const;
-  virtual void forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked = false) const;
+  virtual void forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked = false, bool includeInputs = false) const;
   virtual uint resourceCount(uint id, bool includeLocked = false, bool includeInputs = false) const;
   virtual uint totalResourceCount() const { return totalResCount; }
   virtual bool canStoreResource(uint id, uint amount) const;
