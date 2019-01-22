@@ -6,11 +6,12 @@
 #include <GameObjectDefs/BuildingHarvesterDef.h>
 #include <GameObjectDefs/StaticObjectDef.h>
 #include <SMGameContext.h>
+#include <Utils.h>
 #include "HarvesterBehaviour.h"
 
 void HarvesterBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
   {
-  sendUnitTimer.setTimeOut(2000);
+  sendUnitTimer.setTimeOut(SEND_SETTLER_COOLDOWN);
   sendUnitTimer.reset();
 
   resourceID = BuildingHarvesterDef::getHarvesterDepositResourceID(gameActor, gameContext);

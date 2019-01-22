@@ -57,7 +57,7 @@ bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint b
       auto gameActor = smGameContext->createSMGameActor(buildingDefID, buildingPlacementPos);
       if (auto building = Building::cast(gameActor.get()))
         {
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i < 3; ++i)
           {
           auto unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameObjectDef("Settler")->getID(), building->getEntryPosition().centre());
           auto unitPtr = Unit::cast(unit);

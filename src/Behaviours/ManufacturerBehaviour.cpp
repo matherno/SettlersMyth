@@ -5,15 +5,16 @@
 #include <Building.h>
 #include <GameObjectDefs/BuildingManufacturerDef.h>
 #include <SMGameContext.h>
+#include <Utils.h>
 #include "ManufacturerBehaviour.h"
 
 
 void ManufacturerBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
   {
-  sendUnitTimer.setTimeOut(2000);
+  sendUnitTimer.setTimeOut(SEND_SETTLER_COOLDOWN);
   sendUnitTimer.reset();
 
-  manufactureCooldownTimer.setTimeOut(2500);
+  manufactureCooldownTimer.setTimeOut(MANUFACTURE_COOLDOWN);
   manufactureCooldownTimer.reset();
 
   resCollectIdx = 0;

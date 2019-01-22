@@ -7,11 +7,12 @@
 #include <GameObjectDefs/BuildingStorageDef.h>
 #include <GameObjectDefs/StaticObjectDef.h>
 #include <SMGameContext.h>
+#include <Utils.h>
 
 
 void StorageBehaviour::initialise(SMGameActor* gameActor, GameContext* gameContext)
   {
-  sendUnitTimer.setTimeOut(2000);
+  sendUnitTimer.setTimeOut(SEND_SETTLER_COOLDOWN);
   sendUnitTimer.reset();
 
   SMGameContext::cast(gameContext)->getGameObjectFactory()->forEachGameObjectDef(GameObjectType::resource,

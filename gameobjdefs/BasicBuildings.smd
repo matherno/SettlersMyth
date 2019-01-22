@@ -7,7 +7,7 @@
         <entry x="2" y="1"/>
     </grid>
     <harvester>
-        <deposit name="Tree" harvesttime="2000"/>
+        <deposit name="Tree" harvest_time="5000"/>
     </harvester>
     <render>
         <renderpart voxelfile="buildings/Woodcutter.mgv"/>
@@ -38,7 +38,7 @@
         <renderpart voxelfile="buildings/Sawmill.mgv"/>
     </render>
     <icon imagefile="icons/sawmill.png"/>
-    <construction time="10000">e
+    <construction time="10000">
         <resource name="Log" amount="4"/>
         <resource name="Thatch" amount="2"/>
     </construction>
@@ -52,7 +52,7 @@
         <entry x="1" y="1"/>
     </grid>
     <harvester>
-        <deposit name="Stone Mound" harvesttime="3000"/>
+        <deposit name="Stone Mound" harvest_time="7000"/>
     </harvester>
     <render>
         <renderpart voxelfile="buildings/Stoneminer.mgv"/>
@@ -71,7 +71,7 @@
         <entry x="1" y="1"/>
     </grid>
     <harvester>
-        <deposit name="Reeds" harvesttime="2000"/>
+        <deposit name="Reeds" harvest_time="3000"/>
     </harvester>
     <render>
         <renderpart voxelfile="buildings/Thatcher.mgv"/>
