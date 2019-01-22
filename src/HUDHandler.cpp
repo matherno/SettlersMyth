@@ -5,6 +5,8 @@
 #include "HUDHandler.h"
 #include "SMGameContext.h"
 #include "Resources.h"
+#include "Utils.h"
+
 
 /*
  *  ActorFocusPanel
@@ -13,34 +15,51 @@
 void ActorFocusPanel::initialise(GameContext* context)
   {
   UIPanel::initialise(context);
-
   UIManager* uiManager = context->getUIManager();
+
+  setColour(HUD_COL_BORDER);
+
+  UIPanel* subPanel = new UIPanel(uiManager->getNextComponentID());
+  subPanel->setColour(HUD_COL_BG);
+  subPanel->setVerticalAlignment(alignmentCentre);
+  subPanel->setHorizontalAlignment(alignmentCentre);
+  subPanel->setHeightMatchParent(true);
+  subPanel->setWidthMatchParent(true);
+  subPanel->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  addChild(UIComponentPtr(subPanel));
+
+  UIPanel* iconBorder = new UIPanel(uiManager->getNextComponentID());
+  iconBorder->setColour(BTN_UNPRESSED_COL);
+  iconBorder->setOffset(Vector2D(10, 10));
+  iconBorder->setSize(Vector2D(45));
+  iconBorder->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  addChild(UIComponentPtr(iconBorder));
+
   icon.reset(new UIPanel(uiManager->getNextComponentID()));
-  icon->setOffset(Vector2D(20, 10));
-  icon->setSize(Vector2D(75));
-  icon->setColour(Vector3D(0.2));
-  addChild(icon);
+  icon->setVerticalAlignment(alignmentCentre);
+  icon->setHorizontalAlignment(alignmentCentre);
+  icon->setHeightMatchParent(true);
+  icon->setWidthMatchParent(true);
+  icon->setPadding(BTN_BORDER_SIZE, BTN_BORDER_SIZE);
+  iconBorder->addChild(icon);
 
   nameText.reset(new UIText(uiManager->getNextComponentID()));
-  nameText->setOffset(Vector2D(20, -10));
-  nameText->setSize(Vector2D(250, 40));
-  nameText->setVerticalAlignment(alignmentEnd);
-  nameText->setFontSize(30);
+  nameText->setOffset(Vector2D(10, 60));
+  nameText->setSize(Vector2D(250, 30));
+  nameText->setFontSize(25);
   nameText->setFontColour(Vector3D(0));
   nameText->showBackground(false);
-  addChild(nameText);
+  subPanel->addChild(nameText);
 
   resourceText.reset(new UIText(uiManager->getNextComponentID()));
-  resourceText->setOffset(Vector2D(-10, 0));
-  resourceText->setSize(Vector2D(400, 0));
-  resourceText->setHorizontalAlignment(alignmentEnd);
-  resourceText->setVerticalAlignment(alignmentCentre);
-  resourceText->setHeightMatchParent(true);
-  resourceText->setPadding(0, 10);
-  resourceText->setFontSize(30);
+  resourceText->setOffset(Vector2D(0, 90));
+  resourceText->setSize(Vector2D(0, 100));
+  resourceText->setWidthMatchParent(true);
+  resourceText->setPadding(10, 10);
+  resourceText->setFontSize(22);
   resourceText->setFontColour(Vector3D(0));
   resourceText->showBackground(false);
-  addChild(resourceText);
+  subPanel->addChild(resourceText);
   }
 
 void ActorFocusPanel::updateActorInfo(GameContext* context)
@@ -73,7 +92,7 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
       if (resDef)
         {
         if (!first)
-          resText += ", ";
+          resText += "\n";
         resText += resDef->getDisplayName() + ":" + std::to_string(amount);
         first = false;
         }
@@ -142,11 +161,11 @@ void HUDHandler::initialiseUI(GameContext* context)
   UIManager* uiManager = context->getUIManager();
   mainUIPanel.reset(new UIPanel(uiManager->getNextComponentID()));
   mainUIPanel->setOffset(Vector2D(0, 0));
-  mainUIPanel->setSize(Vector2D(300, 170));
-  mainUIPanel->setColour(Vector3D(0.4, 0.3, 0.1));
+  mainUIPanel->setSize(Vector2D(150, 170));
+  mainUIPanel->setColour(HUD_COL_BORDER);
   mainUIPanel->setHorizontalAlignment(alignmentEnd);
   mainUIPanel->setVerticalAlignment(alignmentEnd);
-  mainUIPanel->setWidthMatchParent(true);
+  mainUIPanel->setHeightMatchParent(true);
   uiManager->addComponent(mainUIPanel);
 
   setupBuildPanel(context);
@@ -176,14 +195,9 @@ void HUDHandler::setupFocusPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
   focusPanel.reset(new ActorFocusPanel(uiManager->getNextComponentID()));
-  focusPanel->setOffset(Vector2D(-10, 0));
-  focusPanel->setSize(Vector2D(600, 100));
-  focusPanel->setColour(Vector3D(0.3, 0.3, 0.25));
-  focusPanel->setVerticalAlignment(alignmentCentre);
-  focusPanel->setHorizontalAlignment(alignmentEnd);
-  focusPanel->setHeightMatchParent(true);
-  focusPanel->setPadding(10, 10);
-  mainUIPanel->addChild(focusPanel);
+  focusPanel->setOffset(Vector2D(0, 20));
+  focusPanel->setSize(Vector2D(200, 200));
+  uiManager->addComponent(focusPanel);
   }
 
 void HUDHandler::setupBuildPanel(GameContext* context)
@@ -192,33 +206,43 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   SMGameContext* smGameContext = SMGameContext::cast(context);
 
   UIPanel* subPanel = new UIPanel(uiManager->getNextComponentID());
-  subPanel->setOffset(Vector2D(0, 0));
-  subPanel->setSize(Vector2D(100, 100));
-  subPanel->setColour(Vector3D(0.35, 0.35, 0.3));
   subPanel->setVerticalAlignment(alignmentCentre);
   subPanel->setHorizontalAlignment(alignmentCentre);
   subPanel->setHeightMatchParent(true);
   subPanel->setWidthMatchParent(true);
-  subPanel->setPadding(5, 5);
+  subPanel->setColour(HUD_COL_BG);
+  subPanel->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
   mainUIPanel->addChild(UIComponentPtr(subPanel));
 
   buildingButtonGroup.reset(new UIToggleButtonGroup());
 
+  static const int numCols = 2;
+  static const int btnSize = 45;
+  static const int btnHalfSize = int(btnSize * 0.5);
+  static const int btnPadding = 13;
+  static const int btnHalfPadding = int(btnPadding * 0.5);
+  static const int btnSizeAndPadding = btnSize + btnPadding;
+
   int buildingNum = 0;
   std::vector<IGameObjectDefPtr> buildings;
-  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::staticObject, &buildings);
+  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::building, &buildings);
   for (auto buildingDef : buildings)
     {
+    const int colNum = buildingNum % numCols;
+    const int rowNum = buildingNum / numCols;
+    const int firstColOffset = -1 * int((btnHalfSize * (numCols - 1)) + (btnHalfPadding * (numCols - 1)));
+
     UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
-    button->setOffset(Vector2D(50 + buildingNum * 65, 20));
-    button->setSize(Vector2D(52, 52));
+    button->setOffset(Vector2D(firstColOffset + colNum * btnSizeAndPadding, 20 + rowNum * btnSizeAndPadding));
+    button->setSize(Vector2D(btnSize, btnSize));
     if (!buildingDef->getIconFilePath().empty())
       button->setButtonTexture(context->getRenderContext()->getSharedTexture(buildingDef->getIconFilePath()));
-    button->setButtonHighlightColour(Vector3D(0.5, 0.5, 0.6), Vector3D(0.2));
+    button->setButtonHighlightColour(BTN_PRESSED_COL, BTN_UNPRESSED_COL);
     button->setVerticalAlignment(alignmentStart);
-    button->setHorizontalAlignment(alignmentStart);
-    button->setHighlightWidth(2);
+    button->setHorizontalAlignment(alignmentCentre);
+    button->setHighlightWidth(BTN_BORDER_SIZE);
     button->setGroup(buildingButtonGroup);
+
     uint gameDefID = buildingDef->getID();
     button->setMouseClickCallback([this, gameDefID, button, context](uint x, uint y) -> bool
                                     {
@@ -228,6 +252,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
                                       endBuildingPlacingMode(context);
                                     return true;
                                     });
+
     subPanel->addChild(UIComponentPtr(button));
     ++buildingNum;
     }
@@ -237,8 +262,9 @@ void HUDHandler::setupDebugPanel(GameContext* context)
   {
   UIManager* uiManager = context->getUIManager();
   debugPanel.reset(new SMDebugPanel(uiManager->getNextComponentID()));
-  debugPanel->setHorizontalAlignment(alignmentEnd);
-  debugPanel->setSize(Vector2D(260, 260));
+  debugPanel->setHorizontalAlignment(alignmentStart);
+  debugPanel->setVerticalAlignment(alignmentEnd);
+  debugPanel->setSize(Vector2D(260, 150));
   debugPanel->setColour(Vector3D(0.2));
   uiManager->addComponent(debugPanel);
 //#ifdef NDEBUG
