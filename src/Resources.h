@@ -7,6 +7,9 @@
 #define RES_DIR std::string("resources/")
 
 
+#define IMAGE_MENU_BACKGROUND  RES_DIR + "menubackground.png"
+
+
 //  fonts
 #define FONT_UNISPACE_FNT                   RES_DIR + "fonts/Unispace.fnt"
 #define FONT_UNISPACE_GLYPHS                RES_DIR + "fonts/Unispace.png"

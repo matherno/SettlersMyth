@@ -8,6 +8,7 @@
 #include "SaveLoadDlg.h"
 #include "SMGameContext.h"
 #include "SettingsDlg.h"
+#include "Utils.h"
 
 /*
  * Pause Menu parent UI component
@@ -87,37 +88,23 @@ void PauseMenuHandler::displayMenu(GameContext* gameContext)
     return true;
     });
 
-  const Vector3D colour(0.3, 0.3, 0.3);
-  UIPanel* buttonBGBorder = new UIPanel(uiManager->getNextComponentID());
-  buttonBGBorder->setSize(Vector2D(200, 500));
-  buttonBGBorder->setColour(colour);
-  buttonBGBorder->setHorizontalAlignment(alignmentCentre);
-  buttonBGBorder->setVerticalAlignment(alignmentCentre);
-  menuUI->addChild(UIComponentPtr(buttonBGBorder));
-
-  UIPanel* buttonBG = new UIPanel(uiManager->getNextComponentID());
-  buttonBG->setColour(Vector3D(0.12, 0.07, 0.04));
-  buttonBG->setWidthMatchParent(true);
-  buttonBG->setHeightMatchParent(true);
-  buttonBG->setPadding(4, 4);
-  buttonBGBorder->addChild(UIComponentPtr(buttonBG));
-
   //  load all the buttons
   const Vector2D buttonSize(150, 50);
-  const Vector3D pressColour(0.2, 0.3, 0.5);
   const float buttonPadding = 30;
-  float buttonYOffset = 80;
+  float buttonYOffset = (buttonPadding + buttonSize.y) * (menuButtons.size() - 1) * -0.5f;
   for (MenuOption& menuOption : menuButtons)
     {
     UIButton* button = new UIButton(uiManager->getNextComponentID(), false);
-    button->setButtonText(menuOption.first, colour, pressColour, 40);
-    button->setButtonHighlightColour(pressColour, colour);
+    button->setButtonText(menuOption.first, MENU_BTN_TEXT_COL, MENU_BTN_PRESS_COL, 40);
+    button->setButtonHighlightColour(MENU_BTN_PRESS_COL, MENU_BTN_UNPRESS_COL);
+    button->setButtonColour(MENU_BTN_BG_COL);
     button->setSize(buttonSize);
     button->setHorizontalAlignment(Alignment::alignmentCentre);
+    button->setVerticalAlignment(Alignment::alignmentCentre);
     button->setOffset(Vector2D(0, buttonYOffset));
     button->setMouseClickCallback(menuOption.second);
-    button->setHighlightWidth(3);
-    buttonBG->addChild(UIComponentPtr(button));
+    button->setHighlightWidth(MENU_BTN_BORDER_SIZE);
+    menuUI->addChild(UIComponentPtr(button));
     buttonYOffset += buttonPadding + buttonSize.y;
     }
   }

@@ -32,6 +32,7 @@ public:
 private:
   MainMenuOutcome currentOutcome;
   std::shared_ptr<SMSettings> settings;
+  UIComponentPtr currentDlg;
 
 public:
   SMMainMenuContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings);
@@ -51,4 +52,5 @@ public:
 protected:
   void showLoadDlg();
   void showSettingsDlg();
+  void closeCurrentDlg();
   };

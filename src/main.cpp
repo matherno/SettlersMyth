@@ -4,6 +4,7 @@
 #include <GameSystem/GameContextImpl.h>
 #include "SMGameContext.h"
 #include "SMMainMenuContext.h"
+#include "Utils.h"
 
 
 //  essentially an exception type that will never be thrown (to make a try-catch block not catch anything)
@@ -30,7 +31,7 @@ void runGame()
   settings->initialise();
 
   RenderInitConfig renderConfig;
-  renderConfig.windowName = "SettlersMyth";
+  renderConfig.windowName = GAME_TITLE;
   renderConfig.windowWidth = (uint)mathernogl::clampi(settings->getWindowWidth(), 800, 2560);
   renderConfig.windowHeight = (uint)mathernogl::clampi(settings->getWindowHeight(), 600, 2440);
   renderConfig.antiAliasing = settings->useAntiAliasing();

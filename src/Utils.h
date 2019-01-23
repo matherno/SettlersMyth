@@ -7,17 +7,25 @@
 #include <TowOff/RenderSystem/RenderSystem.h>
 
 
+#define GAME_TITLE "Settlers Myth"
+
+
 #define VOXEL_SIZE 0.125
 #define DYNAMIC_VOXEL_SIZE 0.0625
 #define SEND_SETTLER_COOLDOWN 4000
 #define MANUFACTURE_COOLDOWN  5000
 
-#define HUD_COL_BG        colToVec3(62, 62, 63)
-#define HUD_COL_BORDER    colToVec3(30, 30, 30)
-#define HUD_BORDER_SIZE   3
-#define BTN_PRESSED_COL   Vector3D(0.5, 0.5, 0.6)
-#define BTN_UNPRESSED_COL Vector3D(0.15)
-#define BTN_BORDER_SIZE   2
+#define HUD_COL_BG              colToVec3(62, 62, 63)
+#define HUD_COL_BORDER          colToVec3(30, 30, 30)
+#define HUD_BORDER_SIZE         3
+#define BTN_PRESSED_COL         Vector3D(0.5, 0.5, 0.6)
+#define BTN_UNPRESSED_COL       Vector3D(0.15)
+#define BTN_BORDER_SIZE         2
+#define MENU_BTN_BG_COL         Vector3D(0.05)
+#define MENU_BTN_TEXT_COL       Vector3D(0.3)
+#define MENU_BTN_PRESS_COL      Vector3D(0.2, 0.3, 0.5)
+#define MENU_BTN_UNPRESS_COL    Vector3D(0.3)
+#define MENU_BTN_BORDER_SIZE    3
 
 static Vector3D colToVec3(double r, double g, double b, bool gammaCorrect = false)
   {
