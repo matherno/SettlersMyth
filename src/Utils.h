@@ -7,7 +7,7 @@
 #include <TowOff/RenderSystem/RenderSystem.h>
 
 
-#define GAME_TITLE "Settlers Myth"
+#define GAME_TITLE "Void Populi"
 
 
 #define VOXEL_SIZE 0.125
