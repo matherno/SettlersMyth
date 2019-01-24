@@ -136,10 +136,6 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
 
   switch(getCharFromKeyCode(key))
     {
-    case 'P':
-      paused = !paused;
-      smGameContext->setPaused(paused);
-      return true;
     case 'T':
       smGameContext->getHUDHandler()->toggleDebugPanel();
       return true;

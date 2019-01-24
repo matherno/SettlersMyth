@@ -22,7 +22,6 @@ private:
   float pitch;
   Matrix4 rotationMatrix;
   float zoomOffset;
-  bool paused = false;
   bool cameraNeedsRefresh = true;
   double aspectRatio = 1;
 
