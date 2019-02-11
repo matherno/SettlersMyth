@@ -135,7 +135,7 @@ public:
   virtual uint getID() const = 0;
   virtual string getIconFilePath() const = 0;
   virtual GameObjectType getType() const = 0;
-  virtual RenderablePtr constructRenderable(RenderContext* renderContext, uint meshIdx = 0) const = 0;
+  virtual RenderablePtr constructRenderable(RenderContext* renderContext, const Vector3D& translation, uint meshIdx = 0) const = 0;
   virtual uint getMeshCount() const = 0;
 
 protected:
@@ -166,7 +166,7 @@ public:
   void forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const;
   void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
   SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor);
-  SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID);
+  SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID, const Vector2D& position);
   bool isSubType(GameObjectType type, GameObjectType subType) const;
   bool isTypeOrSubType(GameObjectType type, GameObjectType subType) const;
   void freeLinkID(uint linkID);

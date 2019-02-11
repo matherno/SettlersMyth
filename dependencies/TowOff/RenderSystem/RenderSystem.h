@@ -7,6 +7,7 @@
 #include "MeshStorage.h"
 #include "Font.h"
 #include "VoxelStorage.h"
+#include "BoundingBox.h"
 
 typedef mathernogl::Matrix4 Matrix4;
 typedef mathernogl::Vector4D Vector4D;
@@ -54,6 +55,7 @@ public:
   virtual void setTransform(const Transform& transform) { this->transform = transform; }
   virtual void setClippingPlane(const Vector4D& plane) { this->clipPlane = plane; }
   virtual int getDrawStage() const { return drawStage; }
+  virtual BoundingBoxPtr getBounds() { return nullptr; }
   };
 typedef std::shared_ptr<Renderable> RenderablePtr;
 
@@ -108,6 +110,8 @@ struct RenderInitConfig
   bool antiAliasing = false;
   };
 
+class VoxelBatchManager;
+
 /*
 *   RenderContext, main rendering manager
 */
@@ -128,6 +132,7 @@ public:
   virtual void setCameraToClip(const Matrix4& transform) = 0;
   virtual const Matrix4* getWorldToCamera() const = 0;
   virtual const Matrix4* getCameraToClip() const = 0;
+  virtual const Matrix4* getWorldToClip() const = 0;
   virtual void render() = 0;
   virtual bool isWindowOpen() const = 0;
   virtual void activateShaderProgram(ShaderProgramPtr shaderProgram) = 0;
@@ -141,6 +146,7 @@ public:
   virtual RenderableSetPtr createRenderableSet() = 0;
   virtual FontPtr getSharedFont(const string& fntFilePath, const string& glyphsFilePath, float sizeScaling = 1) = 0;
   virtual VoxelStoragePtr getSharedVoxelStorage(const string& mgvFilePath) = 0;
+  virtual VoxelBatchManager* getVoxelBatchManager() = 0;
   virtual void pushTransform(const Transform* transform) = 0;
   virtual void popTransform() = 0;
   virtual const Transform* getStackedTransform() = 0;

@@ -7,6 +7,7 @@
 #include <GameObjectDefFileHelper.h>
 #include <TowOff/RenderSystem/RenderableVoxels.h>
 #include <Utils.h>
+#include <SMGameContext.h>
 #include "DynamicObjectDef.h"
 
 bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
@@ -34,7 +35,7 @@ bool DynamicObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, strin
   return true;
   }
 
-RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
+RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext, const Vector3D& translation, uint meshIdx) const
   {
   if (renderableFilePath.empty())
     return nullptr;
@@ -49,7 +50,7 @@ RenderablePtr DynamicObjectDef::constructRenderable(RenderContext* renderContext
     }
   else
     {
-    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID());
+    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID(), DRAW_STAGE_NO_SHADOW_CASTING);
     renderable->setVoxelStorage(renderContext->getSharedVoxelStorage(renderableFilePath));
     renderable->setVoxelSize(DYNAMIC_VOXEL_SIZE);
     ptr.reset(renderable);
@@ -65,3 +66,4 @@ SMGameActorPtr DynamicObjectDef::createGameActor(GameContext* gameContext) const
   createActorBehaviours(actor->getBehaviourList());
   return SMGameActorPtr(actor);
   }
+

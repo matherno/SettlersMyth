@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SMGameObjectFactory.h>
+#include "TowOff/GameSystem/Timer.h"
 
 /*
 *   
@@ -11,6 +12,7 @@ class CarryResourceBehaviour : public IGameObjectBehaviour
 private:
   bool carryingResource = false;
   SMGameActorWkPtr resourceActor;
+  Timer updateTimer;
 
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;

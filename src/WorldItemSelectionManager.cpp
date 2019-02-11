@@ -14,7 +14,7 @@ WorldItemSelectionManager::WorldItemSelectionManager(uint id) : GameActor(id)
 
 void WorldItemSelectionManager::onAttached(GameContext* gameContext)
   {
-  selectionBoxRenderables.reset(new RenderableLineBoxes(gameContext->getRenderContext()->getNextRenderableID(), DRAW_STAGE_OPAQUE_AFTER_EDGE));
+  selectionBoxRenderables.reset(new RenderableLineBoxes(gameContext->getRenderContext()->getNextRenderableID()));
   selectionBoxRenderables->setLineColour(selectionColour);
   selectionBoxRenderables->setAlpha(selectionAlpha);
   selectionBoxRenderables->setLineWidth(selectionBoxLineWidth);

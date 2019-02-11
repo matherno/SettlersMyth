@@ -14,7 +14,7 @@ public:
 
 public:
   virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) override;
-  virtual RenderablePtr constructRenderable(RenderContext* renderContext, uint meshIdx = 0) const override;
+  virtual RenderablePtr constructRenderable(RenderContext* renderContext, const Vector3D& translation, uint meshIdx = 0) const override;
   virtual SMGameActorPtr createGameActor(GameContext* gameContext) const override;
   virtual uint getMeshCount() const override { return 1; }
 

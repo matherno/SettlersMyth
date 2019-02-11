@@ -13,6 +13,9 @@ private:
   VoxelStoragePtr storage;
   ShaderProgramPtr shaderProgram;
   double voxelSize = 1;
+  BoundingBoxPtr objSpaceBounds;
+  BoundingBoxPtr worldSpaceBounds;
+  Transform boundingBoxTransform;
 
 public:
   RenderableVoxels(uint id, int drawStage = DRAW_STAGE_OPAQUE);
@@ -20,6 +23,7 @@ public:
   virtual void cleanUp(RenderContext* renderContext) override;
   virtual void render(RenderContext* renderContext) override;
   virtual void renderShadowMap(RenderContext* renderContext) override;
+  virtual BoundingBoxPtr getBounds() override;
 
   void setVoxelStorage(VoxelStoragePtr storage);
   void setVoxelSize(double size);

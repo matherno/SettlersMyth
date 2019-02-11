@@ -8,8 +8,8 @@ uniform int inUseShadowMap = 0;
 uniform vec2 inScreenSize;
 
 centroid in vec4 shadowMapPos;
-flat in int colourIdxFS;
-flat in vec3 normalFS;
+flat in int colourIdx;
+flat in vec3 normal;
 
 out vec4 outputColour;
 
@@ -84,9 +84,9 @@ float shadowLightFactor()
 
 void main()
   {
-  vec3 colour = colourAt(colourIdxFS);
+  vec3 colour = colourAt(colourIdx);
 
-  float lightFactor = dot(normalFS, normalize(inLightDir * -1));
+  float lightFactor = dot(normal, normalize(inLightDir * -1));
 
   colour.r = pow(colour.r, 2.2);
   colour.g = pow(colour.g, 2.2);

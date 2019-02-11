@@ -43,6 +43,7 @@ void SMInputHandler::onUpdate(GameContext* gameContext)
     refreshRotationMatrix();
     refreshCamera(camera);
     camera->setValid(false);
+    SMGameContext::cast(gameContext)->invalidateShadowMap();
     }
   }
 
@@ -88,7 +89,7 @@ bool SMInputHandler::onKeyHeld(GameContext* gameContext, uint key)
     translation *= mathernogl::matrixYaw(rotation);
     Vector3D newFocalPosition = focalPosition + translation;
     focalPosition = newFocalPosition;
-    refreshCamera(gameContext->getCamera());
+    setCameraNeedsRefresh();
     return true;
     }
   return false;
@@ -183,7 +184,7 @@ bool SMInputHandler::onMouseScroll(GameContext* gameContext, double scrollOffset
   {
   zoomOffset -= scrollOffset * zoomSpeed;
   zoomOffset = mathernogl::clampf(zoomOffset, minZoom, maxZoom);
-  refreshCamera(gameContext->getCamera());
+  setCameraNeedsRefresh();
   return true;
   }
 
@@ -195,7 +196,7 @@ bool SMInputHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mou
     float rotateSpeed = mouseYawSpeed * gameContext->getDeltaTime() * smGameContext->getSettings()->getCameraRotSpeed() * 0.001f;
     rotation += ((float) prevMouseX - (float) mouseX) * rotateSpeed;
     refreshRotationMatrix();
-    refreshCamera(gameContext->getCamera());
+    setCameraNeedsRefresh();
     return true;
     }
   else if (gameContext->getInputManager()->isMouseDown(MOUSE_RIGHT))
@@ -207,7 +208,7 @@ bool SMInputHandler::onMouseMove(GameContext* gameContext, uint mouseX, uint mou
     translation.z += ((float) prevMouseY - (float) mouseY) * speed;
     translation *= mathernogl::matrixYaw(rotation);
     focalPosition += translation;
-    refreshCamera(gameContext->getCamera());
+    setCameraNeedsRefresh();
     return true;
     }
   return false;
@@ -240,7 +241,7 @@ void SMInputHandler::performMouseCameraMovement(GameContext* gameContext)
     camTranslation *= mathernogl::matrixYaw(rotation);
     Vector3D newFocalPosition = focalPosition + camTranslation;
     focalPosition = newFocalPosition;
-    refreshCamera(gameContext->getCamera());
+    setCameraNeedsRefresh();
     }
   }
 

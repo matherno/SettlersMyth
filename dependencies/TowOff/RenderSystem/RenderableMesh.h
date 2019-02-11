@@ -22,6 +22,9 @@ protected:
   bool wireframeMode = false;
   int drawStyle;
   int cellShadedGrades = 0;
+  BoundingBoxPtr objSpaceBounds;
+  BoundingBoxPtr worldSpaceBounds;
+  Transform boundingBoxTransform;
 
 public:
   RenderableMesh(uint id, int drawStage = DRAW_STAGE_OPAQUE);
@@ -44,4 +47,6 @@ public:
   void setDrawStyleTexture(TexturePtr texture);
   void setDrawStyleTexture(TexturePtr texture, float colourMixFactor, const Vector3D& colourMix);
   void setDrawStyleVertColours();
+
+  virtual BoundingBoxPtr getBounds() override;
   };

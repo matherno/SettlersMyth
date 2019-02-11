@@ -24,7 +24,7 @@ void SMGameActor::onAttached(GameContext* gameContext)
       behaviour->initialise(this, gameContext);
     }
 
-  renderable = gameObjectDef->constructRenderable(gameContext->getRenderContext(), meshIdx);
+  renderable = gameObjectDef->constructRenderable(gameContext->getRenderContext(), getPosition3D(), meshIdx);
   }
 
 void SMGameActor::onUpdate(GameContext* gameContext)
@@ -135,15 +135,12 @@ bool SMGameActor::processCommand(const SMActorCommand& command, GameContext* gam
 
 void SMGameActor::updateBoundingBox()
   {
-  if (!boundingBox)
+  if (!boundingBox || !renderable)
     return;
 
-  Vector2D midPos = getMidPosition();
-  Vector2D halfSize = getSize() * 0.5f;
-  double height = getHeight();
-  Vector3D lowerBound = Vector3D(midPos.x - halfSize.x, 0, -(midPos.y + halfSize.y));
-  Vector3D upperBound = Vector3D(midPos.x + halfSize.x, height, -(midPos.y - halfSize.y));
-  boundingBox->setBounds(lowerBound, upperBound);
+  BoundingBoxPtr box = renderable->getBounds();
+  if (box)
+    *boundingBox = *box;
   }
 
 void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
@@ -255,6 +252,9 @@ void SMDynamicActor::onAttached(GameContext* gameContext)
 void SMDynamicActor::onUpdate(GameContext* gameContext)
   {
   SMGameActor::onUpdate(gameContext);
+
+  if (transformChanged)
+    updateRenderableTransform();
   }
 
 void SMDynamicActor::saveActor(XMLElement* element, GameContext* gameContext)
@@ -268,7 +268,7 @@ void SMDynamicActor::saveActor(XMLElement* element, GameContext* gameContext)
 void SMDynamicActor::setPosition(Vector2D position)
   {
   this->position = position;
-  updateRenderableTransform();
+  transformChanged = true;
   }
 
 void SMDynamicActor::setPosition(Vector3D position)
@@ -276,19 +276,19 @@ void SMDynamicActor::setPosition(Vector3D position)
   this->position.x = position.x;
   elevation = position.y;
   this->position.y = -position.z;
-  updateRenderableTransform();
+  transformChanged = true;
   }
 
 void SMDynamicActor::setElevation(double elevation)
   {
   this->elevation = elevation;
-  updateRenderableTransform();
+  transformChanged = true;
   }
 
 void SMDynamicActor::setRotation(double rotation)
   {
   this->rotation = rotation;
-  updateRenderableTransform();
+  transformChanged = true;
   }
 
 
@@ -301,6 +301,7 @@ void SMDynamicActor::updateRenderableTransform()
     renderable->getTransform()->translate(position.x, elevation, -position.y);
     }
   updateBoundingBox();
+  transformChanged = false;
   }
 
 Vector2D SMDynamicActor::getMidPosition() const

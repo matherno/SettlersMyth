@@ -18,9 +18,10 @@
 bool SMGameContext::initialise()
   {
   bool success = GameContextImpl::initialise();
-  getRenderContext()->registerDrawStage(DRAW_STAGE_POST_PROC_EDGE);
-  getRenderContext()->registerDrawStage(DRAW_STAGE_OPAQUE_AFTER_EDGE);
-  getRenderContext()->registerDrawStage(DRAW_STAGE_FOGOFWAR);
+  getRenderContext()->setShadowMapDrawStage(DRAW_STAGE_SHADOW);
+  getRenderContext()->registerDrawStage(DRAW_STAGE_NO_SHADOW_CASTING);
+  getRenderContext()->getVoxelBatchManager()->setVoxelSize(VOXEL_SIZE);
+  getRenderContext()->getVoxelBatchManager()->setBatchSize(VOXEL_SIZE * 200);
 
   selectionManager.reset(new WorldItemSelectionManager(getNextActorID()));
   addActor(selectionManager);
@@ -29,9 +30,6 @@ bool SMGameContext::initialise()
   if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
     return false;
 
-//  PostProcStepHandlerPtr postProcSilhoutting(new PostProcSimpleBase(getRenderContext()->getNextPostProcessingStepID(), DRAW_STAGE_POST_PROC_EDGE, "shaders/SilhouttingFS.glsl"));
-//  postProcSilhoutting->initialise(getRenderContext());
-//  getRenderContext()->addPostProcessingStep(postProcSilhoutting);
 
   smInputHandler.reset(new SMInputHandler(getInputManager()->getNextHandlerID(), Vector3D(DEFAULT_MAP_SIZE / 2.0, 0, -DEFAULT_MAP_SIZE / 2.0), 50, 135, -45));
   addInputHandler(smInputHandler);
@@ -42,6 +40,7 @@ bool SMGameContext::initialise()
   pauseMenuHandler.reset(new PauseMenuHandler(getNextActorID()));
   addActor(pauseMenuHandler);
 
+  invalidateShadowMap();
 
   return success;
   }
@@ -64,13 +63,6 @@ void SMGameContext::cleanUp()
 void SMGameContext::processInputStage()
   {
   GameContextImpl::processInputStage();
-
-  static const Vector3D lightDir = Vector3D(-1.5, -3, -1).getUniform();
-  double shadowMapOffset = smInputHandler->getZoomOffset();
-  double shadowMapFOV = shadowMapOffset * 1.5;
-  Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
-  static const uint shadowMapWidth = 1500;
-  getRenderContext()->configureShadowMap(true, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
   }
 
 void SMGameContext::processUpdateStage()
@@ -82,7 +74,8 @@ void SMGameContext::processUpdateStage()
 
 void SMGameContext::processDrawStage()
   {
-  getRenderContext()->invalidateShadowMap();
+  if (refreshShadowMapTimer.incrementTimer(getDeltaTime()) && !shadowMapValid)
+    recalculateShadowMap();
   GameContextImpl::processDrawStage();
   }
 
@@ -92,7 +85,7 @@ void SMGameContext::initSurface()
 
   const uint numCells = gridMapHandler->getMapSize().x;
   const float cellSize = 1;
-  surfaceMesh.reset(new RenderableTerrain(renderContext->getNextRenderableID(), numCells, cellSize, DRAW_STAGE_OPAQUE_AFTER_EDGE));
+  surfaceMesh.reset(new RenderableTerrain(renderContext->getNextRenderableID(), numCells, cellSize));
   surfaceMesh->setMultiColour(colToVec3(50, 85, 25, true), colToVec3(60, 105, 30, true));
   surfaceMesh->initialise(renderContext);
   surfaceMesh->getTransform()->translate(0, 0, numCells * cellSize * -1);
@@ -125,15 +118,9 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2
   if (!gridMapHandler->isOnMap(position))
     return nullptr;
 
-  auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID);
+  auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID, position);
   if (gameActor)
     {
-    auto staticActor = SMStaticActor::cast(gameActor.get());
-    if (staticActor)
-      staticActor->setGridPos(position);
-    auto dynamicActor = SMDynamicActor::cast(gameActor.get());
-    if (dynamicActor)
-      dynamicActor->setPosition(position);
     addSMGameActor(gameActor);
     return gameActor;
     }
@@ -165,6 +152,7 @@ void SMGameContext::destroySMActor(uint id)
     gameObjectFactory.freeLinkID(actor->getLinkID());
     selectionManager->deselectTower(this, actor->getID());
     removeActor(actor->getID());
+    getRenderContext()->invalidateShadowMap();
     }
   }
 
@@ -176,6 +164,24 @@ Vector2D SMGameContext::terrainHitTest(uint mouseX, uint mouseY)
   double tValue = -1.0 * cursorWorldPos.y / cursorViewDir.y;
   Vector3D position = cursorWorldPos + (cursorViewDir * tValue);
   return Vector2D(position.x, -1 * position.z);
+  }
+
+void SMGameContext::recalculateShadowMap()
+  {
+  static const Vector3D lightDir = Vector3D(-1.5, -3, -1).getUniform();
+  double shadowMapOffset = smInputHandler->getZoomOffset();
+  double shadowMapFOV = shadowMapOffset * 1.5;
+  Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
+  static const uint shadowMapWidth = 1500;
+  getRenderContext()->configureShadowMap(true, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
+  shadowMapValid = true;
+  refreshShadowMapTimer.setTimeOut(100);
+  refreshShadowMapTimer.reset();
+  }
+
+void SMGameContext::invalidateShadowMap()
+  {
+  shadowMapValid = false;
   }
 
 bool SMGameContext::saveGame(string filePath)
@@ -274,6 +280,7 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
     for (GridXY pos : staticObjectDef->clearGridCells)
       gridMapHandler->setGridCellIsObstacle(staticActor->getGridPosition() + pos, false);
     gridMapHandler->endGridTransaction();
+    getRenderContext()->invalidateShadowMap();
     }
 
   SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);
@@ -285,6 +292,8 @@ void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
 
 SMStaticActorPtr SMGameContext::getStaticActor(uint id)
   {
+  if (id == 0)
+    return nullptr;
   if (staticActors.contains(id))
     return staticActors.get(id);
   return nullptr;
@@ -292,6 +301,8 @@ SMStaticActorPtr SMGameContext::getStaticActor(uint id)
 
 SMDynamicActorPtr SMGameContext::getDynamicActor(uint id)
   {
+  if (id == 0)
+    return nullptr;
   if (dynamicActors.contains(id))
     return dynamicActors.get(id);
   return nullptr;
@@ -341,6 +352,18 @@ void SMGameContext::dropResource(uint id, int amount, Vector2D position)
   for (int i = 0; i < amount; ++i)
     createSMGameActor(id, position);
   }
+
+uint SMGameContext::getStaticActorCount() const
+  {
+  return staticActors.count();
+  }
+
+uint SMGameContext::getDynamicActorCount() const
+  {
+  return dynamicActors.count();
+  }
+
+
 
 
 

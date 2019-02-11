@@ -17,9 +17,8 @@ class SMGameContext;
 #include "Grid.h"
 #include "GridMapHandler.h"
 
-#define DRAW_STAGE_POST_PROC_EDGE     (DRAW_STAGE_OPAQUE + 1)
-#define DRAW_STAGE_OPAQUE_AFTER_EDGE  (DRAW_STAGE_POST_PROC_EDGE + 1)
-#define DRAW_STAGE_FOGOFWAR           (DRAW_STAGE_TRANSPARENT + 1)
+#define DRAW_STAGE_SHADOW                (DRAW_STAGE_OPAQUE + 1)
+#define DRAW_STAGE_NO_SHADOW_CASTING     (DRAW_STAGE_SHADOW + 1)
 
 /*
 *   Sub-class of Game Context to capture the central state of the TowOff game
@@ -41,6 +40,8 @@ private:
 
   mathernogl::MappedList<SMStaticActorPtr> staticActors;
   mathernogl::MappedList<SMDynamicActorPtr> dynamicActors;
+  Timer refreshShadowMapTimer;
+  bool shadowMapValid = false;
 
 public:
   SMGameContext(const RenderContextPtr& renderContext, std::shared_ptr<SMSettings> settings)
@@ -59,6 +60,8 @@ public:
   WorldItemSelectionManager* getSelectionManager() { return selectionManager.get(); }
   Vector3D getCameraFocalPosition() const;
   Vector2D terrainHitTest(uint mouseX, uint mouseY);
+  void invalidateShadowMap();
+  void recalculateShadowMap();
 
   void displayPauseMenu();
   void dropResource(uint id, int amount, Vector2D position);
@@ -71,6 +74,8 @@ public:
   SMDynamicActorPtr getDynamicActor(uint id);
   SMGameActorPtr getSMGameActor(uint id);
   SMGameActorPtr getSMGameActorByLinkID(uint linkID);
+  uint getStaticActorCount() const;
+  uint getDynamicActorCount() const;
   void destroySMActor(uint id);
   void forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr actor)> func);
 

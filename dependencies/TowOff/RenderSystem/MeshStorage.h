@@ -18,6 +18,7 @@ private:
   bool useIndices = true;
   mathernogl::Vector3D min;
   mathernogl::Vector3D max;
+  bool minMaxValid = false;
   bool storingTexCoords = false;
   bool coloursPerFace = false;
 
@@ -34,14 +35,15 @@ public:
   int getNumVertices() const { return numVertices; }
   virtual void cleanUp();
   void setUseIndices(bool use){ useIndices = use; }
-  mathernogl::Vector3D getMin() const;
-  mathernogl::Vector3D getMax() const;
-  void calculateMinMax();
+  void invalidateMinMax();
+  mathernogl::Vector3D getMin();
+  mathernogl::Vector3D getMax();
   bool gotTexCoords() const { return storingTexCoords; }
   uint getID() const { return id; }
   void setColoursPerFace(bool perFace) { coloursPerFace = perFace; }
 
 protected:
+  void recalculateMinMax();
   bool initVAOWithTexCoords(std::vector<int>* indicesPtr);
   bool initVAOWithColours(std::vector<int>* indicesPtr);
   };

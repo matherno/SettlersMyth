@@ -59,8 +59,8 @@ void main()
 
   normal = rotatedNormal(1, 0, 0);
   submitVertex(0.5,     0.5,     -0.5, normal);
-  submitVertex(0.5,     -0.5,    -0.5, normal);
   submitVertex(0.5,     0.5,     0.5, normal);
+  submitVertex(0.5,     -0.5,    -0.5, normal);
   submitVertex(0.5,     -0.5,    0.5, normal);
   EndPrimitive();
 
@@ -75,8 +75,8 @@ void main()
 
   normal = rotatedNormal(0, 0, 1);
   submitVertex(0.5,     -0.5,    0.5, normal);
-  submitVertex(-0.5,    -0.5,    0.5, normal);
   submitVertex(0.5,     0.5,     0.5, normal);
+  submitVertex(-0.5,    -0.5,    0.5, normal);
   submitVertex(-0.5,    0.5,     0.5, normal);
   EndPrimitive();
 

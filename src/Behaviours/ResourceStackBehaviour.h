@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SMGameObjectFactory.h>
+#include "TowOff/GameSystem/Timer.h"
 
 /*
 *   
@@ -20,6 +21,7 @@ private:
     };
 
   std::vector<Stack> resourceStacks;
+  Timer updateTimer;
 
 public:
   virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override;

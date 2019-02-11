@@ -21,6 +21,7 @@ public:
   virtual void removeRenderable(int id) override;
   virtual bool containsRenderable(int id) const override;
   virtual int count() const override;
+  virtual BoundingBoxPtr getBounds() override;
 
 protected:
   void render(RenderContext* renderContext, bool shadowMap);

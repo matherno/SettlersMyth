@@ -191,14 +191,22 @@ IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
   return nullptr;
   }
 
-SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint gameObjectDefID)
+SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint gameObjectDefID, const Vector2D& position)
   {
   auto gameObjectDef = getGameObjectDef(gameObjectDefID);
   if (gameObjectDef)
     {
-    auto actor = gameObjectDef->createGameActor(gameContext);
+    SMGameActorPtr actor = gameObjectDef->createGameActor(gameContext);
     if (actor)
+      {
+      auto staticActor = SMStaticActor::cast(actor.get());
+      if (staticActor)
+        staticActor->setGridPos(position);
+      auto dynamicActor = SMDynamicActor::cast(actor.get());
+      if (dynamicActor)
+        dynamicActor->setPosition(position);
       gameContext->addActor(actor);
+      }
 
     while (usedLinkIDs.count(nextLinkID) > 0)
       ++nextLinkID;

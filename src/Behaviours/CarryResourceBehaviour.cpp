@@ -13,33 +13,39 @@ void CarryResourceBehaviour::initialise(SMGameActor* gameActor, GameContext* gam
 
 void CarryResourceBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
   {
-  uint gotResourceID = 0;
-  gameActor->forEachResource([&](uint id, uint amount)
+  if (updateTimer.incrementTimer(gameContext->getDeltaTime()))
     {
-    gotResourceID = id;
-    });
+    uint gotResourceID = 0;
+    gameActor->forEachResource([&](uint id, uint amount)
+                                 {
+                                 gotResourceID = id;
+                                 });
 
-  if (gotResourceID == 0)
-    {
+    if (gotResourceID == 0)
+      {
+      if (carryingResource)
+        {
+        if (auto resActor = resourceActor.lock())
+          SMGameContext::cast(gameContext)->destroySMActor(resActor->getID());
+        carryingResource = false;
+        resourceActor.reset();
+        }
+      return;
+      }
+
+    bool createNewResActor = true;
     if (carryingResource)
       {
       if (auto resActor = resourceActor.lock())
-        SMGameContext::cast(gameContext)->destroySMActor(resActor->getID());
-      carryingResource = false;
-      resourceActor.reset();
+        createNewResActor = resActor->getDef()->getID() != gotResourceID;
       }
-    return;
-    }
+    carryingResource = true;
+    if (createNewResActor)
+      createResourceActor(gameActor, gameContext, gotResourceID);
 
-  bool createNewResActor = true;
-  if (carryingResource)
-    {
-    if (auto resActor = resourceActor.lock())
-      createNewResActor = resActor->getDef()->getID() != gotResourceID;
+    updateTimer.setTimeOut(500);
+    updateTimer.reset();
     }
-  carryingResource = true;
-  if (createNewResActor)
-    createResourceActor(gameActor, gameContext, gotResourceID);
 
   if (carryingResource)
     updateResourceActorTransform(gameActor);

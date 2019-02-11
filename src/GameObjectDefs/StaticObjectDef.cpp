@@ -8,6 +8,8 @@
 #include "StaticObjectDef.h"
 #include "GameObjectDefFileHelper.h"
 #include "Resources.h"
+#include <TowOff/RenderSystem/VoxelBatchManager.h>
+
 
 bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg)
   {
@@ -80,7 +82,7 @@ bool StaticObjectDef::loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string
   }
 
 
-RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext, uint meshIdx) const
+RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext, const Vector3D& translation, uint meshIdx) const
   {
   string filePath = "";
   if (meshIdx < renderList.size())
@@ -99,10 +101,7 @@ RenderablePtr StaticObjectDef::constructRenderable(RenderContext* renderContext,
     }
   else
     {
-    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID());
-    renderable->setVoxelStorage(renderContext->getSharedVoxelStorage(filePath));
-    renderable->setVoxelSize(VOXEL_SIZE);
-    ptr.reset(renderable);
+    ptr = renderContext->getVoxelBatchManager()->createVoxelModelInstance(renderContext, filePath, translation);
     }
 
   ptr->initialise(renderContext);

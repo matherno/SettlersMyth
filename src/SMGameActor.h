@@ -1,6 +1,7 @@
 #pragma once
 
 #include <TowOff/GameSystem/GameSystem.h>
+#include <TowOff/GameSystem/Timer.h>
 #include "SMGameObjectFactory.h"
 #include "Grid.h"
 #include "SaveLoadFileHelper.h"
@@ -43,6 +44,8 @@ public:
   const IGameObjectDef* getDef() const { return gameObjectDef; }
   std::vector<IGameObjectBehaviourPtr>* getBehaviourList() { return &behaviours; }
   virtual GridXY getGridPosition() const = 0;
+  virtual Vector2D getPosition() const = 0;
+  virtual Vector3D getPosition3D() const { return Vector3D(getPosition().x, 0, -getPosition().y); }
   virtual Vector2D getMidPosition() const = 0;
   virtual Vector2D getSize() const = 0;
   virtual double getRotation() const { return 0; };
@@ -78,7 +81,7 @@ public:
 
   void setGridPos(GridXY pos);
   Vector2D getCellPosition() const;
-  Vector2D getPosition() const;
+  Vector2D getPosition() const override;
   Vector3D getPosition3D() const;
   virtual Vector2D getMidPosition() const override;
   virtual GridXY getGridPosition() const override;
@@ -100,6 +103,7 @@ private:
   Vector2D position;
   double elevation = 0;
   double rotation = 0;
+  bool transformChanged = false;
 
 public:
   SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef);
@@ -112,7 +116,7 @@ public:
   void setRotation(double rotation);
   void setElevation(double elevation);
   void lookAt(Vector2D position);
-  Vector2D getPosition() const { return position; }
+  Vector2D getPosition() const override { return position; }
   double getElevation() const { return elevation; };
   virtual GridXY getGridPosition() const override { return getPosition(); }
   virtual Vector2D getMidPosition() const override;

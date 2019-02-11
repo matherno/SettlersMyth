@@ -22,22 +22,28 @@ void ResourceStackBehaviour::initialise(SMGameActor* gameActor, GameContext* gam
 
 void ResourceStackBehaviour::update(SMGameActor* gameActor, GameContext* gameContext)
   {
-  const std::vector<ResourceStack>* storedStacks = gameActor->getResourceStacks();
-
-  int stackIdx = 0;
-  for (const ResourceStack& stack : *storedStacks)
+  if (updateTimer.incrementTimer(gameContext->getDeltaTime()))
     {
-    const uint storedResID = stack.id;
-    const uint storedResAmount = (uint)std::min(stack.amount, MAX_STACK_SIZE);
+    const std::vector<ResourceStack>* storedStacks = gameActor->getResourceStacks();
 
-    if (resourceStacks[stackIdx].id != storedResID || resourceStacks[stackIdx].amount != storedResAmount)
+    int stackIdx = 0;
+    for (const ResourceStack& stack : *storedStacks)
       {
-      //  update stack and recreate actors
-      resourceStacks[stackIdx].id = storedResID;
-      resourceStacks[stackIdx].amount = storedResAmount;
-      refreshResourceStackActors(gameActor, gameContext, (uint) stackIdx);
+      const uint storedResID = stack.id;
+      const uint storedResAmount = (uint) std::min(stack.amount, MAX_STACK_SIZE);
+
+      if (resourceStacks[stackIdx].id != storedResID || resourceStacks[stackIdx].amount != storedResAmount)
+        {
+        //  update stack and recreate actors
+        resourceStacks[stackIdx].id = storedResID;
+        resourceStacks[stackIdx].amount = storedResAmount;
+        refreshResourceStackActors(gameActor, gameContext, (uint) stackIdx);
+        }
+      stackIdx++;
       }
-    stackIdx++;
+
+    updateTimer.setTimeOut(500);
+    updateTimer.reset();
     }
   }
 

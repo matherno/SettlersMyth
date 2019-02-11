@@ -137,12 +137,14 @@ void SMDebugPanel::updateDebugInfo(GameContext* context)
   {
   if (textComponent && isVisible() && refreshTimer.incrementTimer(context->getDeltaTime()))
     {
-    SMGameContext* toGameContext = SMGameContext::cast(context);
+    SMGameContext* smGameContext = SMGameContext::cast(context);
     string text;
     text += "Game Time: " + mathernogl::formatTime(context->getGameTime()) + "\n";
-    text += "Delta Time: " + std::to_string(toGameContext->getDeltaTime()) + " ms\n";
-    text += "FPS: " + std::to_string(int(1.0f / ((float)toGameContext->getDeltaTime() / 1000.0f))) + "\n";
-    text += "Speed: " + std::to_string(toGameContext->getSpeed()) + "\n";
+    text += "Delta Time: " + std::to_string(smGameContext->getDeltaTime()) + " ms\n";
+    text += "FPS: " + std::to_string(int(1.0f / ((float)smGameContext->getDeltaTime() / 1000.0f))) + "\n";
+    text += "Speed: " + std::to_string(smGameContext->getSpeed()) + "\n";
+    text += "Static Actors: " + std::to_string(smGameContext->getStaticActorCount()) + "\n";
+    text += "Dynamic Actors: " + std::to_string(smGameContext->getDynamicActorCount()) + "\n";
 
     textComponent->setText(text);
     textComponent->setVisible(isVisible(), true);
@@ -267,9 +269,9 @@ void HUDHandler::setupDebugPanel(GameContext* context)
   debugPanel->setSize(Vector2D(260, 150));
   debugPanel->setColour(Vector3D(0.2));
   uiManager->addComponent(debugPanel);
-//#ifdef NDEBUG
+#ifdef NDEBUG
   debugPanel->setVisible(false, true);
-//#endif
+#endif
   }
 
 void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)

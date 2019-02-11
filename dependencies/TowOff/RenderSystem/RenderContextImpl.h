@@ -6,6 +6,7 @@
 #include "RenderSystem.h"
 #include "TransformStack.h"
 #include "ResourceCache.h"
+#include "VoxelBatchManager.h"
 
 #define SHADER_VAR_VERT_TO_WORLD "inVertToWorld"
 #define SHADER_VAR_WORLD_TO_CAMERA "inWorldToCamera"
@@ -33,6 +34,7 @@ private:
   RenderableSetPtr renderableSet;
   Matrix4 worldToCameraTransform;
   Matrix4 cameraToClipTransform;
+  Matrix4 worldToClipTransform;
   Vector3D viewDirection;
   double viewZNearPlane = 0;
   double viewZFarPlane = 1;
@@ -46,6 +48,7 @@ private:
   int maxNumTextureLocations = 48;
   std::set<int> drawStages;
   int activeDrawStage = DRAW_STAGE_NONE;
+  VoxelBatchManager voxelBatchManager;
 
   FrameBufferPtr screenFBO_A;
   FrameBufferPtr screenFBO_B;
@@ -77,6 +80,7 @@ public:
   virtual void setCameraToClip(const Matrix4& transform) override;
   virtual const Matrix4* getWorldToCamera() const override;
   virtual const Matrix4* getCameraToClip() const override;
+  virtual const Matrix4* getWorldToClip() const override;
   virtual void render() override;
   virtual bool isWindowOpen() const override;
 
@@ -90,7 +94,7 @@ public:
   virtual TexturePtr createEmptyTexture(uint width, uint height, uint bytesPerPixel, TextureOptions options = TextureOptions()) override;
   virtual FontPtr getSharedFont(const string& fntFilePath, const string& glyphsFilePath, float sizeScaling = 1) override;
   virtual VoxelStoragePtr getSharedVoxelStorage(const string& mgvFilePath) override;
-
+  virtual VoxelBatchManager* getVoxelBatchManager() override { return &voxelBatchManager; }
   virtual RenderableSetPtr createRenderableSet() override;
 
   virtual void pushTransform(const mathernogl::Transform* transform) override;
