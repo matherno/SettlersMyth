@@ -23,6 +23,6 @@ struct GridXY
   GridXY operator- (const GridXY& pt) const { return GridXY(pt.x+x, pt.y+y); }
   bool operator== (const GridXY& pt) const { return pt.x == x && pt.y == y; }
   bool operator!= (const GridXY& pt) const { return !(*this == pt); }
-  operator Vector2D () { return Vector2D(x, y); }
-  operator Vector3D () { return Vector3D(x, 0, -y); }
+  operator Vector2D () const { return Vector2D(x, y); }
+  operator Vector3D () const { return Vector3D(x, 0, -y); }
   };

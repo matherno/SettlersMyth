@@ -1,0 +1,10 @@
+<blueprint name="Settler" type="Unit" selectable="false">
+	<grid x="0.3" y="0.3" height="0.7" posincentre="true"/>
+    <unit speed="2"/>
+	<component type="ResourcePickup" id="1">
+    	<pickup x="0" y="0.22" z="-0.22"/>
+	</component>
+	<component type="VoxelRenderable" id="2" staticmodel="false">
+        <model voxelfile="units/Settler.mgv"/>
+    </component>
+</blueprint>

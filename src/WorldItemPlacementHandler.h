@@ -11,7 +11,7 @@
 class WorldItemPlacementHandler : public InputHandler
   {
 private:
-  const uint buildingDefID;
+  const uint buildingBlueprintID;
   RenderablePtr buildingOutline;
   GridXY buildingPlacementPos;
   bool isOutlinePosValid = false;
@@ -22,11 +22,12 @@ private:
   int buildingSizeY = 1;
 
 public:
-  WorldItemPlacementHandler(uint id, uint buildingDefID);
+  WorldItemPlacementHandler(uint id, uint buildingBlueprintID);
   void setEndHandlerCallback(CallbackFunc func){ endHandlerCallback = func; }
 
   virtual void onAttached(GameContext* gameContext) override;
   virtual void onDetached(GameContext* gameContext) override;
+  virtual bool onKeyPressed(GameContext* gameContext, uint key) override;
   virtual bool onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY) override;
   virtual bool onMouseReleased(GameContext* gameContext, uint button, uint mouseX, uint mouseY) override;
   virtual bool onMouseMove(GameContext* gameContext, uint mouseX, uint mouseY, uint prevMouseX, uint prevMouseY) override;

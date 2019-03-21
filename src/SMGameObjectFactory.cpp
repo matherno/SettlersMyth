@@ -2,120 +2,227 @@
 // Created by matt on 8/11/18.
 //
 
-#include <GameObjectDefs/ResourceDepositDef.h>
-#include <GameObjectDefs/UnitDef.h>
-#include <GameObjectDefs/ResourceDef.h>
-#include <GameObjectDefs/BuildingManufacturerDef.h>
-#include <GameObjectDefs/BuildingStorageDef.h>
+#include <GameActorTypes/GameActorObstacle.h>
+#include <GameActorTypes/GameActorBuilding.h>
+#include <GameActorTypes/GameActorUnit.h>
+#include <GameActorTypes/GameActorResource.h>
+#include <GameActorTypes/GameActorDeposit.h>
+#include <Components/ComponentVoxelModel.h>
+#include <Components/ComponentHarvester.h>
+#include <Components/ComponentManufacturer.h>
+#include <Components/ComponentStorage.h>
+#include <Components/ComponentResourceStacks.h>
+#include <Components/ComponentResourcePickup.h>
+#include <Components/ComponentDestroyWhenNoResource.h>
 #include "SMGameObjectFactory.h"
-#include "GameObjectDefFileHelper.h"
-#include "GameObjectDefs/BuildingHarvesterDef.h"
+#include "BlueprintFileHelper.h"
+#include "Resources.h"
 
 
-void GameObjectFactory::getGameObjectDefs(GameObjectType type, std::vector<IGameObjectDefPtr>* defsList) const
+
+
+/*
+ * SMGameActorBlueprint
+ */
+
+bool SMGameActorBlueprint::loadFromXML(XMLElement* xmlElement, string* errorMsg)
   {
-  forEachGameObjectDef(type, [defsList](const IGameObjectDefPtr def)
+  name = xmlGetStringAttribute(xmlElement, OD_NAME);
+  if (name.empty())
     {
-    defsList->push_back(def);
-    });
-  }
-
-
-IGameObjectDefPtr GameObjectFactory::getGameObjectDef(uint id) const
-  {
-  if (gameObjectDefs.count(id) > 0)
-    return gameObjectDefs.at(id);
-  return nullptr;
-  }
-
-IGameObjectDefPtr GameObjectFactory::findGameObjectDef(string name) const
-  {
-  for (auto pair : gameObjectDefs)
-    {
-    if (pair.second->getUniqueName() == name)
-      return pair.second;
+    *errorMsg = "Blueprint name is blank";
+    return false;
     }
-  return nullptr;
-  }
 
-uint GameObjectFactory::findGameObjectDefID(string name) const
-  {
-  if (auto def = findGameObjectDef(name))
-    return def->getID();
-  return 0;
-  }
+  displayName = name;
+  auto xmlIcon = xmlElement->FirstChildElement(OD_ICON);
+  if (xmlIcon)
+    iconPath = RES_DIR + xmlGetStringAttribute(xmlIcon, OD_IMAGEFILE);
 
-void GameObjectFactory::forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const
-  {
-  ASSERT(type != GameObjectType::LEVELSTART && type != GameObjectType::LEVELEND, "");
-  auto hierarchyIter = std::find(typeHierarchy.begin(), typeHierarchy.end(), type);
-  if (hierarchyIter == typeHierarchy.end())
-    return;   // type isn't in the typeHeirarchy structure
-  forEachGameObjectDef(hierarchyIter, func);
-  }
+  isSelectable = xmlElement->BoolAttribute(OD_SELECTABLE, true);
+  isBuildable = xmlElement->BoolAttribute(OD_BUILDABLE, false);
 
-
-void GameObjectFactory::forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const
-  {
-  const GameObjectType type = *hierarchyIter;
-
-  //  iterate though each child type, if this type has any
-  hierarchyIter++;
-  if (hierarchyIter != typeHierarchy.end() && *hierarchyIter == GameObjectType::LEVELSTART)
+  XMLElement* xmlGrid = xmlElement->FirstChildElement(OD_GRID);
+  if (!xmlGrid)
     {
-    hierarchyIter++;
-    while (hierarchyIter != typeHierarchy.end() && *hierarchyIter != GameObjectType::LEVELEND)
+    *errorMsg = "Missing 'grid' element";
+    return false;
+    }
+
+  gridSize.x = xmlGrid->DoubleAttribute(OD_X, 1);
+  gridSize.y = xmlGrid->DoubleAttribute(OD_Y, 1);
+  height = xmlGrid->DoubleAttribute(OD_HEIGHT, 2);
+  isPosInCentre = xmlGrid->BoolAttribute(OD_POSINCENTRE, false);
+
+  //  clear cells (non-obstacle) cells
+  XMLElement* xmlClearCell = xmlGrid->FirstChildElement(OD_CLEARPOS);
+  while (xmlClearCell)
+    {
+    int x = xmlClearCell->IntAttribute(OD_X, 0);
+    int y = xmlClearCell->IntAttribute(OD_Y, 0);
+    clearGridCells.emplace_back(x, y);
+    xmlClearCell = xmlClearCell->NextSiblingElement(OD_CLEARPOS);
+    }
+
+  //  load components
+  XMLElement* xmlComponent = xmlElement->FirstChildElement(OD_COMPONENT);
+  while (xmlComponent)
+    {
+    if (!loadComponentFromXML(xmlComponent, errorMsg))
+      return false;
+    xmlComponent = xmlComponent->NextSiblingElement(OD_COMPONENT);
+    }
+
+  return true;
+  }
+
+bool SMGameActorBlueprint::loadComponentFromXML(XMLElement* xmlComponent, string* errorMsg)
+  {
+  const string componentType = xmlGetStringAttribute(xmlComponent, OD_TYPE);
+  const uint componentID = xmlComponent->UnsignedAttribute(OD_ID);
+
+  //  search though existing component blueprints to find if we already have a component with this id
+  for (SMComponentBlueprintPtr compBlueprint : componentBlueprints)
+    {
+    if (compBlueprint->componentID == componentID)
       {
-      forEachGameObjectDef(hierarchyIter, func);
-      hierarchyIter++;
-      }
-    }
-  else
-    {
-    hierarchyIter--;
-    }
-
-  //  iterate through each game object def of this type if any
-  if (typesToGameDefs.count(type) == 0)
-    return;
-  for (uint defID : typesToGameDefs.at(type))
-    {
-    auto def = getGameObjectDef(defID);
-    if (def) func(def);
-    }
-  }
-
-
-bool GameObjectFactory::loadGameObjectDefs(const string& defsDirectory)
-  {
-  mathernogl::logInfo("Loading game object def files... ");
-  clearGameObjectDefs();
-
-  std::list<string> files;
-  mathernogl::getFilesInDirectory(defsDirectory, &files, GAME_OBJ_DEF_FILE_EXT);
-  for (auto file : files)
-    {
-    clearError();
-    if (!loadGameObjectDefFile(defsDirectory + "/" + file))
-      {
-      mathernogl::logError("Failed to load Game Object Defs : " + getError());
+      *errorMsg = "Duplicate component id: '" + std::to_string(componentID) + "', type: '" + componentType + "'";
       return false;
       }
+    }
+
+  //  try to construct component blueprint of given type name
+  SMComponentBlueprintPtr componentBlueprint = constructComponentBlueprint(componentType);
+  if (!componentBlueprint)
+    {
+    *errorMsg = "Unrecognised component type '" + componentType + "'";
+    return false;
+    }
+
+  //  load component blueprint parameters
+  componentBlueprint->componentID = componentID;
+  if (componentBlueprint->loadFromXML(xmlComponent, errorMsg))
+    {
+    componentBlueprints.push_back(componentBlueprint);
+    return true;
+    }
+
+  return false;
+  }
+
+bool SMGameActorBlueprint::finaliseLoading(GameContext* gameContext, string* errorMsg)
+  {
+  for (auto& componentBlueprint : componentBlueprints)
+    {
+    if(!componentBlueprint->finaliseLoading(gameContext, errorMsg))
+      return false;
     }
   return true;
   }
 
 
-void GameObjectFactory::clearGameObjectDefs()
+SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const string& componentName)
   {
-  typesToGameDefs.clear();
-  gameObjectDefs.clear();
+  SMComponentType type = SMTypes::getComponentFromName(componentName);
+  if (type == SMComponentType::unknown)
+    return nullptr;
+
+  SMComponentBlueprintPtr blueprint;
+  switch (type)
+    {
+    case SMComponentType::voxelModelRenderable:
+      blueprint.reset(new ComponentVoxelModelBlueprint());
+      break;
+    case SMComponentType::buildingHarvester:
+      blueprint.reset(new ComponentHarvesterBlueprint());
+      break;
+    case SMComponentType::buildingManufacturer:
+      blueprint.reset(new ComponentManufacturerBlueprint());
+      break;
+    case SMComponentType::buildingStorage:
+      blueprint.reset(new ComponentStorageBlueprint());
+      break;
+    case SMComponentType::resourceStacks:
+      blueprint.reset(new ComponentResourceStacksBlueprint());
+      break;
+    case SMComponentType::resourcePickup:
+      blueprint.reset(new ComponentResourcePickupBlueprint());
+      break;
+    case SMComponentType::destroyWhenNoResource:
+      blueprint.reset(new ComponentDestroyWhenNoResourceBlueprint());
+      break;
+    }
+
+  if (blueprint)
+    blueprint->type = type;
+
+  return blueprint;
+  }
+
+SMGameActorPtr SMGameActorBlueprint::constructGameActor(uint actorID) const
+  {
+  SMGameActorPtr actor(doConstructActor(actorID));
+  if (actor)
+    {
+    actor->setHeight(height);
+    actor->setSize2D(gridSize);
+    actor->setIsPosInCentre(isPosInCentre);
+    actor->setTypeName(name);
+    actor->setSelectable(isSelectable);
+
+    for (const SMComponentBlueprintPtr& blueprint : componentBlueprints)
+      {
+      SMComponentPtr component = blueprint->constructComponent(actor);
+      if (component)
+        {
+        component->setComponentID(blueprint->componentID);
+        actor->addComponent(component);
+        }
+      }
+    }
+  return actor;
+  }
+
+
+/*
+ * GameObjectFactory
+ */
+
+bool GameObjectFactory::loadBlueprints(GameContext* gameContext, const string& blueprintsDirectory)
+  {
+  mathernogl::logInfo("Loading game actor blueprint files... ");
+  blueprintsMap.clear();
+
+  std::list<string> files;
+  mathernogl::getFilesInDirectory(blueprintsDirectory, &files, BLUEPRINT_FILE_EXT);
+  for (auto file : files)
+    {
+    clearError();
+    if (!loadBlueprintsFile(blueprintsDirectory + "/" + file))
+      {
+      mathernogl::logError("Failed to load game actor blueprints : " + getError());
+      return false;
+      }
+    }
+
+  mathernogl::logInfo("Finalising game actor blueprints... ");
+
+  for (auto pair : blueprintsMap)
+    {
+    if(!pair.second->finaliseLoading(gameContext, &errorMessage))
+      {
+      mathernogl::logError("Failed to finalise game actor blueprint : '" + pair.second->name + "', " + getError());
+      return false;
+      }
+    }
+
+  return true;
   }
 
 
 using namespace tinyxml2;
 
-bool GameObjectFactory::loadGameObjectDefFile(const string& filePath)
+bool GameObjectFactory::loadBlueprintsFile(const string& filePath)
   {
   XMLDocument doc;
   XMLError xmlError = doc.LoadFile(filePath.c_str());
@@ -125,163 +232,146 @@ bool GameObjectFactory::loadGameObjectDefFile(const string& filePath)
     return false;
     }
 
-  XMLElement* xmlGameObjectDef = doc.FirstChildElement(OD_GAME_OBJECT_DEF);
-  while (xmlGameObjectDef)
+  XMLElement* xmlBlueprint = doc.FirstChildElement(OD_BLUEPRINT);
+  while (xmlBlueprint)
     {
-    if (!loadGameObjectDef(xmlGameObjectDef))
+    if (!loadBlueprint(xmlBlueprint))
       {
       errorMessage = "File '" + filePath + "' : " + errorMessage;
       return false;
       }
-    xmlGameObjectDef = xmlGameObjectDef->NextSiblingElement(OD_GAME_OBJECT_DEF);
+    xmlBlueprint = xmlBlueprint->NextSiblingElement(OD_BLUEPRINT);
     }
 
   return true;
   }
 
-bool GameObjectFactory::loadGameObjectDef(tinyxml2::XMLElement* xmlGameObjectDef)
+bool GameObjectFactory::loadBlueprint(tinyxml2::XMLElement* xmlBlueprint)
   {
-  const string gameObjType = xmlGetStringAttribute(xmlGameObjectDef, OD_TYPE);
-  IGameObjectDef* gameObjectDef = constructGameObjectDef(gameObjType);
-  if (!gameObjectDef)
+  const string blueprintType = xmlGetStringAttribute(xmlBlueprint, OD_TYPE);
+  SMGameActorBlueprint* blueprint = constructGameActorBlueprint(blueprintType);
+  if (!blueprint)
     {
-    errorMessage = "Unrecognised game object type: '" + gameObjType + "'";
+    errorMessage = "Unrecognised game actor type: '" + blueprintType + "'";
     return false;
     }
 
-  if(gameObjectDef->loadFromXML(xmlGameObjectDef, &errorMessage))
+  if(blueprint->loadFromXML(xmlBlueprint, &errorMessage))
     {
-    const uint id = gameObjectDef->getID();
-    const GameObjectType type = gameObjectDef->getType();
-
-    gameObjectDefs[id] = std::shared_ptr<IGameObjectDef>(gameObjectDef);
-    if(typesToGameDefs.count(type) == 0)
-      typesToGameDefs[type] = std::vector<uint>();
-    typesToGameDefs[type].push_back(id);
-
-    mathernogl::logInfo("Loaded game object def: [" + std::to_string(gameObjectDef->getID()) + "] " + gameObjectDef->getDisplayName());
+    mathernogl::logInfo("Loaded game actor blueprint: [" + std::to_string(blueprint->id) + "] " + blueprint->displayName);
     return true;
     }
   else
+    {
+    errorMessage = "Blueprint '" + blueprint->name + "', " + errorMessage;
     return false;
+    }
   }
 
 
-IGameObjectDef* GameObjectFactory::constructGameObjectDef(string name)
+SMGameActorBlueprint* GameObjectFactory::constructGameActorBlueprint(string typeName)
   {
-  GameObjectType type = getTypeBasedOnTypeName(name);
-  if (type == GameObjectType::harvester)
-    return new BuildingHarvesterDef();
-  if (type == GameObjectType::manufacturer)
-    return new BuildingManufacturerDef();
-  if (type == GameObjectType::storage)
-    return new BuildingStorageDef();
+  SMGameActorType type = SMTypes::getGameActorTypeFromName(typeName);
+  if (type == SMGameActorType::unknown)
+    return nullptr;
 
-  if (type == GameObjectType::deposit)
-    return new ResourceDepositDef();
+  SMGameActorBlueprintPtr blueprint;
+  switch (type)
+    {
+    case SMGameActorType::obstacle:
+      blueprint.reset(new GameActorObstacleBlueprint());
+      break;
+    case SMGameActorType::building:
+      blueprint.reset(new GameActorBuildingBlueprint());
+      break;
+    case SMGameActorType::unit:
+      blueprint.reset(new GameActorUnitBlueprint());
+      break;
+    case SMGameActorType::resource:
+      blueprint.reset(new GameActorResourceBlueprint());
+      break;
+    case SMGameActorType::deposit:
+      blueprint.reset(new GameActorDepositBlueprint());
+      break;
+    }
 
-  if (isTypeOrSubType(GameObjectType::unit, type))
-    return new UnitDef();
-
-  if (type == GameObjectType::resource)
-    return new ResourceDef();
-
-  if (isTypeOrSubType(GameObjectType::staticObject, type))
-    return new ObstacleDef();
+  if (blueprint)
+    {
+    blueprint->id = nextBlueprintID++;
+    blueprint->type = type;
+    blueprintsMap[blueprint->id] = blueprint;
+    return blueprint.get();
+    }
   return nullptr;
   }
 
-SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, uint gameObjectDefID, const Vector2D& position)
+SMGameActorPtr GameObjectFactory::createGameActor(uint actorID, uint blueprintID)
   {
-  auto gameObjectDef = getGameObjectDef(gameObjectDefID);
-  if (gameObjectDef)
-    {
-    SMGameActorPtr actor = gameObjectDef->createGameActor(gameContext);
-    if (actor)
-      {
-      auto staticActor = SMStaticActor::cast(actor.get());
-      if (staticActor)
-        staticActor->setGridPos(position);
-      auto dynamicActor = SMDynamicActor::cast(actor.get());
-      if (dynamicActor)
-        dynamicActor->setPosition(position);
-      gameContext->addActor(actor);
-      }
+  auto iter = blueprintsMap.find(blueprintID);
+  if (iter == blueprintsMap.end())
+    return nullptr;
+  SMGameActorBlueprintPtr blueprint = iter->second;
 
-    while (usedLinkIDs.count(nextLinkID) > 0)
+  SMGameActorPtr actor = blueprint->constructGameActor(actorID);
+  if (actor)
+    {
+    while (usedLinkIDs.find(nextLinkID) != usedLinkIDs.end())
       ++nextLinkID;
     actor->setLinkID(nextLinkID);
     usedLinkIDs.insert(nextLinkID);
     ++nextLinkID;
-    return actor;
     }
-
-  ASSERT(false, "Not a valid game object def ID: " + std::to_string(gameObjectDefID));
-  return nullptr;
+  return actor;
   }
 
-SMGameActorPtr GameObjectFactory::createGameActor(GameContext* gameContext, XMLElement* xmlGameActor)
+SMGameActorPtr GameObjectFactory::createGameActor(uint actorID, XMLElement* xmlGameActor)
   {
-  string sObjDefName = xmlGetStringAttribute(xmlGameActor, SL_GAMEOBJDEF_NAME);
-  auto gameObjectDef = findGameObjectDef(sObjDefName);
-  if (gameObjectDef)
+  const string blueprintName = xmlGetStringAttribute(xmlGameActor, SL_TYPE);
+  const SMGameActorBlueprint* blueprint = findGameActorBlueprint(blueprintName);
+  if (blueprint)
     {
-    auto actor = gameObjectDef->createGameActor(gameContext);
+    SMGameActorPtr actor = blueprint->constructGameActor(actorID);
     if (actor)
-      {
       actor->setXMLToLoadFrom(xmlGameActor);
-      gameContext->addActor(actor);
-      usedLinkIDs.insert(actor->getLinkID());
-      }
     return actor;
     }
-  ASSERT(false, "Unknown game actor object definition name");
+  ASSERT(false, "Unknown game actor object definition name + '" + blueprintName + "'!");
   return nullptr;
-  }
-
-bool GameObjectFactory::isSubType(GameObjectType type, GameObjectType subType) const
-  {
-  auto iter = std::find(typeHierarchy.begin(), typeHierarchy.end(), type);
-  int numLevels = 0;
-  do
-    {
-    ++iter;
-    if (*iter == subType)
-      return true;
-    else if (*iter == GameObjectType::LEVELSTART)
-      ++numLevels;
-    else if (*iter == GameObjectType::LEVELEND)
-      --numLevels;
-    }
-  while (numLevels >= 1);
-  return false;
-  }
-
-bool GameObjectFactory::isTypeOrSubType(GameObjectType type, GameObjectType subType) const
-  {
-  return type == subType || isSubType(type, subType);
-  }
-
-string GameObjectFactory::getTypeName(GameObjectType type)
-  {
-  if (typeNames.count(type) > 0)
-    return typeNames.at(type);
-  ASSERT(false, "");
-  return "";
-  }
-
-GameObjectType GameObjectFactory::getTypeBasedOnTypeName(string typeName)
-  {
-  for (auto pair : typeNames)
-    {
-    if (pair.second.compare(typeName) == 0)
-      return pair.first;
-    }
-  return GameObjectType::none;
   }
 
 void GameObjectFactory::freeLinkID(uint linkID)
   {
   usedLinkIDs.erase(linkID);
   }
+
+void GameObjectFactory::registerLinkID(uint linkID)
+  {
+  ASSERT(usedLinkIDs.count(linkID) == 0, "Duplicate link IDs!");
+  usedLinkIDs.insert(linkID);
+  }
+
+const SMGameActorBlueprint* GameObjectFactory::getGameActorBlueprint(uint typeID) const
+  {
+  auto iter = blueprintsMap.find(typeID);
+  if (iter != blueprintsMap.end())
+    return iter->second.get();
+  return nullptr;
+  }
+
+const SMGameActorBlueprint* GameObjectFactory::findGameActorBlueprint(string name) const
+  {
+  for (auto& pair : blueprintsMap)
+    {
+    if (pair.second->name == name)
+      return pair.second.get();
+    }
+  return nullptr;
+  }
+
+void GameObjectFactory::forEachGameActorBlueprint(std::function<void(const SMGameActorBlueprint* blueprint)> func) const
+  {
+  for (auto& pair : blueprintsMap)
+    func(pair.second.get());
+  }
+
 

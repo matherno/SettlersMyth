@@ -5,36 +5,32 @@
 #include <RenderSystem/RenderableMesh.h>
 #include <RenderSystem/RenderableSetImpl.h>
 #include <GameSystem/InputCodes.h>
-#include <GameObjectDefs/BuildingDef.h>
+#include <GameActorTypes/GameActorBuilding.h>
 #include "WorldItemPlacementHandler.h"
 #include "SMGameContext.h"
-#include "Building.h"
 
-WorldItemPlacementHandler::WorldItemPlacementHandler(uint id, uint buildingDefID) : InputHandler(id), buildingDefID(buildingDefID)
+WorldItemPlacementHandler::WorldItemPlacementHandler(uint id, uint buildingBlueprintID) : InputHandler(id), buildingBlueprintID(buildingBlueprintID)
   {}
 
 void WorldItemPlacementHandler::onAttached(GameContext* gameContext)
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  auto gameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(buildingDefID);
-  if (gameObjDef)
+
+  const SMGameActorBlueprint* blueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(buildingBlueprintID);
+  ASSERT(blueprint, "");
+  if (blueprint)
     {
-    const auto buildingDef = StaticObjectDef::cast(gameObjDef.get());
-    if (buildingDef)
-      {
-      buildingSizeX = buildingDef->getSizeX();
-      buildingSizeY = buildingDef->getSizeY();
+    buildingSizeX = blueprint->gridSize.x;
+    buildingSizeY = blueprint->gridSize.y;
 
-      auto renderContext = gameContext->getRenderContext();
-      RenderableLineStrips* lineStrips = new RenderableLineStrips(renderContext->getNextRenderableID());
-      lineStrips->setLineWidth(3);
-      buildingOutline.reset(lineStrips);
-      buildingOutline->initialise(renderContext);
-      renderContext->getRenderableSet()->addRenderable(buildingOutline);
-      updateOutline();
-      }
+    auto renderContext = gameContext->getRenderContext();
+    RenderableLineStrips* lineStrips = new RenderableLineStrips(renderContext->getNextRenderableID());
+    lineStrips->setLineWidth(3);
+    buildingOutline.reset(lineStrips);
+    buildingOutline->initialise(renderContext);
+    renderContext->getRenderableSet()->addRenderable(buildingOutline);
+    updateOutline();
     }
-
   }
 
 void WorldItemPlacementHandler::onDetached(GameContext* gameContext)
@@ -54,13 +50,15 @@ bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint b
     {
     if (isOutlinePosValid)
       {
-      auto gameActor = smGameContext->createSMGameActor(buildingDefID, buildingPlacementPos);
-      if (auto building = Building::cast(gameActor.get()))
+      SMGameActorPtr gameActor = smGameContext->createSMGameActor(buildingBlueprintID, buildingPlacementPos);
+
+      if (GameActorBuilding* building = GameActorBuilding::cast(gameActor.get()))
         {
         for (int i = 0; i < 3; ++i)
           {
-          auto unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameObjectDef("Settler")->getID(), building->getEntryPosition().centre());
-          auto unitPtr = Unit::cast(unit);
+          SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, building->getEntryPosition());
+          ASSERT(unit, "");
+          GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
           building->attachUnit(unitPtr);
           }
         }
@@ -100,6 +98,16 @@ bool WorldItemPlacementHandler::onMouseMove(GameContext* gameContext, uint mouse
   return true;
   }
 
+bool WorldItemPlacementHandler::onKeyPressed(GameContext* gameContext, uint key)
+  {
+  if (key == KEY_ESC)
+    {
+    endHandlerCallback();
+    return true;
+    }
+    
+  return false;
+  }
 
 bool WorldItemPlacementHandler::onMouseHeld(GameContext* gameContext, uint button, uint mouseX, uint mouseY)
   {

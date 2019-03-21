@@ -21,7 +21,7 @@
 #define SL_Z "z"
 #define SL_LINKID "linkid"
 #define SL_BEHAVIOUR "behaviour"
-#define SL_GAMEOBJDEF_NAME "gameobjdef_name"
+#define SL_TYPE "type"
 #define SL_SMGAMEACTOR "smgameactor"
 #define SL_GRIDPOS "gridpos"
 #define SL_CELLPOS "cellpos"
@@ -32,8 +32,10 @@
 #define SL_RESOURCE "resource"
 #define SL_NAME "name"
 #define SL_AMOUNT "amount"
-#define SL_MESHIDX "meshidx"
+#define SL_MODELIDX "modelidx"
 #define SL_ATTACHEDUNITS "attached_units"
+#define SL_COMPONENT "component"
+#define SL_ID "id"
 
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"
@@ -169,7 +171,7 @@ static string xmlGetValue(tinyxml2::XMLElement* parent, string name)
   return "";
   }
 
-static string xmlCreateBehaviourElemName(string name)
+static string xmlConstructCompElemName(uint id)
   {
-  return string(SL_BEHAVIOUR) + "_" + name;
+  return string(SL_COMPONENT) + "_" + std::to_string(id);
   }

@@ -2,14 +2,19 @@
 // Created by matt on 10/11/18.
 //
 
-#include <GameObjectDefs/DynamicObjectDef.h>
-#include <GameObjectDefs/StaticObjectDef.h>
 #include "SMGameActor.h"
 #include "SMGameContext.h"
-#include "GameObjectDefFileHelper.h"
+#include "BlueprintFileHelper.h"
 
-SMGameActor::SMGameActor(uint id, const IGameObjectDef* gameObjectDef) : GameActor(id), gameObjectDef(gameObjectDef)
+SMGameActor::SMGameActor(uint id, uint blueprintID) : GameActor(id), blueprintID(blueprintID)
   {}
+
+void SMGameActor::addComponent(SMComponentPtr component)
+  {
+  ASSERT(!initialised, "Adding component after onAttached!")
+  if (!initialised)
+    components.push_back(component);
+  }
 
 void SMGameActor::onAttached(GameContext* gameContext)
   {
@@ -19,77 +24,89 @@ void SMGameActor::onAttached(GameContext* gameContext)
     }
   else
     {
-    meshIdx = (uint) mathernogl::RandomGenerator::randomInt(0, (int)gameObjectDef->getMeshCount() - 1);
-    for (auto behaviour : behaviours)
-      behaviour->initialise(this, gameContext);
+//    meshIdx = (uint) mathernogl::RandomGenerator::randomInt(0, (int)gameObjectDef->getMeshCount() - 1);
+    for (auto component : components)
+      component->initialise(gameContext);
     }
 
-  renderable = gameObjectDef->constructRenderable(gameContext->getRenderContext(), getPosition3D(), meshIdx);
+  boundingBox.reset(new BoundingBox());
+  boundingBoxID = gameContext->getBoundingBoxManager()->addBoundingBox(boundingBox, getID());
+  updateBoundingBox();
+
+  initialised = true;
   }
 
 void SMGameActor::onUpdate(GameContext* gameContext)
   {
-  for (auto behaviour : behaviours)
-    behaviour->update(this, gameContext);
+  if (positionChanged)
+    sendMessageToComponents(gameContext, SMMessage::actorPositionChanged);
+  if (rotationChanged)
+    sendMessageToComponents(gameContext, SMMessage::actorRotationChanged);
+  positionChanged = rotationChanged = false;
+
+  for (auto component : components)
+    component->update(gameContext);
   }
 
 void SMGameActor::onDetached(GameContext* gameContext)
   {
-  notifyObserversDestroyed(gameContext);
-  if (renderable)
-    {
-    renderable->cleanUp(gameContext->getRenderContext());
-    gameContext->getRenderContext()->getRenderableSet()->removeRenderable(renderable->getID());
-    }
-  for (auto behaviour : behaviours)
-    behaviour->cleanUp(this, gameContext);
+//  if (renderable)
+//    {
+//    renderable->cleanUp(gameContext->getRenderContext());
+//    gameContext->getRenderContext()->getRenderableSet()->removeRenderable(renderable->getID());
+//    }
+  for (auto component : components)
+    component->cleanUp(gameContext);
+  components.clear();
 
   gameContext->getBoundingBoxManager()->removeBoundingBox(boundingBoxID);
   boundingBox.reset();
+  initialised = false;
   }
 
-void SMGameActor::saveActor(XMLElement* element, GameContext* gameContext)
+void SMGameActor::saveActor(XMLElement* xmlGameActor, GameContext* gameContext)
   {
+  //  save standard game actor properties
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-  element->SetAttribute(SL_LINKID, getLinkID());
-  element->SetAttribute(SL_GAMEOBJDEF_NAME, gameObjectDef->getUniqueName().c_str());
-  element->SetAttribute(SL_MESHIDX, meshIdx);
+  xmlGameActor->SetAttribute(SL_LINKID, getLinkID());
+  xmlGameActor->SetAttribute(SL_TYPE, getTypeName().c_str());
+  xmlCreateElement(xmlGameActor, SL_POS, position);
+  xmlCreateElement(xmlGameActor, SL_ROT, rotation);
 
-  // save resources
-  XMLElement* resListElem = xmlCreateElement(element, SL_RESOURCELIST);
+  //  save resources
+  XMLElement* resListElem = xmlCreateElement(xmlGameActor, SL_RESOURCELIST);
   for (const ResourceStack& stack : *getResourceStacks())
     {
-    IGameObjectDefPtr resGameObjDef = smGameContext->getGameObjectFactory()->getGameObjectDef(stack.id);
-    if (resGameObjDef)
+    const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(stack.id);
+    if (resourceBlueprint)
       {
       XMLElement* resourceElem = xmlCreateElement(resListElem, SL_RESOURCE);
-      resourceElem->SetAttribute(SL_NAME, resGameObjDef->getUniqueName().c_str());
+      resourceElem->SetAttribute(SL_NAME, resourceBlueprint->name.c_str());
       resourceElem->SetAttribute(SL_AMOUNT, stack.amount);
       }
     }
 
-  for (auto behaviour : behaviours)
+  //  save components
+  for (SMComponentPtr component : components)
     {
-    const string behaviourName = behaviour->getBehaviourName();
-    if (!behaviourName.empty())
-      {
-      auto behaviourElement = xmlCreateElement(element, xmlCreateBehaviourElemName(behaviourName));
-      behaviour->save(this, gameContext, behaviourElement);
-      }
+    const string elementName = xmlConstructCompElemName(component->getComponentID());
+    XMLElement* xmlComponent = xmlCreateElement(xmlGameActor, elementName);
+    component->save(gameContext, xmlComponent);
     }
   }
 
-void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
+void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* xmlGameActor)
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   const GameObjectFactory* gameObjectFactory = smGameContext->getGameObjectFactory();
   uint linkID = 0;
-  element->QueryUnsignedAttribute(SL_LINKID, &linkID);
+  xmlGameActor->QueryUnsignedAttribute(SL_LINKID, &linkID);
   setLinkID(linkID);
 
-  element->QueryUnsignedAttribute(SL_MESHIDX, &meshIdx);
+  position = xmlGetVec3Value(xmlGameActor, SL_POS);
+  rotation = xmlGetDblValue(xmlGameActor, SL_ROT);
 
-  XMLElement* resListElem = element->FirstChildElement(SL_RESOURCELIST);
+  XMLElement* resListElem = xmlGameActor->FirstChildElement(SL_RESOURCELIST);
   if (resListElem)
     {
     XMLElement* resourceElem = resListElem->FirstChildElement(SL_RESOURCE);
@@ -98,49 +115,44 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
       const string name = xmlGetStringAttribute(resourceElem, SL_NAME);
       int amount = 0;
       resourceElem->QueryAttribute(SL_AMOUNT, &amount);
-      IGameObjectDefPtr resGameObjDef = gameObjectFactory->findGameObjectDef(name);
-      if (resGameObjDef && gameObjectFactory->isTypeOrSubType(GameObjectType::resource, resGameObjDef->getType()))
-        storeResource(resGameObjDef->getID(), amount);
+      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->findGameActorBlueprint(name);
+      if (resourceBlueprint && resourceBlueprint->type == SMGameActorType::resource)
+        storeResource(resourceBlueprint->id, amount);
       else
         mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
       resourceElem = resourceElem->NextSiblingElement(SL_RESOURCE);
       }
     }
 
-  for (auto behaviour : behaviours)
+  for (SMComponentPtr component : components)
     {
-    const string behaviourName = behaviour->getBehaviourName();
-    if (!behaviourName.empty())
-      {
-      const string behaviourElemName = xmlCreateBehaviourElemName(behaviourName);
-      XMLElement* xmlBehaviourElement = element->FirstChildElement(behaviourElemName.c_str());
-      behaviour->initialiseFromSaved(this, gameContext, xmlBehaviourElement);
-      }
+    const string elementName = xmlConstructCompElemName(component->getComponentID());
+    XMLElement* xmlComponent = xmlGameActor->FirstChildElement(elementName.c_str());
+    if (xmlComponent)
+      component->initialiseFromSaved(gameContext, xmlComponent);
     else
-      {
-      behaviour->initialise(this, gameContext);
-      }
+      component->initialise(gameContext);
     }
-  }
-
-bool SMGameActor::processCommand(const SMActorCommand& command, GameContext* gameContext)
-  {
-  for (auto behaviour : behaviours)
-    {
-    if (behaviour->processCommand(this, gameContext, command))
-      return true;
-    }
-  return false;
   }
 
 void SMGameActor::updateBoundingBox()
   {
-  if (!boundingBox || !renderable)
+  if (!boundingBox)
     return;
 
-  BoundingBoxPtr box = renderable->getBounds();
-  if (box)
-    *boundingBox = *box;
+  if (!isPosInCentre)
+    {
+    boundingBox->setBounds(getPosition3D(), getPosition3D() + size);
+    }
+  else
+    {
+    boundingBox->setBounds(getPosition3D() - Vector3D(size.x * 0.5, 0, size.z * 0.5), getPosition3D() + Vector3D(size.x * 0.5, size.y, size.z * 0.5));
+    }
+  }
+
+void SMGameActor::dropAllResources(GameContext* gameContext)
+  {
+  dropAllResources(gameContext, getPosition());
   }
 
 void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
@@ -152,177 +164,137 @@ void SMGameActor::dropAllResources(GameContext* gameContext, Vector2D position)
   clearAllResources();
   }
 
-
-
-SMStaticActor::SMStaticActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
+GridXY SMGameActor::getGridPosition() const
   {
-  if(getSize().x == 1 && getSize().y == 1)
-    cellPos.set(0.5, 0.5);
+  Vector2D position2D = getPosition();
+  return GridXY(position2D);
   }
 
-void SMStaticActor::setGridPos(GridXY pos)
+Vector2D SMGameActor::getPosition() const
   {
-  this->gridPos = pos;
-  if (renderable)
-    {
-    renderable->getTransform()->setIdentityMatrix();
-    renderable->getTransform()->translate(getPosition3D());
-    }
-  updateBoundingBox();
+  return Vector2D(position.x, -position.z);
   }
 
-void SMStaticActor::onAttached(GameContext* gameContext)
+Vector3D SMGameActor::getPosition3D() const
   {
-  SMGameActor::onAttached(gameContext);
-  setGridPos(gridPos);     // sets renderables transform
-
-  boundingBox.reset(new BoundingBox());
-  boundingBoxID = gameContext->getBoundingBoxManager()->addBoundingBox(boundingBox, getID());
-  updateBoundingBox();
+  return position;
   }
 
-Vector2D SMStaticActor::getPosition() const
+Vector2D SMGameActor::getMidPosition() const
   {
-  return Vector2D(gridPos.x, gridPos.y) + cellPos;
-  }
-
-GridXY SMStaticActor::getGridPosition() const
-  {
-  return gridPos;
-  }
-
-Vector2D SMStaticActor::getCellPosition() const
-  {
-  return cellPos;
-  }
-
-Vector3D SMStaticActor::getPosition3D() const
-  {
-  Vector2D pos = getPosition();
-  return Vector3D(pos.x, 0, -pos.y);
-  }
-
-void SMStaticActor::saveActor(XMLElement* element, GameContext* gameContext)
-  {
-  SMGameActor::saveActor(element, gameContext);
-  xmlCreateElement(element, SL_GRIDPOS, gridPos);
-  xmlCreateElement(element, SL_CELLPOS, cellPos);
-  }
-
-void SMStaticActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
-  {
-  gridPos = xmlGetGridXYValue(element, SL_GRIDPOS);
-  cellPos = xmlGetVec2Value(element, SL_CELLPOS);
-  SMGameActor::initialiseActorFromSave(gameContext, element);
-  }
-
-Vector2D SMStaticActor::getMidPosition() const
-  {
-  const Vector2D size = getSize();
-  if (size.x <= 1 && size.y <= 1)
-    return getPosition();
+  if (!isPosInCentre)
+    return getPosition() + (getSize() * 0.5f);
   else
-    return getPosition() + (size * 0.5f);
+    return getPosition();
   }
 
-Vector2D SMStaticActor::getSize() const
+Vector2D SMGameActor::getSize() const
   {
-  if (StaticObjectDef::cast(getDef()))
-    return StaticObjectDef::cast(getDef())->getSize();
-  return Vector2D(1, 1);
+  return Vector2D(size.x, -size.z);
   }
 
-double SMStaticActor::getHeight() const
+double SMGameActor::getRotation() const
   {
-  if (StaticObjectDef::cast(getDef()))
-    return StaticObjectDef::cast(getDef())->height;
-  return 2;
+  return rotation;
   }
 
-
-SMDynamicActor::SMDynamicActor(uint id, const IGameObjectDef* gameObjectDef) : SMGameActor(id, gameObjectDef)
-  {}
-
-void SMDynamicActor::onAttached(GameContext* gameContext)
+double SMGameActor::getHeight() const
   {
-  SMGameActor::onAttached(gameContext);
-  updateRenderableTransform();
+  return size.y;
   }
 
-void SMDynamicActor::onUpdate(GameContext* gameContext)
+void SMGameActor::setSelectable(bool selectable)
   {
-  SMGameActor::onUpdate(gameContext);
-
-  if (transformChanged)
-    updateRenderableTransform();
+  ASSERT(!initialised, "");
+  this->isSelectable = selectable;
   }
 
-void SMDynamicActor::saveActor(XMLElement* element, GameContext* gameContext)
-  {
-  SMGameActor::saveActor(element, gameContext);
-  xmlCreateElement(element, SL_POS, position);
-  xmlCreateElement(element, SL_ROT, rotation);
-  xmlCreateElement(element, SL_ELEV, elevation);
+void SMGameActor::setIsPosInCentre(bool isPosInCentre)
+  { 
+  ASSERT(!initialised, "");
+  this->isPosInCentre = isPosInCentre;
   }
 
-void SMDynamicActor::setPosition(Vector2D position)
+void SMGameActor::setHeight(double height)
   {
-  this->position = position;
-  transformChanged = true;
+  ASSERT(!initialised, "");
+  this->size.y = height;
   }
 
-void SMDynamicActor::setPosition(Vector3D position)
+void SMGameActor::setSize2D(Vector2D size)
   {
-  this->position.x = position.x;
-  elevation = position.y;
-  this->position.y = -position.z;
-  transformChanged = true;
+  ASSERT(!initialised, "");
+  this->size.x = size.x;
+  this->size.z = -size.y;
   }
 
-void SMDynamicActor::setElevation(double elevation)
+void SMGameActor::setPosition(GridXY position)
   {
-  this->elevation = elevation;
-  transformChanged = true;
+  setPosition(position.centre());
   }
 
-void SMDynamicActor::setRotation(double rotation)
+void SMGameActor::setPosition(Vector2D position)
   {
-  this->rotation = rotation;
-  transformChanged = true;
+  setPosition(Vector3D(position.x, 0, -position.y));
   }
 
-
-void SMDynamicActor::updateRenderableTransform()
+void SMGameActor::setPosition(Vector3D position)
   {
-  if (renderable)
+  if (this->position != position)
     {
-    renderable->getTransform()->setIdentityMatrix();
-    renderable->getTransform()->rotate(0, 1, 0, rotation);
-    renderable->getTransform()->translate(position.x, elevation, -position.y);
+    this->position = position;
+    positionChanged = true;
+    updateBoundingBox();
     }
-  updateBoundingBox();
-  transformChanged = false;
   }
 
-Vector2D SMDynamicActor::getMidPosition() const
+void SMGameActor::setRotation(double rotation)
   {
-  return getPosition();
+  if (this->rotation != rotation)
+    {
+    this->rotation = rotation;
+    rotationChanged = true;
+    updateBoundingBox();
+    }
   }
 
-Vector2D SMDynamicActor::getSize() const
+void SMGameActor::setElevation(double elevation)
   {
-  return Vector2D(0.5, 0.5);
+  setPosition(Vector3D(position.x, elevation, position.z));  
   }
 
-void SMDynamicActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
+void SMGameActor::sendMessageToComponents(GameContext* gameContext, SMMessage message, void* extra)
   {
-  position = xmlGetVec2Value(element, SL_POS);
-  rotation = xmlGetDblValue(element, SL_ROT);
-  elevation = xmlGetDblValue(element, SL_ELEV);
-  SMGameActor::initialiseActorFromSave(gameContext, element);
+  for (SMComponentPtr& component : components)
+    component->onMessage(gameContext, message, extra);
   }
 
-void SMDynamicActor::lookAt(Vector2D position)
+bool SMGameActor::getIsPosInCentre() const
   {
-  setRotation(-mathernogl::ccwAngleBetween(Vector2D(0, 1), (position - getPosition()).getUniform()));
+  return !isPosInCentre;
   }
+
+bool SMGameActor::getIsSelectable() const
+  {
+  return isSelectable;
+  }
+
+void SMGameActor::postMessage(GameContext* gameContext, SMMessage message, void* extra)
+  {
+  sendMessageToComponents(gameContext, message, extra);
+  }
+
+bool SMGameActor::gotComponentType(SMComponentType type) const
+  {
+  for(SMComponentPtr component : components)
+    {
+    if(component->getType() == type)
+      return true;
+    }
+  return false;
+  }
+
+
+
+
+

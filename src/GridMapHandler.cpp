@@ -5,7 +5,7 @@
 #include <cfloat>
 #include "GridMapHandler.h"
 #include "SMGameContext.h"
-#include "Building.h"
+#include "GameActorTypes/GameActorBuilding.h"
 
 
 void GridMapPath::addNode(GridXY node)
@@ -173,7 +173,7 @@ bool GridMapHandler::isRegionClear(const GridXY& gridPos, const GridXY& regionSi
   }
 
 
-SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext, GridXY position, GridMapHandler::FindActorPredicate predicate) const
+SMGameActorPtr GridMapHandler::findClosestGriddedActor(GameContext* gameContext, GridXY position, GridMapHandler::FindActorPredicate predicate) const
   {
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
 
@@ -197,20 +197,25 @@ SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext
       }
     }
 
-  SMStaticActorPtr closestActor;
+  SMGameActorPtr closestActor;
   double closestDistance = DBL_MAX;
   for (auto gridCell : griddedActors)
     {
     //  check the target actor is valid and what we are looking for in predicate function
-    SMStaticActorPtr actor = smGameContext->getStaticActor(gridCell.actorID);
+    SMGameActorPtr actor = smGameContext->getSMGameActor(gridCell.actorID);
     if (!actor || !predicate(actor))
       continue;
+
+    //  obtain the position of this actor (use entry position if this is a building)
+    Vector2D actorPosition = actor->getMidPosition();
+    if(GameActorBuilding* building = GameActorBuilding::cast(actor.get()))
+      actorPosition = building->getEntryPosition().centre();
 
     //  check all possible start positions against the target actor position
     for (GridXY pos : possibleStartPositions)
       {
-      double thisDistance = (actor->getEntryPosition().centre() - pos.centre()).magnitude();
-      if (thisDistance < closestDistance && canReachTarget(pos, actor->getEntryPosition()))
+      double thisDistance = (actorPosition - pos.centre()).magnitude();
+      if (thisDistance < closestDistance && canReachTarget(pos, actorPosition))
         {
         closestDistance = thisDistance;
         closestActor = actor;
@@ -219,25 +224,6 @@ SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext
     }
 
   return closestActor;
-  }
-
-
-SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext, GridXY position, GameObjectType gameObjDefType) const
-  {
-  const auto gameObjectFactory = SMGameContext::cast(gameContext)->getGameObjectFactory();
-  return findClosestStaticActor(gameContext, position, [&](SMStaticActorPtr actor)
-    {
-    auto type = actor->getDef()->getType();
-    return gameObjectFactory->isTypeOrSubType(gameObjDefType, type);
-    });
-  }
-
-SMStaticActorPtr GridMapHandler::findClosestStaticActor(GameContext* gameContext, GridXY position, string gameObjDefName) const
-  {
-  return findClosestStaticActor(gameContext, position, [&](SMStaticActorPtr actor)
-    {
-    return actor->getDef()->getUniqueName() == gameObjDefName;
-    });
   }
 
 bool GridMapHandler::getPathToTarget(GridXY startPos, GridXY targetPos, GridMapPath* path, double maxPathLength) const

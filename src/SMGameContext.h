@@ -38,8 +38,7 @@ private:
   GameObjectFactory gameObjectFactory;
   std::unique_ptr<GridMapHandler> gridMapHandler;
 
-  mathernogl::MappedList<SMStaticActorPtr> staticActors;
-  mathernogl::MappedList<SMDynamicActorPtr> dynamicActors;
+  mathernogl::MappedList<SMGameActorPtr> smActorsList;
   Timer refreshShadowMapTimer;
   bool shadowMapValid = false;
 
@@ -68,16 +67,13 @@ public:
   bool saveGame(string filePath);
   bool loadGame(string filePath);
 
-  SMGameActorPtr createSMGameActor(uint gameObjDefID, const GridXY& position);
-  SMGameActorPtr createSMGameActor(uint gameObjDefID, const Vector2D& position);
-  SMStaticActorPtr getStaticActor(uint id);
-  SMDynamicActorPtr getDynamicActor(uint id);
+  SMGameActorPtr createSMGameActor(uint blueprintID, const GridXY& position);
+  SMGameActorPtr createSMGameActor(uint blueprintID, const Vector2D& position);
   SMGameActorPtr getSMGameActor(uint id);
   SMGameActorPtr getSMGameActorByLinkID(uint linkID);
-  uint getStaticActorCount() const;
-  uint getDynamicActorCount() const;
+  uint getSMActorCount() const;
   void destroySMActor(uint id);
-  void forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr actor)> func);
+  void forEachSMActor(std::function<void(SMGameActorPtr actor)> func);
 
   inline static SMGameContext* cast(GameContext* context)
     {

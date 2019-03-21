@@ -45,18 +45,21 @@ bool WorldItemSelectionManager::onWorldClick(GameContext* gameContext, uint mous
   if (!isCtrlClick)
     deselectAll(gameContext);
 
-  SMGameContext* toGameContext = SMGameContext::cast(gameContext);
+  SMGameContext* smGameContext = SMGameContext::cast(gameContext);
   if (gameContext->getBoundingBoxManager()->boundingBoxPicked())
     {
     uint pickedActorID = (uint)gameContext->getBoundingBoxManager()->getPickedBoundingBoxMeta();
     if (!isActorSelected(pickedActorID))
       {
-      if (SMGameActorPtr pickedActor = toGameContext->getSMGameActor(pickedActorID))
-        selectActor(gameContext, pickedActor);
+      if (SMGameActorPtr pickedActor = smGameContext->getSMGameActor(pickedActorID))
+        {
+        if (pickedActor->getIsSelectable())
+          selectActor(gameContext, pickedActor);
+        }
       }
     else if (isCtrlClick)
       {
-      deselectTower(gameContext, pickedActorID);
+      deselectActor(gameContext, pickedActorID);
       }
     return true;
     }
@@ -120,16 +123,16 @@ void WorldItemSelectionManager::deselectAll(GameContext* gameContext)
   selectedActors.clear();
   }
 
-void WorldItemSelectionManager::deselectTower(GameContext* gameContext, uint actorID)
+void WorldItemSelectionManager::deselectActor(GameContext* gameContext, uint id)
   {
   // remove actor selection box
-  if (actorSelectionBoxesMap.count(actorID) > 0)
+  if (actorSelectionBoxesMap.count(id) > 0)
     {
-    selectionBoxRenderables->removeBox(actorSelectionBoxesMap[actorID]);
-    actorSelectionBoxesMap.erase(actorID);
+    selectionBoxRenderables->removeBox(actorSelectionBoxesMap[id]);
+    actorSelectionBoxesMap.erase(id);
     }
-  if (selectedActors.contains(actorID))
-    selectedActors.remove(actorID);
+  if (selectedActors.contains(id))
+    selectedActors.remove(id);
   }
 
 void WorldItemSelectionManager::selectActor(GameContext* gameContext, SMGameActorPtr actor)
@@ -157,11 +160,14 @@ void WorldItemSelectionManager::selectActorScreenRect(GameContext* gameContext, 
       smGameContext->terrainHitTest(screenPoint1.x, screenPoint2.y),
     };
 
-  smGameContext->forEachSMActor(GameObjectType::staticObject, [this, gameContext, terrainHitPoints](SMGameActorPtr actor)
+  smGameContext->forEachSMActor([this, gameContext, terrainHitPoints](SMGameActorPtr actor)
     {
-    Vector2D actorPos = actor->getMidPosition();
-    if (isPointWithinTrapezoid(actorPos, terrainHitPoints[0], terrainHitPoints[1], terrainHitPoints[2], terrainHitPoints[3]))
-      selectActor(gameContext, actor);
+    if (actor->getIsSelectable())
+      {
+      Vector2D actorPos = actor->getMidPosition();
+      if (isPointWithinTrapezoid(actorPos, terrainHitPoints[0], terrainHitPoints[1], terrainHitPoints[2], terrainHitPoints[3]))
+        selectActor(gameContext, actor);
+      }
     });
   }
 

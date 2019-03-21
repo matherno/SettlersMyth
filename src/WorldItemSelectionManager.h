@@ -36,7 +36,7 @@ public:
   bool isMouseDragging() const;
 
   void deselectAll(GameContext* gameContext);
-  void deselectTower(GameContext* gameContext, uint id);
+  void deselectActor(GameContext* gameContext, uint id);
   void selectActor(GameContext* gameContext, SMGameActorPtr actor);
   void selectActorScreenRect(GameContext* gameContext, const Vector2D& screenPoint1, const Vector2D& screenPoint2);
   bool isActorSelected(uint actorID) const;

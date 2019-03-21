@@ -3,6 +3,7 @@
 #include <map>
 #include <mathernogl/Types.h>
 #include <TowOff/GameSystem/GameSystem.h>
+#include <set>
 
 #define DEFAULT_RES_PER_STACK   9
 
@@ -24,6 +25,7 @@ struct ResourceLock
   ResourceLock() {}
   ResourceLock(uint lockID, uint resID, uint resAmount) : lockID(lockID), resID(resID), resAmount(resAmount) {}
   bool isValid() const { return lockID > 0; }
+  void reset() { *this = ResourceLock(); }
   };
 
 struct ResourceReserve
@@ -34,6 +36,7 @@ struct ResourceReserve
   ResourceReserve() {}
   ResourceReserve(uint reserveID, uint resID, uint resAmount) : reserveID(reserveID), resID(resID), resAmount(resAmount) {}
   bool isValid() const { return reserveID > 0; }
+  void reset() { *this = ResourceReserve(); }
   };
 
 class ResourceStorage

@@ -4,7 +4,6 @@
 
 #include <RenderSystem/RenderableMesh.h>
 #include <RenderSystem/PostProcessing.h>
-#include <GameObjectDefs/StaticObjectDef.h>
 
 #include "SMGameContext.h"
 #include "Resources.h"
@@ -27,7 +26,7 @@ bool SMGameContext::initialise()
   addActor(selectionManager);
 
   gridMapHandler.reset(new GridMapHandler(GridXY(DEFAULT_MAP_SIZE, DEFAULT_MAP_SIZE)));
-  if (!gameObjectFactory.loadGameObjectDefs("gameobjdefs/"))
+  if (!gameObjectFactory.loadBlueprints(this, "blueprints/"))
     return false;
 
 
@@ -47,8 +46,7 @@ bool SMGameContext::initialise()
 
 void SMGameContext::cleanUp()
   {
-  dynamicActors.clear();
-  staticActors.clear();
+  smActorsList.clear();
   if (surfaceMesh)
     {
     getRenderContext()->getRenderableSet()->removeRenderable(surfaceMesh->getID());
@@ -107,20 +105,22 @@ Vector3D SMGameContext::getCameraFocalPosition() const
   return smInputHandler->getFocalPosition();
   }
 
-
-SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const GridXY& position)
+SMGameActorPtr SMGameContext::createSMGameActor(uint blueprintID, const GridXY& position)
   {
-  return createSMGameActor(gameObjDefID, position.centre());
+  const bool isPosInCentre = gameObjectFactory.getGameActorBlueprint(blueprintID)->isPosInCentre;
+  const Vector2D position2D = isPosInCentre ? position.centre() : (Vector2D) position;
+  return createSMGameActor(blueprintID, position2D);
   }
 
-SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2D& position)
+SMGameActorPtr SMGameContext::createSMGameActor(uint blueprintID, const Vector2D& position)
   {
   if (!gridMapHandler->isOnMap(position))
     return nullptr;
 
-  auto gameActor = gameObjectFactory.createGameActor(this, gameObjDefID, position);
+  SMGameActorPtr gameActor = gameObjectFactory.createGameActor(getNextActorID(), blueprintID);
   if (gameActor)
     {
+    gameActor->setPosition(position);
     addSMGameActor(gameActor);
     return gameActor;
     }
@@ -129,28 +129,12 @@ SMGameActorPtr SMGameContext::createSMGameActor(uint gameObjDefID, const Vector2
 
 void SMGameContext::destroySMActor(uint id)
   {
-  SMGameActorPtr actor;
-
-  SMStaticActorPtr staticActor = getStaticActor(id);
-  if (staticActor)
+  if(SMGameActorPtr actor = getSMGameActor(id))
     {
-    staticActors.remove(id);
-    const StaticObjectDef* staticObjDef = StaticObjectDef::cast(staticActor->getDef());
-    gridMapHandler->setGridCells(staticActor->getGridPosition(), staticObjDef->getSize(), 0, false);
-    actor = staticActor;
-    }
-
-  SMDynamicActorPtr dynamicActor = getDynamicActor(id);
-  if (dynamicActor)
-    {
-    dynamicActors.remove(id);
-    actor = dynamicActor;
-    }
-
-  if (actor)
-    {
+    smActorsList.remove(id);
+    gridMapHandler->setGridCells(actor->getGridPosition(), actor->getSize(), 0, false);
     gameObjectFactory.freeLinkID(actor->getLinkID());
-    selectionManager->deselectTower(this, actor->getID());
+    selectionManager->deselectActor(this, actor->getID());
     removeActor(actor->getID());
     getRenderContext()->invalidateShadowMap();
     }
@@ -197,16 +181,7 @@ bool SMGameContext::saveGame(string filePath)
   xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_ROT, smInputHandler->getRotation());
   xmlCreateElement(doc, xmlSaveFile, SL_CAMERA_PITCH, smInputHandler->getPitch());
 
-  for (auto actor : *staticActors.getList())
-    {
-    if (actor->isSavingAllowed())
-      {
-      auto element = xmlCreateElement(doc, xmlSaveFile, SL_SMGAMEACTOR);
-      actor->saveActor(element, this);
-      }
-    }
-
-  for (auto actor : *dynamicActors.getList())
+  for (auto actor : *smActorsList.getList())
     {
     if (actor->isSavingAllowed())
       {
@@ -257,8 +232,9 @@ bool SMGameContext::loadGame(string filePath)
   XMLElement* xmlGameActor = xmlSaveFile->FirstChildElement(SL_SMGAMEACTOR);
   while (xmlGameActor)
     {
-    SMGameActorPtr smGameActor = gameObjectFactory.createGameActor(this, xmlGameActor);
+    SMGameActorPtr smGameActor = gameObjectFactory.createGameActor(getNextActorID(), xmlGameActor);
     addSMGameActor(smGameActor);
+    gameObjectFactory.registerLinkID(smGameActor->getLinkID());
     loadedActors.push_back(smGameActor);
     xmlGameActor = xmlGameActor->NextSiblingElement(SL_SMGAMEACTOR);
     }
@@ -270,61 +246,29 @@ bool SMGameContext::loadGame(string filePath)
 
 void SMGameContext::addSMGameActor(SMGameActorPtr gameActor)
   {
-  SMStaticActorPtr staticActor = std::dynamic_pointer_cast<SMStaticActor>(gameActor);
-  if (staticActor)
-    {
-    staticActors.add(staticActor, staticActor->getID());
-    const StaticObjectDef* staticObjectDef = dynamic_cast<const StaticObjectDef*>(staticActor->getDef());
-    gridMapHandler->startGridTransaction();
-    gridMapHandler->setGridCells(staticActor->getGridPosition(), staticObjectDef->getSize(), staticActor->getID(), true);
-    for (GridXY pos : staticObjectDef->clearGridCells)
-      gridMapHandler->setGridCellIsObstacle(staticActor->getGridPosition() + pos, false);
-    gridMapHandler->endGridTransaction();
-    getRenderContext()->invalidateShadowMap();
-    }
+  addActor(gameActor);
+  smActorsList.add(gameActor, gameActor->getID());
+   
+  gridMapHandler->startGridTransaction();
+  gridMapHandler->setGridCells(gameActor->getGridPosition(), gameActor->getSize(), gameActor->getID(), true);
+  const SMGameActorBlueprint* blueprint = gameObjectFactory.getGameActorBlueprint(gameActor->getBlueprintTypeID());
+  for (GridXY pos : blueprint->clearGridCells)
+    gridMapHandler->setGridCellIsObstacle(gameActor->getGridPosition() + pos, false);
+  gridMapHandler->endGridTransaction();
 
-  SMDynamicActorPtr dynamicActor = std::dynamic_pointer_cast<SMDynamicActor>(gameActor);
-  if (dynamicActor)
-    {
-    dynamicActors.add(dynamicActor, dynamicActor->getID());
-    }
-  }
-
-SMStaticActorPtr SMGameContext::getStaticActor(uint id)
-  {
-  if (id == 0)
-    return nullptr;
-  if (staticActors.contains(id))
-    return staticActors.get(id);
-  return nullptr;
-  }
-
-SMDynamicActorPtr SMGameContext::getDynamicActor(uint id)
-  {
-  if (id == 0)
-    return nullptr;
-  if (dynamicActors.contains(id))
-    return dynamicActors.get(id);
-  return nullptr;
+  getRenderContext()->invalidateShadowMap();
   }
 
 SMGameActorPtr SMGameContext::getSMGameActor(uint id)
   {
-  if (auto actor = getStaticActor(id))
-    return actor;
-  if (auto actor = getDynamicActor(id))
-    return actor;
+  if (smActorsList.contains(id))
+    return smActorsList.get(id);
   return nullptr;
   }
 
 SMGameActorPtr SMGameContext::getSMGameActorByLinkID(uint linkID)
   {
-  for (SMGameActorPtr actor : *staticActors.getList())
-    {
-    if (actor->getLinkID() == linkID)
-      return actor;
-    }
-  for (SMGameActorPtr actor : *dynamicActors.getList())
+  for (SMGameActorPtr actor : *smActorsList.getList())
     {
     if (actor->getLinkID() == linkID)
       return actor;
@@ -332,19 +276,10 @@ SMGameActorPtr SMGameContext::getSMGameActorByLinkID(uint linkID)
   return nullptr;
   }
 
-void SMGameContext::forEachSMActor(GameObjectType type, std::function<void(SMGameActorPtr)> func)
+void SMGameContext::forEachSMActor(std::function<void(SMGameActorPtr)> func)
   {
-  for (SMStaticActorPtr staticActor : *staticActors.getList())
-    {
-    if (gameObjectFactory.isTypeOrSubType(type, staticActor->getDef()->getType()))
-      func(staticActor);
-    }
-
-  for (SMDynamicActorPtr dynamicActor: *dynamicActors.getList())
-    {
-    if (gameObjectFactory.isTypeOrSubType(type, dynamicActor->getDef()->getType()))
-      func(dynamicActor);
-    }
+  for (SMGameActorPtr& actor : *smActorsList.getList())
+    func(actor);
   }
 
 void SMGameContext::dropResource(uint id, int amount, Vector2D position)
@@ -353,16 +288,10 @@ void SMGameContext::dropResource(uint id, int amount, Vector2D position)
     createSMGameActor(id, position);
   }
 
-uint SMGameContext::getStaticActorCount() const
+uint SMGameContext::getSMActorCount() const
   {
-  return staticActors.count();
+  return (uint)smActorsList.count();
   }
-
-uint SMGameContext::getDynamicActorCount() const
-  {
-  return dynamicActors.count();
-  }
-
 
 
 

@@ -6,182 +6,78 @@
 #include "tinyxml2/tinyxml2.h"
 #include "SMGameActor.h"
 #include "SaveLoadFileHelper.h"
-#include "SMActorCommand.h"
-#include "SMObserverItem.h"
+#include "Utils.h"
 
 
-/*
-*   
-*/
 
-
-enum class GameObjectType
-  {
-  none,
-  all,
-
-  staticObject,
-  deposit,
-  building,
-  harvester,
-  manufacturer,
-  storage,
-  obstacle,
-
-  pickup,
-  resource,
-
-  unit,
-  settler,
-  citizen,
-  //  animals?,
-
-  LEVELSTART,   // special codes for the hierarchy
-  LEVELEND,
-  };
-
-
-static const std::list<GameObjectType> typeHierarchy
-  {
-  GameObjectType::all,
-    GameObjectType::LEVELSTART,
-
-    GameObjectType::staticObject,
-      GameObjectType::LEVELSTART,
-      GameObjectType::building,
-        GameObjectType::LEVELSTART,
-        GameObjectType::harvester,
-        GameObjectType::manufacturer,
-        GameObjectType::storage,
-        GameObjectType::LEVELEND,
-      GameObjectType::deposit,
-      GameObjectType::obstacle,
-      GameObjectType::LEVELEND,
-
-    GameObjectType::pickup,
-      GameObjectType::LEVELSTART,
-      GameObjectType::resource,
-      GameObjectType::LEVELEND,
-
-    GameObjectType::unit,
-      GameObjectType::LEVELSTART,
-      GameObjectType::settler,
-      GameObjectType::citizen,
-      GameObjectType::LEVELEND,
-
-    GameObjectType::LEVELEND,
-  };
-
-static const std::map<GameObjectType, string> typeNames
-  {
-    { GameObjectType::LEVELSTART, "LEVEL_START" },
-    { GameObjectType::LEVELEND, "LEVEL_END" },
-    { GameObjectType::all, "All" },
-    { GameObjectType::none, "None" },
-    { GameObjectType::staticObject, "Static Object" },
-    { GameObjectType::deposit, "Deposit" },
-    { GameObjectType::building, "Building" },
-    { GameObjectType::harvester, "Harvester" },
-    { GameObjectType::manufacturer, "Manufacturer" },
-    { GameObjectType::storage, "Storage" },
-    { GameObjectType::obstacle, "Obstacle" },
-    { GameObjectType::pickup, "Pickup" },
-    { GameObjectType::resource, "Resource" },
-    { GameObjectType::unit, "Unit" },
-    { GameObjectType::settler, "Settler" },
-    { GameObjectType::citizen, "Citizen" },
-  };
-
-class GameObjectFactory;
-class SMGameActor;
-typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
-
-
-class IGameObjectBehaviour : public SMObserverItem
+class SMComponentBlueprint
   {
 public:
-  virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) = 0;
-  virtual void initialiseFromSaved(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) { initialise(gameActor, gameContext); }
-  virtual void save(SMGameActor* gameActor, GameContext* gameContext, XMLElement* xmlElement) {};
-  virtual void update(SMGameActor* gameActor, GameContext* gameContext) = 0;
-  virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) = 0;
-  virtual string getBehaviourName() { return ""; };
-  virtual bool processCommand(SMGameActor* gameActor, GameContext* gameContext, const SMActorCommand& command) { return false; }  // return true if handled
+  SMComponentType type;
+  uint componentID;
+  virtual bool loadFromXML(XMLElement* xmlComponent, string* errorMsg) = 0;
+  virtual bool finaliseLoading(GameContext* gameContext, string* errorMsg) { return true; }
+  virtual SMComponentPtr constructComponent(SMGameActorPtr actor) const = 0;
   };
-typedef std::shared_ptr<IGameObjectBehaviour> IGameObjectBehaviourPtr;
+typedef std::shared_ptr<SMComponentBlueprint> SMComponentBlueprintPtr;
 
-
-class BehaviourHelper : public IGameObjectBehaviour
+class SMGameActorBlueprint
   {
 public:
-  typedef std::function<void(SMGameActor*, GameContext*)> Callback;
+  uint id = 0;
+  string name;
+  string displayName;
+  string iconPath;
+  SMGameActorType type;
+  Vector2D gridSize;
+  double height = 1;
+  bool isPosInCentre = false;
+  bool isSelectable = false;
+  bool isBuildable = false;
+  std::vector<GridXY> clearGridCells;    //  cells that units can move through
+  std::vector<SMComponentBlueprintPtr> componentBlueprints;
 
-private:
-  Callback onInit, onUpdate;
-
-public:
-  BehaviourHelper (Callback fInit, Callback fUpdate) : onInit(fInit), onUpdate(fUpdate) {}
-  virtual void initialise(SMGameActor* gameActor, GameContext* gameContext) override { if (onInit) onInit(gameActor, gameContext); };
-  virtual void update(SMGameActor* gameActor, GameContext* gameContext) override { if (onUpdate) onUpdate(gameActor, gameContext); };
-  virtual void cleanUp(SMGameActor* gameActor, GameContext* gameContext) override {};
-  };
-
-
-class IGameObjectDef
-  {
-public:
-  virtual string getUniqueName() const = 0;
-  virtual string getDisplayName() const = 0;
-  virtual uint getID() const = 0;
-  virtual string getIconFilePath() const = 0;
-  virtual GameObjectType getType() const = 0;
-  virtual RenderablePtr constructRenderable(RenderContext* renderContext, const Vector3D& translation, uint meshIdx = 0) const = 0;
-  virtual uint getMeshCount() const = 0;
+  virtual bool loadFromXML(XMLElement* xmlElement, string* errorMsg);
+  virtual bool finaliseLoading(GameContext* gameContext, string* errorMsg);
+  virtual SMGameActorPtr constructGameActor(uint actorID) const;
 
 protected:
-  friend class GameObjectFactory;
-  virtual bool loadFromXML(tinyxml2::XMLElement* xmlGameObjectDef, string* errorMsg) = 0;
-  virtual SMGameActorPtr createGameActor(GameContext* gameContext) const = 0;
-  virtual void createActorBehaviours(std::vector<IGameObjectBehaviourPtr>* behaviourList) const {};
+  virtual SMGameActor* doConstructActor(uint actorID) const = 0;
+
+private:
+  bool loadComponentFromXML(XMLElement* xmlComponent, string* errorMsg);
+  SMComponentBlueprintPtr constructComponentBlueprint(const string& componentName);
   };
-typedef std::shared_ptr<const IGameObjectDef> IGameObjectDefPtr;
+typedef std::shared_ptr<SMGameActorBlueprint> SMGameActorBlueprintPtr;
 
 
 class GameObjectFactory
   {
 private:
-  std::map<uint, IGameObjectDefPtr> gameObjectDefs;
-  std::map<GameObjectType, std::vector<uint>> typesToGameDefs;
+  std::map<uint, SMGameActorBlueprintPtr> blueprintsMap;
   string errorMessage;
   std::set<uint> usedLinkIDs;
   uint nextLinkID = 1;
+  uint nextBlueprintID = 1;
 
 public:
   GameObjectFactory() {};
 
-  void getGameObjectDefs(GameObjectType type, std::vector<IGameObjectDefPtr>* defsList) const;
-  IGameObjectDefPtr getGameObjectDef(uint id) const;
-  IGameObjectDefPtr findGameObjectDef(string name) const;
-  uint findGameObjectDefID(string name) const;
-  void forEachGameObjectDef(GameObjectType type, std::function<void(IGameObjectDefPtr)> func) const;
-  void forEachGameObjectDef(std::list<GameObjectType>::const_iterator& hierarchyIter, std::function<void(IGameObjectDefPtr)> func) const;
-  SMGameActorPtr createGameActor(GameContext* gameContext, XMLElement* xmlGameActor);
-  SMGameActorPtr createGameActor(GameContext* gameContext, uint gameObjectDefID, const Vector2D& position);
-  bool isSubType(GameObjectType type, GameObjectType subType) const;
-  bool isTypeOrSubType(GameObjectType type, GameObjectType subType) const;
-  void freeLinkID(uint linkID);
-
-  bool loadGameObjectDefs(const string& defsDirectory);
+  bool loadBlueprints(GameContext* gameContext, const string& blueprintsDirectory);
   string getError() const { return errorMessage; }
   void clearError() { errorMessage = ""; }
 
-  static string getTypeName(GameObjectType type);
-  static GameObjectType getTypeBasedOnTypeName(string name);
+  SMGameActorPtr createGameActor(uint actorID, uint blueprintID);
+  SMGameActorPtr createGameActor(uint actorID, XMLElement* xmlGameActor);
+  void freeLinkID(uint linkID);
+  void registerLinkID(uint linkID);
+  const SMGameActorBlueprint* getGameActorBlueprint(uint typeID) const;
+  const SMGameActorBlueprint* findGameActorBlueprint(string name) const;
+  void forEachGameActorBlueprint(std::function<void(const SMGameActorBlueprint* blueprint)> func) const;
 
 private:
   void clearGameObjectDefs();
-  bool loadGameObjectDefFile(const string& filePath);
-  bool loadGameObjectDef(tinyxml2::XMLElement* xmlGameObjectDef);
-  IGameObjectDef* constructGameObjectDef(string type);
+  bool loadBlueprintsFile(const string& filePath);
+  bool loadBlueprint(tinyxml2::XMLElement* xmlBlueprint);
+  SMGameActorBlueprint* constructGameActorBlueprint(string type);
   };
-

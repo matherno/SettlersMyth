@@ -66,16 +66,18 @@ void runGame()
       try
         {
         SMGameContext gameContext(renderContext, settings);
-        gameContext.initialise();
-        if (saveFile.empty() || gameContext.loadGame(saveFile))
+        if(gameContext.initialise())
           {
-          while (!gameContext.isContextEnded() && renderContext->isWindowOpen())
+          if (saveFile.empty() || gameContext.loadGame(saveFile))
             {
-            gameContext.startFrame();
-            gameContext.processInputStage();
-            gameContext.processUpdateStage();
-            gameContext.processDrawStage();
-            gameContext.endFrame(60);
+            while (!gameContext.isContextEnded() && renderContext->isWindowOpen())
+              {
+              gameContext.startFrame();
+              gameContext.processInputStage();
+              gameContext.processUpdateStage();
+              gameContext.processDrawStage();
+              gameContext.endFrame(60);
+              }
             }
           }
         gameContext.cleanUp();

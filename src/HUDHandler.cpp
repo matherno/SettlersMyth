@@ -73,27 +73,30 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
     if (!focusActor || focusActor->getID() != actor->getID())
       {
       focusActor = actor;
-      const IGameObjectDef* actorDef = actor->getDef();
-      if (!actorDef->getIconFilePath().empty())
-        icon->setTexture(context->getRenderContext()->getSharedTexture(actorDef->getIconFilePath()));
-      else
-        icon->setTexture(nullptr);
-      icon->invalidate();
-      nameText->setText(actorDef->getDisplayName());
-      nameText->invalidate();
-
+      const SMGameActorBlueprint* blueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(actor->getBlueprintTypeID());
+      ASSERT(blueprint, "");
+      if (blueprint)
+        {
+        if (!blueprint->iconPath.empty())
+          icon->setTexture(context->getRenderContext()->getSharedTexture(blueprint->iconPath));
+        else
+          icon->setTexture(nullptr);
+        icon->invalidate();
+        nameText->setText(blueprint->displayName);
+        nameText->invalidate();
+        }
       }
 
     bool first = true;
     string resText;
     actor->forEachResource([&](uint id, uint amount)
       {
-      IGameObjectDefPtr resDef = smGameContext->getGameObjectFactory()->getGameObjectDef(id);
-      if (resDef)
+      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(id);
+      if (resourceBlueprint)
         {
         if (!first)
           resText += "\n";
-        resText += resDef->getDisplayName() + ":" + std::to_string(amount);
+        resText += resourceBlueprint->displayName + ":" + std::to_string(amount);
         first = false;
         }
       }, true, true);
@@ -143,8 +146,7 @@ void SMDebugPanel::updateDebugInfo(GameContext* context)
     text += "Delta Time: " + std::to_string(smGameContext->getDeltaTime()) + " ms\n";
     text += "FPS: " + std::to_string(int(1.0f / ((float)smGameContext->getDeltaTime() / 1000.0f))) + "\n";
     text += "Speed: " + std::to_string(smGameContext->getSpeed()) + "\n";
-    text += "Static Actors: " + std::to_string(smGameContext->getStaticActorCount()) + "\n";
-    text += "Dynamic Actors: " + std::to_string(smGameContext->getDynamicActorCount()) + "\n";
+    text += "Actors: " + std::to_string(smGameContext->getSMActorCount()) + "\n";
 
     textComponent->setText(text);
     textComponent->setVisible(isVisible(), true);
@@ -226,10 +228,11 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   static const int btnSizeAndPadding = btnSize + btnPadding;
 
   int buildingNum = 0;
-  std::vector<IGameObjectDefPtr> buildings;
-  smGameContext->getGameObjectFactory()->getGameObjectDefs(GameObjectType::building, &buildings);
-  for (auto buildingDef : buildings)
+  smGameContext->getGameObjectFactory()->forEachGameActorBlueprint([&](const SMGameActorBlueprint* blueprint) -> void
     {
+    if (!blueprint->isBuildable)
+      return;
+
     const int colNum = buildingNum % numCols;
     const int rowNum = buildingNum / numCols;
     const int firstColOffset = -1 * int((btnHalfSize * (numCols - 1)) + (btnHalfPadding * (numCols - 1)));
@@ -237,27 +240,27 @@ void HUDHandler::setupBuildPanel(GameContext* context)
     UIButton* button = new UIButton(uiManager->getNextComponentID(), true);
     button->setOffset(Vector2D(firstColOffset + colNum * btnSizeAndPadding, 20 + rowNum * btnSizeAndPadding));
     button->setSize(Vector2D(btnSize, btnSize));
-    if (!buildingDef->getIconFilePath().empty())
-      button->setButtonTexture(context->getRenderContext()->getSharedTexture(buildingDef->getIconFilePath()));
+    if (!blueprint->iconPath.empty())
+      button->setButtonTexture(context->getRenderContext()->getSharedTexture(blueprint->iconPath));
     button->setButtonHighlightColour(BTN_PRESSED_COL, BTN_UNPRESSED_COL);
     button->setVerticalAlignment(alignmentStart);
     button->setHorizontalAlignment(alignmentCentre);
     button->setHighlightWidth(BTN_BORDER_SIZE);
     button->setGroup(buildingButtonGroup);
 
-    uint gameDefID = buildingDef->getID();
+    uint gameDefID = blueprint->id;
     button->setMouseClickCallback([this, gameDefID, button, context](uint x, uint y) -> bool
-                                    {
-                                    if (button->isToggledDown())
-                                      startBuildingPlacingMode(context, gameDefID);
-                                    else
-                                      endBuildingPlacingMode(context);
-                                    return true;
-                                    });
+      {
+      if (button->isToggledDown())
+        startBuildingPlacingMode(context, gameDefID);
+      else
+        endBuildingPlacingMode(context);
+      return true;
+      });
 
     subPanel->addChild(UIComponentPtr(button));
     ++buildingNum;
-    }
+    });
   }
 
 void HUDHandler::setupDebugPanel(GameContext* context)

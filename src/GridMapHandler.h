@@ -3,6 +3,7 @@
 #include <mathernogl/Types.h>
 #include "Grid.h"
 #include "SMGameActor.h"
+#include "SMGameObjectFactory.h"
 
 #define DEFAULT_MAX_PATH 50
 
@@ -64,10 +65,8 @@ public:
   int gridPosToIndex(GridXY gridPos) const { return gridPos.x + gridPos.y * mapSize.x; }
   GridXY indexToGridPos(uint index) const { return GridXY(index % mapSize.x, index / mapSize.y); }
 
-  typedef std::function<bool(SMStaticActorPtr)> FindActorPredicate;
-  SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, FindActorPredicate predicate) const;
-  SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, GameObjectType gameObjDefType) const;
-  SMStaticActorPtr findClosestStaticActor(GameContext* gameContext, GridXY position, string gameObjDefName) const;
+  typedef std::function<bool(SMGameActorPtr)> FindActorPredicate;
+  SMGameActorPtr findClosestGriddedActor(GameContext* gameContext, GridXY position, FindActorPredicate predicate) const;
 
   /*
    *  Obtains the closest path from start position to target, adding the nodes to given path, including starting position

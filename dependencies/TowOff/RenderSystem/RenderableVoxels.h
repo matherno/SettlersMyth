@@ -16,6 +16,7 @@ private:
   BoundingBoxPtr objSpaceBounds;
   BoundingBoxPtr worldSpaceBounds;
   Transform boundingBoxTransform;
+  bool backFaceCulling = true;
 
 public:
   RenderableVoxels(uint id, int drawStage = DRAW_STAGE_OPAQUE);
@@ -27,4 +28,8 @@ public:
 
   void setVoxelStorage(VoxelStoragePtr storage);
   void setVoxelSize(double size);
+  void setBackFaceCulling(bool enable);
+
+  VoxelStoragePtr getVoxelStorage() { return storage; }
+  double getVoxelSize() const { return voxelSize; }
   };

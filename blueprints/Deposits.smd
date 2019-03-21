@@ -1,0 +1,35 @@
+<blueprint name="Tree" type="Deposit" buildable="true">
+    <icon imagefile="icons/tree.png"/>
+    <grid x="1" y="1" height="2.0" posincentre="true"/>
+    <deposit resource_name="Log" resource_amount="4"/>
+    <component type="VoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="deposits/TreeA.mgv"/>
+        <model voxelfile="deposits/TreeB.mgv"/>
+        <model voxelfile="deposits/TreeC.mgv"/>
+    </component>
+    <component type="DestroyWhenNoResource" id="2"/>    
+</blueprint>
+
+<blueprint name="Stone Mound" type="Deposit" buildable="true">
+    <icon imagefile="icons/stonemound.png"/>
+    <grid x="1" y="1" height="1.1" posincentre="true"/>
+    <deposit resource_name="Stone" resource_amount="10"/>
+    <component type="VoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="deposits/StoneA.mgv"/>
+        <model voxelfile="deposits/StoneB.mgv"/>
+        <model voxelfile="deposits/StoneC.mgv"/>
+    </component>
+    <component type="DestroyWhenNoResource" id="2"/>        
+</blueprint>
+
+<blueprint name="Reeds" type="Deposit" buildable="true">
+    <icon imagefile="icons/reeds.png"/>
+    <grid x="1" y="1" height="1.1" posincentre="true"/>
+    <deposit resource_name="Thatch" resource_amount="3"/>
+    <component type="VoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="deposits/ReedsA.mgv"/>
+        <model voxelfile="deposits/ReedsB.mgv"/>
+        <model voxelfile="deposits/ReedsC.mgv"/>
+    </component>
+    <component type="DestroyWhenNoResource" id="2"/>        
+</blueprint>

@@ -1,6 +1,13 @@
 cmake-build-debug
 cmake-build-release
 .idea
+bin_debug
+bin_release
+obj
 Log.txt
 get_libs.bash
 saves
+Makefile
+SettlersMyth.make
+.vscode
+bin_*
