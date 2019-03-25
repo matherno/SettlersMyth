@@ -6,6 +6,7 @@
 
 #include <tinyxml2/tinyxml2.h>
 #include "Grid.h"
+#include "MathernoGL.h"
 
 #define SAVES_DIRECTORY "saves/"
 #define SAVES_FILE_EXT "sms"

@@ -8,11 +8,11 @@ project "SettlersMyth"
    
    files { "src/**.h", "src/**.cpp" }
    
-   libdirs { "./dependencies/mathernogl", "./dependencies/TowOff", "./dependencies/RaySplay/"}
+   libdirs { "./dependencies/mathernogl" }
 
-   links { "TowOffLib", "MathernoGL", "RaySplayLib", "GL", "GLEW", "glfw", "freeimage" }
+   links { "MathernoGL", "GL", "GLEW", "glfw", "freeimage" }
    
-   includedirs { "./dependencies", "./dependencies/TowOff", "./src", "./dependencies/RaySplay/include", "./dependencies/misc" }
+   includedirs { "./dependencies", "./dependencies/mathernogl", "./src", "./dependencies/misc" }
 
    cppdialect "C++11"
 

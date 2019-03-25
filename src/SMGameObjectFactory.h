@@ -1,7 +1,7 @@
 #pragma once
 
-#include <TowOff/RenderSystem/RenderSystem.h>
-#include <TowOff/GameSystem/GameSystem.h>
+#include <RenderSystem/RenderSystem.h>
+#include <GameSystem/GameSystem.h>
 #include <set>
 #include "tinyxml2/tinyxml2.h"
 #include "SMGameActor.h"

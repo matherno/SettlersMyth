@@ -11,3 +11,4 @@ Makefile
 SettlersMyth.make
 .vscode
 bin_*
+SettlersMyth.code-workspace

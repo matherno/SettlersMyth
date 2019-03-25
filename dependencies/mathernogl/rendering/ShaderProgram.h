@@ -4,11 +4,11 @@
 #include <iostream>
 #include <GL/glew.h>
 
-#include <mathernogl/utils/FileIO.h>
-#include <mathernogl/utils/Logging.h>
-#include <mathernogl/maths/Matrix4.h>
-#include <mathernogl/maths/Vector3D.h>
-#include <mathernogl/maths/Vector4D.h>
+#include <utils/FileIO.h>
+#include <utils/Logging.h>
+#include <maths/Matrix4.h>
+#include <maths/Vector3D.h>
+#include <maths/Vector4D.h>
 
 namespace mathernogl {
 

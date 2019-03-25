@@ -2,12 +2,12 @@
 // Created by matt on 25/02/19.
 //
 
-#include <TowOff/RenderSystem/RenderableVoxels.h>
+#include <RenderSystem/RenderableVoxels.h>
 #include <SMGameContext.h>
 #include <BlueprintFileHelper.h>
 #include <Resources.h>
 #include "ComponentVoxelModel.h"
-#include "TowOff/RenderSystem/VoxelBatchManager.h"
+#include "RenderSystem/VoxelBatchManager.h"
 
 
 /*

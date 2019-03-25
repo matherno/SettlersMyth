@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-#include <mathernogl/data/GPUBuffer.h>
+#include <data/GPUBuffer.h>
 
 namespace mathernogl {
 

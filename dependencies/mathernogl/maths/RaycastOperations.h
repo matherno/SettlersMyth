@@ -3,7 +3,7 @@
 #include <limits>
 #include <stdexcept>
 
-#include <mathernogl/maths/Vector3D.h>
+#include <maths/Vector3D.h>
 
 namespace mathernogl {
 

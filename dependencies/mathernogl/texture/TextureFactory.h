@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <GL/glew.h>
 
-#include <mathernogl/utils/Logging.h>
-#include <mathernogl/utils/ImageImporter.h>
-#include <mathernogl/image/ImageData.h>
-#include <mathernogl/texture/Texture.h>
+#include <utils/Logging.h>
+#include <utils/ImageImporter.h>
+#include <image/ImageData.h>
+#include <texture/Texture.h>
 
 namespace mathernogl {
 

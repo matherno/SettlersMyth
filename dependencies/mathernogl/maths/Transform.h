@@ -3,8 +3,8 @@
 // Created by matherno on 1/10/17.
 //
 
-#include <mathernogl/maths/Matrix4.h>
-#include <mathernogl/maths/Vector3D.h>
+#include <maths/Matrix4.h>
+#include <maths/Vector3D.h>
 
 namespace mathernogl{
 

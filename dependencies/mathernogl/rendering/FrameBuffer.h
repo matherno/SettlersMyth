@@ -1,9 +1,9 @@
 #pragma once
 
-#include <mathernogl/Types.h>
-#include <mathernogl/texture/Texture.h>
+#include <Types.h>
+#include <texture/Texture.h>
 #include <vector>
-#include <mathernogl/maths/Vector2D.h>
+#include <maths/Vector2D.h>
 
 /*
 *   

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <mathernogl/maths/Maths.h>
+#include <maths/Maths.h>
 
 namespace mathernogl {
 

@@ -5,7 +5,7 @@
 #include <cstring>
 #include <FreeImage.h>
 
-#include <mathernogl/image/ImageData.h>
+#include <image/ImageData.h>
 
 namespace mathernogl {
 

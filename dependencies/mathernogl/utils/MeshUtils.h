@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "mathernogl/maths/Maths.h"
+#include "maths/Maths.h"
 
 namespace mathernogl {
 

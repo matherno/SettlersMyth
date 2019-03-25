@@ -4,7 +4,7 @@
 *   
 */
 
-#include <mathernogl/maths/Vector3D.h>
+#include <maths/Vector3D.h>
 #include <memory>
 
 namespace mathernogl

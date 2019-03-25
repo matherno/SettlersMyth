@@ -2,9 +2,9 @@
 
 #include <stdexcept>
 
-#include <mathernogl/maths/Matrix4.h>
-#include <mathernogl/maths/MatrixOperations.h>
-#include <mathernogl/maths/Vector3D.h>
+#include <maths/Matrix4.h>
+#include <maths/MatrixOperations.h>
+#include <maths/Vector3D.h>
 
 namespace mathernogl {
 

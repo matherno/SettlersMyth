@@ -2,11 +2,11 @@
 
 #include <cmath>
 
-#include <mathernogl/maths/Vector2D.h>
-#include <mathernogl/maths/Vector3D.h>
-#include <mathernogl/maths/Vector4D.h>
-#include <mathernogl/maths/Matrix4.h>
-#include <mathernogl/maths/VectorOperations.h>
+#include <maths/Vector2D.h>
+#include <maths/Vector3D.h>
+#include <maths/Vector4D.h>
+#include <maths/Matrix4.h>
+#include <maths/VectorOperations.h>
 
 namespace mathernogl {
 

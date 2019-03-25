@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <vector>
 
-#include <mathernogl/maths/Vector2D.h>
+#include <maths/Vector2D.h>
 
 namespace mathernogl {
 

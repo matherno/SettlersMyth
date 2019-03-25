@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include <mathernogl/data/GPUBuffer.h>
-#include <mathernogl/Types.h>
+#include <data/GPUBuffer.h>
+#include <Types.h>
 
 namespace mathernogl {
 

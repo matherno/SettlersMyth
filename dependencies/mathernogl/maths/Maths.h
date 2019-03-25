@@ -1,16 +1,17 @@
-#include <mathernogl/maths/Vector2D.h>
-#include <mathernogl/maths/Vector3D.h>
-#include <mathernogl/maths/Vector4D.h>
-#include <mathernogl/maths/Matrix4.h>
+#include <maths/Vector2D.h>
+#include <maths/Vector3D.h>
+#include <maths/Vector4D.h>
+#include <maths/Matrix4.h>
 
-#include <mathernogl/maths/VectorOperations.h>
-#include <mathernogl/maths/MatrixOperations.h>
-#include <mathernogl/maths/RaycastOperations.h>
+#include <maths/VectorOperations.h>
+#include <maths/MatrixOperations.h>
+#include <maths/RaycastOperations.h>
+#include <maths/Ray.h>
 
-#include <mathernogl/maths/RandomGenerator.h>
-#include <mathernogl/maths/NoiseGenerator.h>
+#include <maths/RandomGenerator.h>
+#include <maths/NoiseGenerator.h>
 
-#include <mathernogl/maths/Transform.h>
-#include <mathernogl/maths/Transformation.h>
-#include <mathernogl/maths/Arithmetic.h>
-#include <mathernogl/maths/GeometricOperations.h>
+#include <maths/Transform.h>
+#include <maths/Transformation.h>
+#include <maths/Arithmetic.h>
+#include <maths/GeometricOperations.h>

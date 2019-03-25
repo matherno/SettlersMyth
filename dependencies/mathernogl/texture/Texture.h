@@ -1,7 +1,7 @@
 #pragma once
 
 #include <GL/glew.h>
-#include <mathernogl/image/ImageData.h>
+#include <image/ImageData.h>
 #include <memory>
 
 

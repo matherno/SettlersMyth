@@ -6,7 +6,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <mathernogl/systemio/Window.h>
+#include <systemio/Window.h>
 
 namespace mathernogl {
 

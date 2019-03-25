@@ -1,7 +1,7 @@
 #pragma once
 
-#include <TowOff/GameSystem/GameSystem.h>
-#include <TowOff/GameSystem/Timer.h>
+#include <GameSystem/GameSystem.h>
+#include <GameSystem/Timer.h>
 #include "Grid.h"
 #include "SaveLoadFileHelper.h"
 #include "ResourceStorage.h"

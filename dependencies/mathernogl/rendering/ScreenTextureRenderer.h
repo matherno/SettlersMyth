@@ -4,8 +4,8 @@
 *   
 */
 
-#include <mathernogl/texture/Texture.h>
-#include <mathernogl/data/VertexArray.h>
+#include <texture/Texture.h>
+#include <data/VertexArray.h>
 #include <memory>
 #include "ShaderProgram.h"
 

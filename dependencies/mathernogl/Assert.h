@@ -6,7 +6,7 @@
 #include <cstring>
 #include <stdlib.h>
 
-#include "mathernogl/utils/Logging.h"
+#include "utils/Logging.h"
 
 namespace mathernogl{
 

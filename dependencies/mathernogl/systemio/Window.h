@@ -9,8 +9,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <mathernogl/maths/Maths.h>
-#include <mathernogl/Types.h>
+#include <maths/Maths.h>
+#include <Types.h>
 
 namespace mathernogl {
 

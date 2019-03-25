@@ -4,9 +4,9 @@
 #include <iostream>
 #include <sstream>
 
-#include <mathernogl/maths/Vector2D.h>
-#include <mathernogl/maths/Matrix4.h>
-#include <mathernogl/image/ImageData.h>
+#include <maths/Vector2D.h>
+#include <maths/Matrix4.h>
+#include <image/ImageData.h>
 
 namespace mathernogl {
 

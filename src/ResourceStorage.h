@@ -2,7 +2,7 @@
 
 #include <map>
 #include <mathernogl/Types.h>
-#include <TowOff/GameSystem/GameSystem.h>
+#include <GameSystem/GameSystem.h>
 #include <set>
 
 #define DEFAULT_RES_PER_STACK   9
