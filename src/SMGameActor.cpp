@@ -7,7 +7,8 @@
 #include "BlueprintFileHelper.h"
 
 SMGameActor::SMGameActor(uint id, uint blueprintID) : GameActor(id), blueprintID(blueprintID)
-  {}
+  {
+  }
 
 void SMGameActor::addComponent(SMComponentPtr component)
   {
@@ -18,6 +19,11 @@ void SMGameActor::addComponent(SMComponentPtr component)
 
 void SMGameActor::onAttached(GameContext* gameContext)
   {
+  setResourceObserverFunc([&]()
+    {
+    postMessage(gameContext, SMMessage::resourceStorageChanged);
+    });
+
   if (xmlToLoadFrom)
     {
     initialiseActorFromSave(gameContext, xmlToLoadFrom);

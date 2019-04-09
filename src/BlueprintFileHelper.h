@@ -51,6 +51,8 @@
 #define OD_POSINCENTRE "posincentre"
 #define OD_SELECTABLE "selectable"
 #define OD_BUILDABLE "buildable"
+#define OD_CONSTRUCTIONPACK "construction_pack"
+#define OD_CONSTRUCTIONTIME "construction_time"
 
 
 static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)

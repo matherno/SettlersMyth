@@ -41,6 +41,9 @@ struct ResourceReserve
 
 class ResourceStorage
   {
+public:
+  typedef std::function<void()> ResourceObserverFunc;
+
 private:
   std::vector<ResourceStack> resourceStacks;
   mathernogl::MappedList<ResourceLock> resourceLocks;
@@ -52,9 +55,12 @@ private:
   uint maxResPerStack = 9;
   uint nextLockID = 1;
   uint nextReserveID = 1;
+  ResourceObserverFunc resObserver;
 
 public:
   ResourceStorage();
+
+  void setResourceObserverFunc(ResourceObserverFunc func);
 
   const std::vector<ResourceStack>* getResourceStacks() const;
   virtual void forEachResource(std::function<void(uint id, uint amount)> func, bool includeLocked = false, bool includeInputs = false) const;

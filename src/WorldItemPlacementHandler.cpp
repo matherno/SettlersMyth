@@ -54,12 +54,16 @@ bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint b
 
       if (GameActorBuilding* building = GameActorBuilding::cast(gameActor.get()))
         {
-        for (int i = 0; i < 3; ++i)
+        // temp
+        if (!building->getIsUnderConstruction())
           {
-          SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, building->getEntryPosition());
-          ASSERT(unit, "");
-          GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
-          building->attachUnit(unitPtr);
+          for (int i = 0; i < 3; ++i)
+            {
+            SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, building->getEntryPosition());
+            ASSERT(unit, "");
+            GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
+            building->attachUnit(unitPtr);
+            }
           }
         }
 

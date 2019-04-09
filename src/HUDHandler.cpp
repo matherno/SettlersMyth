@@ -6,6 +6,7 @@
 #include "SMGameContext.h"
 #include "Resources.h"
 #include "Utils.h"
+#include "GameActorTypes/GameActorBuilding.h"
 
 
 /*
@@ -70,36 +71,51 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
     {
     setVisible(true, true);
 
+
     if (!focusActor || focusActor->getID() != actor->getID())
       {
       focusActor = actor;
       const SMGameActorBlueprint* blueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(actor->getBlueprintTypeID());
       ASSERT(blueprint, "");
-      if (blueprint)
-        {
-        if (!blueprint->iconPath.empty())
-          icon->setTexture(context->getRenderContext()->getSharedTexture(blueprint->iconPath));
-        else
-          icon->setTexture(nullptr);
-        icon->invalidate();
-        nameText->setText(blueprint->displayName);
-        nameText->invalidate();
-        }
+      nameText->setText(blueprint->displayName);
+      nameText->invalidate();
+      if (!blueprint->iconPath.empty())
+        icon->setTexture(context->getRenderContext()->getSharedTexture(blueprint->iconPath));
+      else
+        icon->setTexture(nullptr);
+      icon->invalidate();
       }
+
+    GameActorBuilding* buildingActor = GameActorBuilding::cast(actor.get());
+    bool buildingUnderConstruction = false;
+    if (buildingActor)
+      buildingUnderConstruction = buildingActor->getIsUnderConstruction();
+
 
     bool first = true;
     string resText;
-    actor->forEachResource([&](uint id, uint amount)
+    if (buildingUnderConstruction)
       {
-      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(id);
+      resText = "Under Construction\n";
+      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(buildingActor->getConstructionPackID());
       if (resourceBlueprint)
+        resText += resourceBlueprint->displayName + "\n";
+      resText += mathernogl::stringFormat("Progress %.0f%%", buildingActor->getConstructionProgress() * 100.0);
+      }
+    else
+      {
+      actor->forEachResource([&](uint id, uint amount)
         {
-        if (!first)
-          resText += "\n";
-        resText += resourceBlueprint->displayName + ":" + std::to_string(amount);
-        first = false;
-        }
-      }, true, true);
+        const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(id);
+        if (resourceBlueprint)
+          {
+          if (!first)
+            resText += "\n";
+          resText += resourceBlueprint->displayName + ":" + std::to_string(amount);
+          first = false;
+          }
+        }, true, true);
+      }
 
     resourceText->setText(resText);
     resourceText->invalidate();

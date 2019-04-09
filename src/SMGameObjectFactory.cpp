@@ -8,12 +8,14 @@
 #include <GameActorTypes/GameActorResource.h>
 #include <GameActorTypes/GameActorDeposit.h>
 #include <Components/ComponentVoxelModel.h>
+#include <Components/ComponentBuildingVoxelModel.h>
 #include <Components/ComponentHarvester.h>
 #include <Components/ComponentManufacturer.h>
 #include <Components/ComponentStorage.h>
 #include <Components/ComponentResourceStacks.h>
 #include <Components/ComponentResourcePickup.h>
 #include <Components/ComponentDestroyWhenNoResource.h>
+#include <Components/ComponentConstructor.h>
 #include "SMGameObjectFactory.h"
 #include "BlueprintFileHelper.h"
 #include "Resources.h"
@@ -133,6 +135,9 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
     case SMComponentType::voxelModelRenderable:
       blueprint.reset(new ComponentVoxelModelBlueprint());
       break;
+    case SMComponentType::buildingVoxelModelRenderable:
+      blueprint.reset(new ComponentBuildingVoxelModelBlueprint());
+      break;
     case SMComponentType::buildingHarvester:
       blueprint.reset(new ComponentHarvesterBlueprint());
       break;
@@ -150,6 +155,9 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
       break;
     case SMComponentType::destroyWhenNoResource:
       blueprint.reset(new ComponentDestroyWhenNoResourceBlueprint());
+      break;
+    case SMComponentType::buildingConstructor:
+      blueprint.reset(new ComponentConstructorBlueprint());
       break;
     }
 

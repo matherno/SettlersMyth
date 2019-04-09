@@ -14,9 +14,14 @@ typedef std::shared_ptr<GameActorUnit> GameActorUnitPtr;
 
 class GameActorBuildingBlueprint : public SMGameActorBlueprint
   {
+private:
+  string constructionPackName = "";
+
 public:
   GridXY entryCell;
   std::vector<GridXY> resourceStackSpots;
+  uint constructionPackID = 0;
+  uint constructionPackAmount = 0;
 
 protected:
   virtual bool loadFromXML(XMLElement* xmlElement, string* errorMsg) override;
@@ -30,6 +35,9 @@ private:
   const GameActorBuildingBlueprint* blueprint;
   mathernogl::MappedList<GameActorUnitPtr> attachedUnits;
   Timer returnIdleUnitsTimer;
+
+  bool isUnderConstruction = false;
+  ResourceStorage constructionResourceStorage;
 
 public:
   GameActorBuilding(uint id, uint typeID, const GameActorBuildingBlueprint* blueprint);
@@ -50,8 +58,15 @@ public:
   bool isUnitAttached(uint unitID) const;
   void getResourceStackPositions(std::vector<GridXY>* positions) const;
 
+  bool getIsUnderConstruction() const;
+  ResourceStorage* getConstructionResourceStorage();
+  void makeConstructed(GameContext* gameContext, bool force = false);
+  uint getConstructionPackID() const;
+  double getConstructionProgress() const;   //  from 0 to 1
+
   static GameActorBuilding* cast(SMGameActor* actor) { return dynamic_cast<GameActorBuilding*>(actor); }
 
 protected:
   virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) override;
+  void onUpdateReturnIdleUnits(GameContext* gameContext);
   };

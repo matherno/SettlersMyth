@@ -12,6 +12,11 @@ ResourceStorage::ResourceStorage()
   setupStackCount(1);
   }
 
+void ResourceStorage::setResourceObserverFunc(ResourceObserverFunc func)
+  {
+  resObserver = func;
+  }
+
 const std::vector<ResourceStack>* ResourceStorage::getResourceStacks() const
   {
   return &resourceStacks;
@@ -53,6 +58,9 @@ bool ResourceStorage::takeResource(uint id, uint amount, bool canTakeInput)
         amount -= amountToTake;
         }
       }
+
+    if (resObserver)
+      resObserver();
     return true;
     }
   return false;
@@ -89,6 +97,8 @@ bool ResourceStorage::storeResource(uint id, uint amount)
       }
     }
 
+  if (resObserver)
+    resObserver();
   return true;
   }
 
@@ -112,6 +122,8 @@ uint ResourceStorage::takeAllResource(uint id, uint maxAmount)
     }
 
   totalResCount -= amountTaken;
+  if (amountTaken > 0 && resObserver)
+    resObserver();
   return amountTaken;
   }
 
@@ -125,7 +137,12 @@ void ResourceStorage::clearAllResources()
   ASSERT(resourceLocks.count() == 0, "");
   resourceLocks.clear();
   resAmountLocked.clear();
-  totalResCount = 0;
+  if (totalResCount > 0)
+    {
+    totalResCount = 0;
+    if (resObserver)
+      resObserver();
+    }
   }
 
 bool ResourceStorage::canStoreResource(uint id, uint amount) const
@@ -157,9 +174,15 @@ void ResourceStorage::transferAllResourcesTo(ResourceStorage* receiver)
     if (stack.id > 0 && stack.amount > 0)
       {
       receiver->storeResource(stack.id, stack.amount);
-      totalResCount -= stack.amount;
       stack.amount = 0;
       }
+    }
+  
+  if (totalResCount > 0)
+    {
+    totalResCount = 0;
+    if (resObserver)
+      resObserver();
     }
   }
 
@@ -272,7 +295,7 @@ uint ResourceStorage::reservedResourceSpaceCount(uint id) const
   {
   if(resAmountReserved.count(id) == 0)
     return 0;
-  return resAmountReserved.at(id);
+  return resAmountReserved.at(id); 
   }
 
 void ResourceStorage::registerResourceAsInput(uint id)

@@ -30,6 +30,13 @@ bool GameActorBuildingBlueprint::loadFromXML(XMLElement* xmlElement, string* err
       }
     }
 
+  XMLElement* xmlConstruction = xmlElement->FirstChildElement(OD_CONSTRUCTION);
+  if(xmlConstruction)
+    {
+    constructionPackName = xmlGetStringAttribute(xmlConstruction, OD_CONSTRUCTIONPACK);
+    xmlConstruction->QueryAttribute(OD_AMOUNT, &constructionPackAmount);
+    }
+
   return true;
   }
   
@@ -37,6 +44,18 @@ bool GameActorBuildingBlueprint::finaliseLoading(GameContext* gameContext, strin
   {
   if(!SMGameActorBlueprint::finaliseLoading(gameContext, errorMsg))
     return false;
+
+  constructionPackID = 0;
+  if (!constructionPackName.empty())
+    {
+    const SMGameActorBlueprint* resourceBlueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameActorBlueprint(constructionPackName);
+    if (!resourceBlueprint)
+      {
+      *errorMsg = "Construction pack name '" + constructionPackName + "' unknown.";
+      return false;
+      }
+    constructionPackID = resourceBlueprint->id;
+    }
 
   return true;
   }
@@ -60,6 +79,24 @@ GameActorBuilding::GameActorBuilding(uint id, uint typeID, const GameActorBuildi
 
 void GameActorBuilding::onAttached(GameContext* gameContext)
   {
+  if(blueprint->constructionPackID > 0 && blueprint->constructionPackAmount > 0)
+    {
+    isUnderConstruction = true;
+    constructionResourceStorage.setupStackCount(1, blueprint->constructionPackAmount);
+    constructionResourceStorage.setResourceObserverFunc([this, gameContext]()
+      {
+      makeConstructed(gameContext);     //  checks internally if can be constructed or not
+      if (getIsUnderConstruction())
+        postMessage(gameContext, SMMessage::constructionProgress);
+      else
+        postMessage(gameContext, SMMessage::constructionFinished);
+      });
+    }
+  else
+    {
+    isUnderConstruction = false;
+    }
+
   SMGameActor::onAttached(gameContext);
   returnIdleUnitsTimer.setTimeOut(SEND_SETTLER_COOLDOWN);
   returnIdleUnitsTimer.reset();
@@ -68,18 +105,9 @@ void GameActorBuilding::onAttached(GameContext* gameContext)
 void GameActorBuilding::onUpdate(GameContext* gameContext)
   {
   SMGameActor::onUpdate(gameContext);
-  if (returnIdleUnitsTimer.incrementTimer(gameContext->getDeltaTime()))
-    {
-    for (GameActorUnitPtr unit : *(attachedUnits.getList()))
-      {
-      if (unit->isIdling() && unit->getPosition() != getEntryPosition().centre())
-        {
-        unit->dropAllResources(gameContext, unit->getPosition());
-        unit->returnToAttachedBuilding(gameContext);
-        }
-      }
-    returnIdleUnitsTimer.reset();
-    }  
+
+  if (!isUnderConstruction)
+    onUpdateReturnIdleUnits(gameContext);
   }
 
 GridXY GameActorBuilding::getEntryPosition() const
@@ -180,5 +208,61 @@ void GameActorBuilding::finaliseActorFromSave(GameContext* gameContext, XMLEleme
     if (GameActorUnitPtr unit = std::dynamic_pointer_cast<GameActorUnit>(linkedActor))
       attachUnit(unit);
     xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
+    }
+  }
+
+bool GameActorBuilding::getIsUnderConstruction() const
+  {
+  return isUnderConstruction;
+  }
+
+ResourceStorage* GameActorBuilding::getConstructionResourceStorage()
+  {
+  return &constructionResourceStorage;
+  }
+
+void GameActorBuilding::makeConstructed(GameContext* gameContext, bool force)
+  {
+  if (force || constructionResourceStorage.resourceCount(blueprint->constructionPackID) >= blueprint->constructionPackAmount)
+    {
+    isUnderConstruction = false;
+    constructionResourceStorage.clearAllResources();
+
+    // temp
+    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+    for (int i = 0; i < 3; ++i)
+      {
+      SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, getEntryPosition());
+      ASSERT(unit, "");
+      GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
+      attachUnit(unitPtr);
+      }
+    }
+  }
+
+uint GameActorBuilding::getConstructionPackID() const
+  {
+  return blueprint->constructionPackID;
+  }
+
+double GameActorBuilding::getConstructionProgress() const
+  {
+  const double progress = (double)constructionResourceStorage.resourceCount(blueprint->constructionPackID) / (double)blueprint->constructionPackAmount;
+  return mathernogl::clampd(progress, 0, 1);
+  }
+
+void GameActorBuilding::onUpdateReturnIdleUnits(GameContext* gameContext)
+  {
+  if (returnIdleUnitsTimer.incrementTimer(gameContext->getDeltaTime()))
+    {
+    for (GameActorUnitPtr unit : *(attachedUnits.getList()))
+      {
+      if (unit->isIdling() && unit->getPosition() != getEntryPosition().centre())
+        {
+        unit->dropAllResources(gameContext, unit->getPosition());
+        unit->returnToAttachedBuilding(gameContext);
+        }
+      }
+    returnIdleUnitsTimer.reset();
     }
   }

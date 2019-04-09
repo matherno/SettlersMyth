@@ -48,6 +48,9 @@ enum class SMMessage
   actorRotationChanged,
   attachedUnitCmdEnded,       //  extra is pointer to the UnitCommand that was ended
   attachedUnitCmdCancelled,   //  extra is pointer to the UnitCommand that was cancelled
+  resourceStorageChanged,
+  constructionProgress,
+  constructionFinished,
   };
 
 
@@ -65,12 +68,14 @@ enum class SMComponentType
   {
   unknown,
   voxelModelRenderable,
+  buildingVoxelModelRenderable,
   buildingHarvester,
   buildingManufacturer,
   buildingStorage,
   resourceStacks,
   resourcePickup,
   destroyWhenNoResource,
+  buildingConstructor,
   };
 
 
@@ -79,12 +84,14 @@ namespace SMTypes
   static const std::map<SMComponentType, string> componentNames
     {
       { SMComponentType::voxelModelRenderable, "VoxelRenderable" },
+      { SMComponentType::buildingVoxelModelRenderable, "BuildingVoxelRenderable" },
       { SMComponentType::buildingHarvester, "BuildingHarvester" },
       { SMComponentType::buildingManufacturer, "BuildingManufacturer" },
       { SMComponentType::buildingStorage, "BuildingStorage" },
       { SMComponentType::resourceStacks, "ResourceStacks" },
       { SMComponentType::resourcePickup, "ResourcePickup" },
       { SMComponentType::destroyWhenNoResource, "DestroyWhenNoResource" },
+      { SMComponentType::buildingConstructor, "BuildingConstructor" },
     };
 
   static const std::map<SMGameActorType, string> typeNames

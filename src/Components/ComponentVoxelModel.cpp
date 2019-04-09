@@ -61,13 +61,13 @@ ComponentVoxelModel::ComponentVoxelModel(const SMGameActorPtr& actor, SMComponen
 void ComponentVoxelModel::initialise(GameContext* gameContext)
   {
   voxelModelIdx = (uint) mathernogl::RandomGenerator::randomInt(0, (int) blueprint->modelFilePaths.size() - 1);
-  createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
+  voxelModel = createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
   }
 
 void ComponentVoxelModel::initialiseFromSaved(GameContext* gameContext, XMLElement* xmlComponent)
   {
   voxelModelIdx = std::min(xmlComponent->UnsignedAttribute(SL_MODELIDX), (uint)blueprint->modelFilePaths.size() - 1);
-  createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
+  voxelModel = createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
   }
 
 void ComponentVoxelModel::update(GameContext* gameContext)
@@ -90,7 +90,9 @@ void ComponentVoxelModel::onMessage(GameContext* gameContext, SMMessage message,
     {
     case SMMessage::actorRotationChanged:
     case SMMessage::actorPositionChanged:
-      updateRenderableTransform();
+      if (!blueprint->staticModel)
+        updateRenderableTransform(voxelModel);
+      break;
     }
   }
 
@@ -99,31 +101,41 @@ void ComponentVoxelModel::save(GameContext* gameContext, XMLElement* xmlComponen
   xmlComponent->SetAttribute(SL_MODELIDX, voxelModelIdx);
   }
 
-void ComponentVoxelModel::updateRenderableTransform()
+void ComponentVoxelModel::updateRenderableTransform(RenderablePtr renderable) const
   {
-  if (!blueprint->staticModel)
-    {
-    voxelModel->getTransform()->setIdentityMatrix();
-    voxelModel->getTransform()->rotate(0, 1, 0, getActor()->getRotation());
-    voxelModel->getTransform()->translate(getActor()->getPosition3D());
-    }
+  renderable->getTransform()->setIdentityMatrix();
+  renderable->getTransform()->rotate(0, 1, 0, getActor()->getRotation());
+  renderable->getTransform()->translate(getActor()->getPosition3D());
   }
 
-void ComponentVoxelModel::createRenderable(GameContext* gameContext, const string& filePath)
+RenderablePtr ComponentVoxelModel::createRenderable(GameContext* gameContext, const string& filePath) const
   {
   RenderContext* renderContext = gameContext->getRenderContext();
+  RenderablePtr renderable;
   if (blueprint->staticModel)
     {
-    voxelModel = renderContext->getVoxelBatchManager()->createVoxelModelInstance(renderContext, filePath, getActor()->getPosition3D());
+    renderable = renderContext->getVoxelBatchManager()->createVoxelModelInstance(renderContext, filePath, getActor()->getPosition3D());
     }
   else
     {
-    RenderableVoxels* renderable = new RenderableVoxels(renderContext->getNextRenderableID(), DRAW_STAGE_NO_SHADOW_CASTING);
-    renderable->setVoxelStorage(renderContext->getSharedVoxelStorage(filePath));
-    renderable->setVoxelSize(DYNAMIC_VOXEL_SIZE);
-    voxelModel.reset(renderable);
-    updateRenderableTransform();
+    RenderableVoxels* voxels = new RenderableVoxels(renderContext->getNextRenderableID(), DRAW_STAGE_NO_SHADOW_CASTING);
+    voxels->setVoxelStorage(renderContext->getSharedVoxelStorage(filePath));
+    voxels->setVoxelSize(DYNAMIC_VOXEL_SIZE);
+    renderable.reset(voxels);
+    updateRenderableTransform(renderable);
     }
-  voxelModel->initialise(renderContext);
-  renderContext->getRenderableSet()->addRenderable(voxelModel);
+  renderable->initialise(renderContext);
+  renderContext->getRenderableSet()->addRenderable(renderable);
+  return renderable;
+  }
+
+void ComponentVoxelModel::refreshRenderable(GameContext* gameContext)
+  {
+  if (voxelModel)
+    {
+    voxelModel->cleanUp(gameContext->getRenderContext());
+    gameContext->getRenderContext()->getRenderableSet()->removeRenderable(voxelModel->getID());
+    voxelModel.reset();
+    }
+  voxelModel = createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
   }

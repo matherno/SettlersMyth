@@ -25,6 +25,8 @@ class ComponentVoxelModel : public SMComponent
   {
 private:
   const ComponentVoxelModelBlueprint* blueprint;
+
+protected:
   RenderablePtr voxelModel;
   uint voxelModelIdx;
 
@@ -39,6 +41,7 @@ public:
   virtual void save(GameContext* gameContext, XMLElement* xmlComponent) override;
 
 protected:
-  void createRenderable(GameContext* gameContext, const string& filePath);
-  void updateRenderableTransform();
+  virtual RenderablePtr createRenderable(GameContext* gameContext, const string& filePath) const;
+  void updateRenderableTransform(RenderablePtr renderable) const;
+  void refreshRenderable(GameContext* gameContext);
   };
