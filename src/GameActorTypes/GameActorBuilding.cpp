@@ -88,8 +88,6 @@ void GameActorBuilding::onAttached(GameContext* gameContext)
       makeConstructed(gameContext);     //  checks internally if can be constructed or not
       if (getIsUnderConstruction())
         postMessage(gameContext, SMMessage::constructionProgress);
-      else
-        postMessage(gameContext, SMMessage::constructionFinished);
       });
     }
   else
@@ -227,6 +225,7 @@ void GameActorBuilding::makeConstructed(GameContext* gameContext, bool force)
     {
     isUnderConstruction = false;
     constructionResourceStorage.clearAllResources();
+    postMessage(gameContext, SMMessage::constructionFinished);
 
     // temp
     SMGameContext* smGameContext = SMGameContext::cast(gameContext);

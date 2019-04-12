@@ -61,6 +61,8 @@ RenderablePtr ComponentBuildingVoxelModel::createRenderable(GameContext* gameCon
     voxels->setVoxelStorage(renderContext->getSharedVoxelStorage(filePath));
     voxels->setVoxelSize(blueprint->staticModel ? VOXEL_SIZE : DYNAMIC_VOXEL_SIZE);
     voxels->setConstructionCompletion(building->getConstructionProgress());
+    voxels->setSaturationFactor(0.7);
+    voxels->setValueFactor(0.7);
 
     RenderablePtr renderable;
     renderable.reset(voxels);

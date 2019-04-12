@@ -61,6 +61,24 @@ void ActorFocusPanel::initialise(GameContext* context)
   resourceText->setFontColour(Vector3D(0));
   resourceText->showBackground(false);
   subPanel->addChild(resourceText);
+
+  // temp force construction finished button
+  UIButton* button = new UIButton(uiManager->getNextComponentID(), false);
+  button->setVerticalAlignment(Alignment::alignmentEnd);
+  button->setHorizontalAlignment(Alignment::alignmentEnd);
+  button->setOffset(Vector2D(-10, -10));
+  button->setSize(Vector2D(30, 30));
+  button->setButtonColour(Vector3D(0.7, 0.1, 0.1));
+  button->setButtonHighlightColour(BTN_PRESSED_COL, BTN_UNPRESSED_COL);
+  button->setHighlightWidth(BTN_BORDER_SIZE);
+  button->setMouseClickCallback([this, context](uint x, uint y) -> bool
+    {
+    GameActorBuilding* buildingActor = GameActorBuilding::cast(focusActor.get());
+    if (buildingActor)
+      buildingActor->makeConstructed(context, true);
+    return true;
+    });
+  subPanel->addChild(UIComponentPtr(button));
   }
 
 void ActorFocusPanel::updateActorInfo(GameContext* context)
@@ -111,7 +129,7 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
           {
           if (!first)
             resText += "\n";
-          resText += resourceBlueprint->displayName + ":" + std::to_string(amount);
+          resText += resourceBlueprint->displayName + ": " + std::to_string(amount);
           first = false;
           }
         }, true, true);
@@ -216,7 +234,7 @@ void HUDHandler::setupFocusPanel(GameContext* context)
   UIManager* uiManager = context->getUIManager();
   focusPanel.reset(new ActorFocusPanel(uiManager->getNextComponentID()));
   focusPanel->setOffset(Vector2D(0, 20));
-  focusPanel->setSize(Vector2D(200, 200));
+  focusPanel->setSize(Vector2D(250, 200));
   uiManager->addComponent(focusPanel);
   }
 

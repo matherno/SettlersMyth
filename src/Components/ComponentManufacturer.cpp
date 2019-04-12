@@ -19,6 +19,7 @@ bool ComponentManufacturerBlueprint::loadFromXML(XMLElement* xmlComponent, strin
   xmlComponent->QueryAttribute(OD_PROCESSTIME, &manufactureTime);
   manufactureSpot = xmlGetGridXYValue(xmlComponent, OD_MANUF_SPOT);
   manufactureDir = xmlGetGridXYValue(xmlComponent, OD_MANUF_DIR);
+  keepOutput = xmlComponent->BoolAttribute(OD_KEEPOUTPUT);
 
   //  inputs
   int inputResCount = 0;
@@ -65,7 +66,7 @@ bool ComponentManufacturerBlueprint::finaliseLoading(GameContext* gameContext, s
       *errorMsg = "Input resource name '" + pair.first + "' unknown.";
       return false;
       }
-    inputsByID[resourceBlueprint->id] = pair.second;
+    inputs[resourceBlueprint->id] = pair.second;
     }
 
   //  verify output resource name and get its corresponding blueprint id
@@ -108,7 +109,7 @@ void ManufactureUnitCommand::onStart(GameContext* gameContext, GameActorUnit* un
     }
 
   unit->dropAllResources(gameContext);
-  for (auto pair : manufactureBlueprint->inputsByID)
+  for (auto pair : manufactureBlueprint->inputs)
     {
     if (attachedBuilding->takeResource(pair.first, pair.second, true))
       {
@@ -188,12 +189,14 @@ void ComponentManufacturer::initialise(GameContext* gameContext)
 
   resCollectIdx = 0;
   resCollectCycle.clear();
-  for (auto pair : blueprint->inputsByID)
+  for (auto pair : blueprint->inputs)
     {
     for (int resNum = 0; resNum < pair.second; ++resNum)
       resCollectCycle.push_back(pair.first);
     getBuildingActor()->registerResourceAsInput(pair.first);
     }
+  if (blueprint->keepOutput)
+    getBuildingActor()->registerResourceAsInput(blueprint->outputResID);
   std::shuffle(resCollectCycle.begin(), resCollectCycle.end(), std::default_random_engine());
   }
 
@@ -237,10 +240,12 @@ void ComponentManufacturer::onMessage(GameContext* gameContext, SMMessage messag
 bool ComponentManufacturer::gotEnoughInputResources() const
   {
   const GameActorBuilding* building = getBuildingActor();
+  if (building->resourceCount(blueprint->outputResID, false, true) + blueprint->outputResAmount > DEFAULT_RES_PER_STACK)
+    return false;
   if(!building->canStoreResource(blueprint->outputResID, blueprint->outputResAmount))
     return false;
 
-  for (auto pair : blueprint->inputsByID)
+  for (auto pair : blueprint->inputs)
     {
     if (building->resourceCount(pair.first, false, true) < pair.second)
       return false;
@@ -270,7 +275,8 @@ void ComponentManufacturer::sendUnitToCollect(GameContext* gameContext)
     if (resCollectIdx >= resCollectCycle.size())
       resCollectIdx = 0;
     numResChecked++;
-    if (building->canStoreResource(resToCollect, 1))
+    const int amountStoring = building->resourceCount(resToCollect, false, true) + building->reservedResourceSpaceCount(resToCollect);
+    if (amountStoring < DEFAULT_RES_PER_STACK && building->canStoreResource(resToCollect, 1))
       {
       actorToCollectFrom = smGameContext->getGridMapHandler()->findClosestGriddedActor(gameContext, building->getEntryPosition(), 
         [&](SMGameActorPtr actor)

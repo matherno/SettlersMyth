@@ -16,9 +16,11 @@
 #include <Components/ComponentResourcePickup.h>
 #include <Components/ComponentDestroyWhenNoResource.h>
 #include <Components/ComponentConstructor.h>
+#include <Components/ComponentInitResources.h>
 #include "SMGameObjectFactory.h"
 #include "BlueprintFileHelper.h"
 #include "Resources.h"
+#include "SMGameContext.h"
 
 
 
@@ -30,13 +32,15 @@
 bool SMGameActorBlueprint::loadFromXML(XMLElement* xmlElement, string* errorMsg)
   {
   name = xmlGetStringAttribute(xmlElement, OD_NAME);
+  displayName = xmlGetStringAttribute(xmlElement, OD_DISPLAYNAME);
   if (name.empty())
     {
     *errorMsg = "Blueprint name is blank";
     return false;
     }
+  if (displayName.empty())
+    displayName = name;
 
-  displayName = name;
   auto xmlIcon = xmlElement->FirstChildElement(OD_ICON);
   if (xmlIcon)
     iconPath = RES_DIR + xmlGetStringAttribute(xmlIcon, OD_IMAGEFILE);
@@ -158,6 +162,9 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
       break;
     case SMComponentType::buildingConstructor:
       blueprint.reset(new ComponentConstructorBlueprint());
+      break;
+    case SMComponentType::initResources:
+      blueprint.reset(new ComponentInitResourcesBlueprint());
       break;
     }
 

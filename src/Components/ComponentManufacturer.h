@@ -11,15 +11,18 @@
 
 class ComponentManufacturerBlueprint : public SMComponentBlueprint
   {
-public:
+private:
   std::map<string, uint> inputsByName;
-  std::map<uint, uint> inputsByID;
   string outputResName;
+
+public:
+  std::map<uint, uint> inputs;
   uint outputResID = 0;
   uint outputResAmount = 0;
   uint manufactureTime = 0;
   GridXY manufactureSpot;
   GridXY manufactureDir;
+  bool keepOutput = false;  //  if true, then units from other buildings can not take output resource from this
 
   virtual bool loadFromXML(XMLElement* xmlComponent, string* errorMsg) override;
   virtual bool finaliseLoading(GameContext* gameContext, string* errorMsg) override;

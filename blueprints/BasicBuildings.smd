@@ -1,3 +1,24 @@
+<blueprint name="Camp" type="Building" buildable="true">
+    <icon imagefile="icons/camp.png"/>
+    <grid x="4" y="4" height="1.5" posincentre="false">
+        <resourcestack x="2" y="1"/>
+        <resourcestack x="0" y="2"/>
+        <resourcestack x="1" y="0"/>
+        <resourcestack x="3" y="2"/>
+        <resourcestack x="3" y="1"/>
+        <resourcestack x="1" y="2"/>
+        <entry x="2" y="3"/>
+    </grid>
+    <component type="BuildingConstructor" id="1" construction_pack="BuildMaterials1" construction_time="5000"/>    
+    <component type="BuildingVoxelRenderable" id="2" staticmodel="true">
+        <model voxelfile="buildings/Camp.mgv"/>
+    </component>
+    <component type="ResourceStacks" id="3"/>    
+    <component type="InitResources" id="4">
+        <resource name="BuildMaterials1" amount="18"/>
+    </component>
+</blueprint>
+
 <blueprint name="Wood Cutter" type="Building" buildable="true">
     <icon imagefile="icons/woodcutter.png"/>
     <grid x="4" y="4" height="2.3" posincentre="false">
@@ -7,6 +28,7 @@
         <clearpos x="3" y="3"/>
         <entry x="2" y="1"/>
     </grid>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
     <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
         <model voxelfile="buildings/Woodcutter.mgv"/>
     </component>
@@ -24,7 +46,7 @@
         <clearpos x="1" y="2"/>
         <entry x="1" y="1"/>
     </grid>
-    <construction construction_pack="BasicConstrPack" amount="4"/>
+    <construction construction_pack="BuildMaterials1" amount="5"/>
     <component type="BuildingManufacturer" id="1" process_time="5000">
         <manufacturespot x="2" y="2"/> 
         <manufacturedir x="1" y="0"/> 
@@ -44,7 +66,7 @@
         <clearpos x="1" y="2"/>
         <entry x="1" y="1"/>
     </grid>
-    <construction construction_pack="BasicConstrPack" amount="3"/>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
     <component type="BuildingHarvester" id="1" deposit="Stone Mound" harvest_time="7000"/>
     <component type="ResourceStacks" id="2"/>    
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
@@ -59,6 +81,7 @@
         <resourcestack x="2" y="1"/>
         <entry x="1" y="1"/>
     </grid>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
     <component type="BuildingHarvester" id="1" deposit="Reeds" harvest_time="3000"/>
     <component type="ResourceStacks" id="2"/>    
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
@@ -75,7 +98,7 @@
         <resourcestack x="3" y="1"/>
         <entry x="1" y="1"/>
     </grid>
-    <construction construction_pack="BasicConstrPack" amount="6"/>
+    <construction construction_pack="BuildMaterials1" amount="6"/>
     <component type="BuildingStorage" id="1"/>
     <component type="ResourceStacks" id="2"/>    
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
@@ -96,7 +119,7 @@
         <resourcestack x="3" y="3"/>
         <entry x="1" y="3"/>
     </grid>
-    <construction construction_pack="BasicConstrPack" amount="10"/>
+    <construction construction_pack="BuildMaterials1" amount="10"/>
     <component type="BuildingStorage" id="1"/>
     <component type="ResourceStacks" id="2"/>
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
@@ -113,13 +136,14 @@
         <resourcestack x="3" y="1"/>
         <entry x="1" y="1"/>
     </grid>
-    <component type="BuildingConstructor" id="1" construction_pack="BasicConstrPack" construction_time="5000"/>    
-    <component type="BuildingManufacturer" id="2" process_time="5000">
+    <construction construction_pack="BuildMaterials1" amount="4"/>
+    <component type="BuildingConstructor" id="1" construction_pack="BuildMaterials1" construction_time="5000"/>    
+    <component type="BuildingManufacturer" id="2" process_time="5000" keepoutput="true">
         <manufacturespot x="1" y="2"/> 
         <manufacturedir x="0" y="0"/> 
         <input name="Log" amount="2"/> 
         <input name="Thatch" amount="2"/> 
-        <output name="BasicConstrPack" amount="1"/> 
+        <output name="BuildMaterials1" amount="1"/> 
     </component>
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
         <model voxelfile="buildings/StoragePitSmall.mgv"/>

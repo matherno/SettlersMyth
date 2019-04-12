@@ -12,3 +12,4 @@ SettlersMyth.make
 .vscode
 bin_*
 SettlersMyth.code-workspace
+imgui.ini

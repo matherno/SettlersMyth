@@ -76,6 +76,7 @@ enum class SMComponentType
   resourcePickup,
   destroyWhenNoResource,
   buildingConstructor,
+  initResources,
   };
 
 
@@ -92,6 +93,7 @@ namespace SMTypes
       { SMComponentType::resourcePickup, "ResourcePickup" },
       { SMComponentType::destroyWhenNoResource, "DestroyWhenNoResource" },
       { SMComponentType::buildingConstructor, "BuildingConstructor" },
+      { SMComponentType::initResources, "InitResources" },
     };
 
   static const std::map<SMGameActorType, string> typeNames

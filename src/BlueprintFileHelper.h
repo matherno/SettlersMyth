@@ -10,6 +10,7 @@
 #define OD_TYPE "type"
 #define OD_ID "id"
 #define OD_NAME "name"
+#define OD_DISPLAYNAME "displayname"
 #define OD_GRID "grid"
 #define OD_X "x"
 #define OD_Y "y"
@@ -53,6 +54,7 @@
 #define OD_BUILDABLE "buildable"
 #define OD_CONSTRUCTIONPACK "construction_pack"
 #define OD_CONSTRUCTIONTIME "construction_time"
+#define OD_KEEPOUTPUT "keepoutput"
 
 
 static std::string xmlGetStringAttribute(tinyxml2::XMLElement* element, const std::string& attributeName)

@@ -62,7 +62,7 @@
     </component>
 </blueprint>
 
-<blueprint name="BasicConstrPack" type="Resource" selectable="false">
+<blueprint name="BuildMaterials1" displayname="Build Materials L1" type="Resource" selectable="false">
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
