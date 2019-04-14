@@ -11,6 +11,7 @@
 #define OD_ID "id"
 #define OD_NAME "name"
 #define OD_DISPLAYNAME "displayname"
+#define OD_DESCRIPTION "description"
 #define OD_GRID "grid"
 #define OD_X "x"
 #define OD_Y "y"

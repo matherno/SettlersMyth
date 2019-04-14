@@ -199,7 +199,7 @@ void HUDHandler::initialiseUI(GameContext* context)
   UIManager* uiManager = context->getUIManager();
   mainUIPanel.reset(new UIPanel(uiManager->getNextComponentID()));
   mainUIPanel->setOffset(Vector2D(0, 0));
-  mainUIPanel->setSize(Vector2D(150, 170));
+  mainUIPanel->setSize(Vector2D(160, 0));
   mainUIPanel->setColour(HUD_COL_BORDER);
   mainUIPanel->setHorizontalAlignment(alignmentEnd);
   mainUIPanel->setVerticalAlignment(alignmentEnd);
@@ -252,7 +252,53 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   subPanel->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
   mainUIPanel->addChild(UIComponentPtr(subPanel));
 
+
+
+  /*
+  *   Selected building details
+  */
+
+  selectedBuildPanel.reset(new UIPanel(uiManager->getNextComponentID()));
+  selectedBuildPanel->setVerticalAlignment(alignmentEnd);
+  selectedBuildPanel->setHorizontalAlignment(alignmentCentre);
+  selectedBuildPanel->setSize(Vector2D(0, 250));
+  selectedBuildPanel->setWidthMatchParent(true);
+  selectedBuildPanel->setColour(HUD_COL_BG);
+  selectedBuildPanel->setPadding(0, 0);
+  subPanel->addChild(selectedBuildPanel);
+
+  UIPanel* iconBorder = new UIPanel(uiManager->getNextComponentID());
+  iconBorder->setColour(BTN_UNPRESSED_COL);
+  iconBorder->setOffset(Vector2D(10, 0));
+  iconBorder->setSize(Vector2D(45));
+  iconBorder->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  selectedBuildPanel->addChild(UIComponentPtr(iconBorder));
+
+  selectedBuildIcon.reset(new UIPanel(uiManager->getNextComponentID()));
+  selectedBuildIcon->setVerticalAlignment(alignmentCentre);
+  selectedBuildIcon->setHorizontalAlignment(alignmentCentre);
+  selectedBuildIcon->setHeightMatchParent(true);
+  selectedBuildIcon->setWidthMatchParent(true);
+  selectedBuildIcon->setPadding(BTN_BORDER_SIZE, BTN_BORDER_SIZE);
+  iconBorder->addChild(selectedBuildIcon);
+
+  selectedBuildText.reset(new UIText(uiManager->getNextComponentID()));
+  selectedBuildText->setOffset(Vector2D(0, 50));
+  selectedBuildText->setSize(Vector2D(0, 200));
+  selectedBuildText->setWidthMatchParent(true);
+  selectedBuildText->setPadding(10, 10);
+  selectedBuildText->setFontSize(20);
+  selectedBuildText->setFontColour(Vector3D(0));
+  selectedBuildText->showBackground(false);
+  selectedBuildPanel->addChild(selectedBuildText);
+
   buildingButtonGroup.reset(new UIToggleButtonGroup());
+
+
+
+  /*
+  *   Place building buttons
+  */
 
   static const int numCols = 2;
   static const int btnSize = 45;
@@ -319,9 +365,10 @@ void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)
     placementHandler.reset();
     }
   deselectUI();
+  updateBuildSelectionDetails(gameContext, 0);
   }
 
-void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID)
+void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildingBlueprintID)
   {
   SMGameContext::cast(gameContext)->getSelectionManager()->deselectAll(gameContext);
 
@@ -330,9 +377,10 @@ void HUDHandler::startBuildingPlacingMode(GameContext* gameContext, uint buildin
     gameContext->removeInputHandler(placementHandler);
     placementHandler.reset();
     }
-  placementHandler.reset(new WorldItemPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), buildingDefID));
+  placementHandler.reset(new WorldItemPlacementHandler(gameContext->getInputManager()->getNextHandlerID(), buildingBlueprintID));
   placementHandler->setEndHandlerCallback([this, gameContext]() { endBuildingPlacingMode(gameContext); });
   gameContext->addInputHandler(placementHandler);
+  updateBuildSelectionDetails(gameContext, buildingBlueprintID);
   }
 
 void HUDHandler::cleanUp(GameContext* context)
@@ -340,3 +388,41 @@ void HUDHandler::cleanUp(GameContext* context)
   endBuildingPlacingMode(context);
   }
 
+void HUDHandler::updateBuildSelectionDetails(GameContext* gameContext, uint buildingBlueprintID)
+  {
+  if (buildingBlueprintID == 0)
+    {
+    selectedBuildPanel->setVisible(false, true);
+    selectedBuildIcon->setTexture(nullptr);
+    selectedBuildIcon->invalidate();
+    selectedBuildText->setText("");
+    selectedBuildText->invalidate();
+    return;
+    }
+
+  const SMGameActorBlueprint* blueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(buildingBlueprintID);
+  const GameActorBuildingBlueprint* buildingBlueprint = dynamic_cast<const GameActorBuildingBlueprint*>(blueprint);
+  if (blueprint)
+    {
+    selectedBuildPanel->setVisible(true, true);
+    if (!blueprint->iconPath.empty())
+      selectedBuildIcon->setTexture(gameContext->getRenderContext()->getSharedTexture(blueprint->iconPath));
+    else
+      selectedBuildIcon->setTexture(nullptr);
+    selectedBuildIcon->invalidate();
+
+    string text = blueprint->displayName;
+    if (!blueprint->description.empty())
+      text += "\n\n" + blueprint->description;
+
+    if (buildingBlueprint)
+      {
+      const SMGameActorBlueprint* constrPackBlueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(buildingBlueprint->constructionPackID);
+      if (constrPackBlueprint)
+        text += "\n\n" + constrPackBlueprint->displayName + ": " + std::to_string(buildingBlueprint->constructionPackAmount);
+      }
+
+    selectedBuildText->setText(text);
+    selectedBuildText->invalidate();
+    }
+  }

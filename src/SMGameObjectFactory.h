@@ -27,6 +27,7 @@ public:
   uint id = 0;
   string name;
   string displayName;
+  string description;
   string iconPath;
   SMGameActorType type;
   Vector2D gridSize;

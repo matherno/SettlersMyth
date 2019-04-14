@@ -1,4 +1,4 @@
-<blueprint name="Camp" type="Building" buildable="true">
+<blueprint name="Camp" type="Building" description="Starting camp for any budding settlement" buildable="true">
     <icon imagefile="icons/camp.png"/>
     <grid x="4" y="4" height="1.5" posincentre="false">
         <resourcestack x="2" y="1"/>
@@ -19,7 +19,7 @@
     </component>
 </blueprint>
 
-<blueprint name="Wood Cutter" type="Building" buildable="true">
+<blueprint name="Wood Cutter" type="Building" description="Cuts down trees for logs" buildable="true">
     <icon imagefile="icons/woodcutter.png"/>
     <grid x="4" y="4" height="2.3" posincentre="false">
         <resourcestack x="3" y="2"/>
@@ -37,7 +37,7 @@
 </blueprint>
 
 
-<blueprint name="Sawmill" type="Building" buildable="true">
+<blueprint name="Sawmill" type="Building" description="Gathers logs and saws them into planks" buildable="true">
     <icon imagefile="icons/sawmill.png"/>
     <grid x="4" y="4" height="2.4" posincentre="false">
         <resourcestack x="3" y="3"/>

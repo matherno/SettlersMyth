@@ -33,6 +33,7 @@ bool SMGameActorBlueprint::loadFromXML(XMLElement* xmlElement, string* errorMsg)
   {
   name = xmlGetStringAttribute(xmlElement, OD_NAME);
   displayName = xmlGetStringAttribute(xmlElement, OD_DISPLAYNAME);
+  description = xmlGetStringAttribute(xmlElement, OD_DESCRIPTION);
   if (name.empty())
     {
     *errorMsg = "Blueprint name is blank";

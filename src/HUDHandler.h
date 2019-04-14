@@ -48,6 +48,10 @@ private:
   std::shared_ptr<SMDebugPanel> debugPanel;
   UIToggleButtonGroupPtr buildingButtonGroup;
   std::shared_ptr<WorldItemPlacementHandler> placementHandler;
+  
+  std::shared_ptr<UIPanel> selectedBuildPanel;
+  std::shared_ptr<UIPanel> selectedBuildIcon;
+  std::shared_ptr<UIText> selectedBuildText;
 
 public:
   void initialiseUI(GameContext* context);
@@ -60,6 +64,7 @@ protected:
   void setupFocusPanel(GameContext* context);
   void setupBuildPanel(GameContext* context);
   void setupDebugPanel(GameContext* context);
-  void startBuildingPlacingMode(GameContext* gameContext, uint buildingDefID);
+  void startBuildingPlacingMode(GameContext* gameContext, uint buildingBlueprintID);
   void endBuildingPlacingMode(GameContext* gameContext);
+  void updateBuildSelectionDetails(GameContext* gameContext, uint buildingBlueprintID);
   };
