@@ -129,7 +129,7 @@
 
 <blueprint name="Construction Yard L1" type="Building" buildable="true">
     <icon imagefile="icons/constructionyard1.png"/>
-    <grid x="4" y="3" height="1.7" posincentre="false">
+    <grid x="4" y="3" height="1.8" posincentre="false">
         <entry x="2" y="1"/>
         <clearpos x="2" y="2"/>
         <resourcestack x="1" y="2"/>
