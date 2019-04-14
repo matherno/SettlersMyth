@@ -67,6 +67,7 @@ public:
   static GameActorBuilding* cast(SMGameActor* actor) { return dynamic_cast<GameActorBuilding*>(actor); }
 
 protected:
+  virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element) override;
   virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) override;
   void onUpdateReturnIdleUnits(GameContext* gameContext);
   };

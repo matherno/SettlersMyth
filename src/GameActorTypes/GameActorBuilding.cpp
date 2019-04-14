@@ -185,7 +185,54 @@ void GameActorBuilding::saveActor(XMLElement* element, GameContext* gameContext)
 
   XMLElement* xmlAttachedUnits = xmlCreateElement(element, SL_ATTACHEDUNITS);
   for (SMGameActorPtr unit : *attachedUnits.getList())
-  xmlCreateElement(xmlAttachedUnits, SL_LINKID, unit->getLinkID());
+    xmlCreateElement(xmlAttachedUnits, SL_LINKID, unit->getLinkID());
+
+  xmlCreateElement(element, SL_UNDER_CONSTR, isUnderConstruction);
+  
+  if (isUnderConstruction)
+    {
+    //  save construction resources
+    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+    XMLElement* resListElem = xmlCreateElement(element, SL_CONSTR_RESOURCELIST);
+    for (const ResourceStack& stack : *constructionResourceStorage.getResourceStacks())
+      {
+      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(stack.id);
+      if (resourceBlueprint)
+        {
+        XMLElement* resourceElem = xmlCreateElement(resListElem, SL_RESOURCE);
+        resourceElem->SetAttribute(SL_NAME, resourceBlueprint->name.c_str());
+        resourceElem->SetAttribute(SL_AMOUNT, stack.amount);
+        }
+      }
+    }
+  }
+
+void GameActorBuilding::initialiseActorFromSave(GameContext* gameContext, XMLElement* element)
+  {
+  isUnderConstruction = xmlGetBoolValue(element, SL_UNDER_CONSTR);
+  if (isUnderConstruction)
+    {
+    XMLElement* resListElem = element->FirstChildElement(SL_CONSTR_RESOURCELIST);
+    if (resListElem)
+      {
+      SMGameContext* smGameContext = SMGameContext::cast(gameContext);
+      XMLElement* resourceElem = resListElem->FirstChildElement(SL_RESOURCE);
+      while (resourceElem)
+        {
+        const string name = xmlGetStringAttribute(resourceElem, SL_NAME);
+        int amount = 0;
+        resourceElem->QueryAttribute(SL_AMOUNT, &amount);
+        const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->findGameActorBlueprint(name);
+        if (resourceBlueprint && resourceBlueprint->type == SMGameActorType::resource)
+          constructionResourceStorage.storeResource(resourceBlueprint->id, amount);
+        else
+          mathernogl::logWarning("Loading Actor: Couldn't find resource of name: " + name);
+        resourceElem = resourceElem->NextSiblingElement(SL_RESOURCE);
+        }
+      }
+    }
+
+  SMGameActor::initialiseActorFromSave(gameContext, element);
   }
 
 
@@ -194,18 +241,24 @@ void GameActorBuilding::finaliseActorFromSave(GameContext* gameContext, XMLEleme
   SMGameActor::finaliseActorFromSave(gameContext, element);
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
 
-  XMLElement* xmlAttachedUnits = element->FirstChildElement(SL_ATTACHEDUNITS);
-  if (!xmlAttachedUnits)
-    return;
-
-  XMLElement* xmlUnitLinkID = xmlAttachedUnits->FirstChildElement(SL_LINKID);
-  while (xmlUnitLinkID)
+  if (!isUnderConstruction)
     {
-    const uint unitLinkID = (uint) xmlUnitLinkID->IntText(0);
-    SMGameActorPtr linkedActor = smGameContext->getSMGameActorByLinkID(unitLinkID);
-    if (GameActorUnitPtr unit = std::dynamic_pointer_cast<GameActorUnit>(linkedActor))
-      attachUnit(unit);
-    xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
+    if (blueprint->constructionPackID > 0 && blueprint->constructionPackAmount > 0)
+      makeConstructed(gameContext, true);
+
+    XMLElement* xmlAttachedUnits = element->FirstChildElement(SL_ATTACHEDUNITS);
+    if (!xmlAttachedUnits)
+      return;
+
+    XMLElement* xmlUnitLinkID = xmlAttachedUnits->FirstChildElement(SL_LINKID);
+    while (xmlUnitLinkID)
+      {
+      const uint unitLinkID = (uint) xmlUnitLinkID->IntText(0);
+      SMGameActorPtr linkedActor = smGameContext->getSMGameActorByLinkID(unitLinkID);
+      if (GameActorUnitPtr unit = std::dynamic_pointer_cast<GameActorUnit>(linkedActor))
+        attachUnit(unit);
+      xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
+      }
     }
   }
 

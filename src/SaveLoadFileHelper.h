@@ -37,6 +37,8 @@
 #define SL_ATTACHEDUNITS "attached_units"
 #define SL_COMPONENT "component"
 #define SL_ID "id"
+#define SL_UNDER_CONSTR "under_constr"
+#define SL_CONSTR_RESOURCELIST "constr_resource_list"
 
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"
@@ -161,6 +163,14 @@ static int xmlGetGridIntValue(tinyxml2::XMLElement* parent, string name)
   auto element = parent->FirstChildElement(name.c_str());
   if (element)
     return element->IntText();
+  return 0;
+  }
+
+static bool xmlGetBoolValue(tinyxml2::XMLElement* parent, string name)
+  {
+  auto element = parent->FirstChildElement(name.c_str());
+  if (element)
+    return element->BoolText();
   return 0;
   }
 
