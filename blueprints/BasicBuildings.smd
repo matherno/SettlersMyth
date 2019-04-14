@@ -127,26 +127,26 @@
     </component>
 </blueprint>
 
-<blueprint name="Basic Constructor" type="Building" buildable="true">
-    <icon imagefile="icons/storagepit.png"/>
-    <grid x="4" y="2" height="1.7" posincentre="false">
-        <resourcestack x="2" y="0"/>
-        <resourcestack x="2" y="1"/>
-        <resourcestack x="3" y="0"/>
-        <resourcestack x="3" y="1"/>
-        <entry x="1" y="1"/>
+<blueprint name="Construction Yard L1" type="Building" buildable="true">
+    <icon imagefile="icons/constructionyard1.png"/>
+    <grid x="4" y="3" height="1.7" posincentre="false">
+        <entry x="2" y="1"/>
+        <clearpos x="2" y="2"/>
+        <resourcestack x="1" y="2"/>
+        <resourcestack x="0" y="1"/>
+        <resourcestack x="1" y="0"/>
     </grid>
     <construction construction_pack="BuildMaterials1" amount="4"/>
     <component type="BuildingConstructor" id="1" construction_pack="BuildMaterials1" construction_time="5000"/>    
     <component type="BuildingManufacturer" id="2" process_time="5000" keepoutput="true">
-        <manufacturespot x="1" y="2"/> 
+        <manufacturespot x="2" y="1"/> 
         <manufacturedir x="0" y="0"/> 
-        <input name="Log" amount="2"/> 
+        <input name="Plank" amount="2"/> 
         <input name="Thatch" amount="2"/> 
         <output name="BuildMaterials1" amount="1"/> 
     </component>
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
-        <model voxelfile="buildings/StoragePitSmall.mgv"/>
+        <model voxelfile="buildings/ConstructionYardL1.mgv"/>
     </component>
     <component type="ResourceStacks" id="4"/>    
 </blueprint>
