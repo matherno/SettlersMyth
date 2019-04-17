@@ -19,6 +19,7 @@ private:
   uint idxCamRotSpeed;
   uint idxFullscreen;
   uint idxEnableEdgePan;
+  uint idxShadows;
 
 public:
   SMSettings();
@@ -40,4 +41,5 @@ public:
   float getCameraPanSpeed() const;
   float getCameraRotSpeed() const;
   bool enableScreenEdgePan() const;
+  bool enableShadows() const;
   };

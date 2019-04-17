@@ -152,12 +152,19 @@ Vector2D SMGameContext::terrainHitTest(uint mouseX, uint mouseY)
 
 void SMGameContext::recalculateShadowMap()
   {
-  static const Vector3D lightDir = Vector3D(-1.5, -3, -1).getUniform();
-  double shadowMapOffset = smInputHandler->getZoomOffset();
-  double shadowMapFOV = shadowMapOffset * 1.5;
-  Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
-  static const uint shadowMapWidth = 1500;
-  getRenderContext()->configureShadowMap(true, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
+  if (settingsHandler->enableShadows())
+    {
+    static const Vector3D lightDir = Vector3D(-1.5, -3, -1).getUniform();
+    double shadowMapOffset = smInputHandler->getZoomOffset();
+    double shadowMapFOV = shadowMapOffset * 1.5;
+    Vector3D shadowMapPos = smInputHandler->getFocalPosition() - lightDir * shadowMapOffset;
+    static const uint shadowMapWidth = 1500;
+    getRenderContext()->configureShadowMap(true, shadowMapPos, lightDir, shadowMapFOV, shadowMapOffset * 1.5, shadowMapWidth, shadowMapWidth);
+    }
+  else
+    {
+    getRenderContext()->configureShadowMap(false);
+    }
   shadowMapValid = true;
   refreshShadowMapTimer.setTimeOut(100);
   refreshShadowMapTimer.reset();

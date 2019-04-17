@@ -15,7 +15,8 @@ SMSettings::SMSettings()
   idxCamPanSpeed = manager->addOption(GameConfigManager::typeFloat, "Camera Pan Speed Factor", "campanspeed", "input", "1");
   idxCamRotSpeed = manager->addOption(GameConfigManager::typeFloat, "Camera Rotate Speed Factor", "camrotspeed", "input", "1");
   idxFullscreen = manager->addOption(GameConfigManager::typeBool, "Fullscreen", "fullscreen", "graphics", "false");
-  idxEnableEdgePan = manager->addOption(GameConfigManager::typeBool, "Enable Screen Edge Pan", "screenedgepan", "input", "true");
+  idxEnableEdgePan = manager->addOption(GameConfigManager::typeBool, "Screen Edge Pan", "screenedgepan", "input", "true");
+  idxShadows = manager->addOption(GameConfigManager::typeBool, "Shadows", "shadows", "graphics", "true");
   }
 
 void SMSettings::initialise()
@@ -100,6 +101,13 @@ bool SMSettings::enableScreenEdgePan() const
   {
   bool enable = false;
   activeValueMap->getBoolValue(idxEnableEdgePan, &enable);
+  return enable;
+  }
+
+bool SMSettings::enableShadows() const
+  {
+  bool enable = false;
+  activeValueMap->getBoolValue(idxShadows, &enable);
   return enable;
   }
 

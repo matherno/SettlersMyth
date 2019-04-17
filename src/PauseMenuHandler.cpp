@@ -149,11 +149,12 @@ void PauseMenuHandler::onSettingsPressed(GameContext* gameContext)
   uiManager->addComponent(settingsDlg);
   uiManager->pushModalComponent(settingsDlg);
   uint id = settingsDlg->getID();
-  settingsDlg->setOnFinishedCallback([this, uiManager, id]()
-     {
-     uiManager->removeComponent(id);
-     uiManager->popModalComponent();
-     });
+  settingsDlg->setOnFinishedCallback([this, uiManager, id, gameContext]()
+      {
+      SMGameContext::cast(gameContext)->invalidateShadowMap();     
+      uiManager->removeComponent(id);
+      uiManager->popModalComponent();
+      });
   }
 
 void PauseMenuHandler::onQuitPressed(GameContext* gameContext)
