@@ -272,6 +272,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   iconBorder->setOffset(Vector2D(10, 0));
   iconBorder->setSize(Vector2D(45));
   iconBorder->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  iconBorder->setVisible(false, true);
   selectedBuildPanel->addChild(UIComponentPtr(iconBorder));
 
   selectedBuildIcon.reset(new UIPanel(uiManager->getNextComponentID()));
@@ -280,6 +281,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   selectedBuildIcon->setHeightMatchParent(true);
   selectedBuildIcon->setWidthMatchParent(true);
   selectedBuildIcon->setPadding(BTN_BORDER_SIZE, BTN_BORDER_SIZE);
+  selectedBuildIcon->setVisible(false, true);
   iconBorder->addChild(selectedBuildIcon);
 
   selectedBuildText.reset(new UIText(uiManager->getNextComponentID()));
@@ -291,8 +293,6 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   selectedBuildText->setFontColour(Vector3D(0));
   selectedBuildText->showBackground(false);
   selectedBuildPanel->addChild(selectedBuildText);
-
-  buildingButtonGroup.reset(new UIToggleButtonGroup());
 
 
 
@@ -306,6 +306,7 @@ void HUDHandler::setupBuildPanel(GameContext* context)
   static const int btnPadding = 13;
   static const int btnHalfPadding = int(btnPadding * 0.5);
   static const int btnSizeAndPadding = btnSize + btnPadding;
+  buildingButtonGroup.reset(new UIToggleButtonGroup());
 
   int buildingNum = 0;
   smGameContext->getGameObjectFactory()->forEachGameActorBlueprint([&](const SMGameActorBlueprint* blueprint) -> void
