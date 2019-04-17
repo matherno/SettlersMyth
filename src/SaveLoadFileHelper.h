@@ -35,6 +35,7 @@
 #define SL_AMOUNT "amount"
 #define SL_MODELIDX "modelidx"
 #define SL_ATTACHEDUNITS "attached_units"
+#define SL_RESIDENTUNITS "resident_units"
 #define SL_COMPONENT "component"
 #define SL_ID "id"
 #define SL_UNDER_CONSTR "under_constr"

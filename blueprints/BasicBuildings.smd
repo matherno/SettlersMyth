@@ -17,6 +17,8 @@
     <component type="InitResources" id="4">
         <resource name="BuildMaterials1" amount="18"/>
     </component>
+    <component type="BuildingResidents" id="5" unit="Settler" max_units="15"/>
+    <component type="UnitRecruiter" id="6" unit="Settler" max_units="5"/>
 </blueprint>
 
 <blueprint name="Wood Cutter" type="Building" description="Cuts down trees for logs" buildable="true">
@@ -34,6 +36,7 @@
     </component>
     <component type="BuildingHarvester" id="2" deposit="Tree" harvest_time="5000"/>
     <component type="ResourceStacks" id="3"/>    
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
 </blueprint>
 
 
@@ -57,6 +60,7 @@
         <model voxelfile="buildings/Sawmill.mgv"/>
     </component>
     <component type="ResourceStacks" id="3"/>    
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
 </blueprint>
 
 <blueprint name="Stone Miner" type="Building" buildable="true">
@@ -72,6 +76,7 @@
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
         <model voxelfile="buildings/Stoneminer.mgv"/>
     </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
 </blueprint>
 
 
@@ -87,6 +92,7 @@
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
         <model voxelfile="buildings/Thatcher.mgv"/>
     </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
 </blueprint>
 
 <blueprint name="Storage Pit" type="Building" buildable="true">
@@ -104,6 +110,7 @@
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
         <model voxelfile="buildings/StoragePitSmall.mgv"/>
     </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
 </blueprint>
 
 <blueprint name="Large Storage Pit" type="Building" buildable="true">
@@ -125,6 +132,7 @@
     <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
         <model voxelfile="buildings/StoragePitLarge.mgv"/>
     </component>
+    <component type="UnitRecruiter" id="4" max_units="4" unit="Settler"/>
 </blueprint>
 
 <blueprint name="Construction Yard L1" type="Building" buildable="true">
@@ -149,4 +157,22 @@
         <model voxelfile="buildings/ConstructionYardL1.mgv"/>
     </component>
     <component type="ResourceStacks" id="4"/>    
+    <component type="UnitRecruiter" id="5" max_units="4" unit="Settler"/>
+</blueprint>
+
+<blueprint name="Basic Hut" type="Building" description="A basic residents where settlers live" buildable="true">
+    <icon imagefile="icons/woodcutter.png"/>
+    <grid x="4" y="4" height="2.3" posincentre="false">
+        <resourcestack x="3" y="2"/>
+        <clearpos x="2" y="3"/>
+        <clearpos x="2" y="2"/>
+        <clearpos x="3" y="3"/>
+        <entry x="2" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="6"/>
+    <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="buildings/Woodcutter.mgv"/>
+    </component>
+    <component type="BuildingResidents" id="2" unit="Settler" max_units="10"/>
+    <component type="ResourceStacks" id="3"/>    
 </blueprint>

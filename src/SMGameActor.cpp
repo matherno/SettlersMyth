@@ -134,10 +134,7 @@ void SMGameActor::initialiseActorFromSave(GameContext* gameContext, XMLElement* 
     {
     const string elementName = xmlConstructCompElemName(component->getComponentID());
     XMLElement* xmlComponent = xmlGameActor->FirstChildElement(elementName.c_str());
-    if (xmlComponent)
-      component->initialiseFromSaved(gameContext, xmlComponent);
-    else
-      component->initialise(gameContext);
+    component->initialiseFromSaved(gameContext, xmlComponent);
     }
   }
 

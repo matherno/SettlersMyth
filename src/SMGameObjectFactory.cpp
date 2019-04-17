@@ -17,6 +17,8 @@
 #include <Components/ComponentDestroyWhenNoResource.h>
 #include <Components/ComponentConstructor.h>
 #include <Components/ComponentInitResources.h>
+#include <Components/ComponentResidents.h>
+#include <Components/ComponentUnitRecruiter.h>
 #include "SMGameObjectFactory.h"
 #include "BlueprintFileHelper.h"
 #include "Resources.h"
@@ -166,6 +168,12 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
       break;
     case SMComponentType::initResources:
       blueprint.reset(new ComponentInitResourcesBlueprint());
+      break;
+    case SMComponentType::buildingResidents:
+      blueprint.reset(new ComponentResidentsBlueprint());
+      break;
+    case SMComponentType::unitRecruiter:
+      blueprint.reset(new ComponentUnitRecruiterBlueprint());
       break;
     }
 

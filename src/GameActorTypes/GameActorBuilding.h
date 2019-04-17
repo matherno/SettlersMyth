@@ -34,6 +34,7 @@ class GameActorBuilding : public SMGameActor
 private:
   const GameActorBuildingBlueprint* blueprint;
   mathernogl::MappedList<GameActorUnitPtr> attachedUnits;
+  mathernogl::MappedList<GameActorUnitPtr> residentUnits;
   Timer returnIdleUnitsTimer;
 
   bool isUnderConstruction = false;
@@ -57,6 +58,12 @@ public:
   const mathernogl::MappedList<GameActorUnitPtr>* getAttachedUnits() const { return &attachedUnits; }
   bool isUnitAttached(uint unitID) const;
   void getResourceStackPositions(std::vector<GridXY>* positions) const;
+
+  void addResidentUnit(GameActorUnitPtr unit);
+  void removeResidentUnit(uint unitID);
+  GameActorUnitPtr getDettachedResidentUnit(uint unitBlueprintTypeID = 0);    //  gets a resident unit (of given blueprint type) that is not attached to any buildings
+  uint getResidentUnitCount() const;
+  uint getDettachedResidentUnitCount() const;
 
   bool getIsUnderConstruction() const;
   ResourceStorage* getConstructionResourceStorage();

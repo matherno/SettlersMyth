@@ -52,6 +52,14 @@ void ActorFocusPanel::initialise(GameContext* context)
   nameText->showBackground(false);
   subPanel->addChild(nameText);
 
+  attachedUnitText.reset(new UIText(uiManager->getNextComponentID()));
+  attachedUnitText->setOffset(Vector2D(65, 20));
+  attachedUnitText->setSize(Vector2D(170, 30));
+  attachedUnitText->setFontSize(25);
+  attachedUnitText->setFontColour(Vector3D(0));
+  attachedUnitText->showBackground(false);
+  subPanel->addChild(attachedUnitText);
+
   resourceText.reset(new UIText(uiManager->getNextComponentID()));
   resourceText->setOffset(Vector2D(0, 90));
   resourceText->setSize(Vector2D(0, 100));
@@ -106,9 +114,20 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
 
     GameActorBuilding* buildingActor = GameActorBuilding::cast(actor.get());
     bool buildingUnderConstruction = false;
+    string unitText;
     if (buildingActor)
+      {
       buildingUnderConstruction = buildingActor->getIsUnderConstruction();
-
+      if (!buildingUnderConstruction)
+        {
+        const int attachedUnitCount = buildingActor->getAttachedUnits()->count();
+        const int residentUnitCount = buildingActor->getDettachedResidentUnitCount();
+        const int idleCount = buildingActor->getIdleUnitCount();
+        unitText = mathernogl::stringFormat("%d|%d|%d", idleCount, attachedUnitCount, residentUnitCount);
+        }
+      }
+    attachedUnitText->setText(unitText);
+    attachedUnitText->invalidate();
 
     bool first = true;
     string resText;

@@ -66,8 +66,15 @@ void ComponentVoxelModel::initialise(GameContext* gameContext)
 
 void ComponentVoxelModel::initialiseFromSaved(GameContext* gameContext, XMLElement* xmlComponent)
   {
-  voxelModelIdx = std::min(xmlComponent->UnsignedAttribute(SL_MODELIDX), (uint)blueprint->modelFilePaths.size() - 1);
-  voxelModel = createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
+  if (xmlComponent)
+    {
+    voxelModelIdx = std::min(xmlComponent->UnsignedAttribute(SL_MODELIDX), (uint)blueprint->modelFilePaths.size() - 1);
+    voxelModel = createRenderable(gameContext, blueprint->modelFilePaths[voxelModelIdx]);
+    }
+  else
+    {
+    initialise(gameContext);
+    }
   }
 
 void ComponentVoxelModel::update(GameContext* gameContext)

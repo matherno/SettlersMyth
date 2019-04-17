@@ -179,6 +179,54 @@ void GameActorBuilding::getResourceStackPositions(std::vector<GridXY>* positions
     positions->push_back(gridPos + spot);
   }
 
+void GameActorBuilding::addResidentUnit(GameActorUnitPtr unit)
+  {
+  ASSERT(unit->getResidentsBuilding() == 0 || unit->getResidentsBuilding() == getID(), "Unit already residented to a building?");
+  residentUnits.add(unit, unit->getID());
+  unit->setResidentsBuilding(getID());
+  }
+
+void GameActorBuilding::removeResidentUnit(uint unitID)
+  {
+  if (GameActorUnitPtr unit = residentUnits.get(unitID))
+    {
+    ASSERT(unit->getResidentsBuilding() == getID(), "Unit not residented to this building?");
+    residentUnits.remove(unitID);
+    unit->setResidentsBuilding(0);
+    }
+  }
+
+GameActorUnitPtr GameActorBuilding::getDettachedResidentUnit(uint unitBlueprintTypeID)
+  {
+  for (GameActorUnitPtr unit : *(residentUnits.getList()))
+    {
+    if (!unit->isAttachedToBuilding())
+      {
+      if (unitBlueprintTypeID == 0)
+        return unit;
+      else if (unit->getBlueprintTypeID() == unitBlueprintTypeID)
+        return unit;
+      }
+    }
+  return nullptr;
+  }
+
+uint GameActorBuilding::getResidentUnitCount() const
+  {
+  return residentUnits.count();
+  }
+
+uint GameActorBuilding::getDettachedResidentUnitCount() const
+  {
+  uint count = 0;
+  for (GameActorUnitPtr unit : *(residentUnits.getList()))
+    {
+    if (!unit->isAttachedToBuilding())
+      count++;
+    }
+  return count;
+  }
+
 void GameActorBuilding::saveActor(XMLElement* element, GameContext* gameContext)
   {
   SMGameActor::saveActor(element, gameContext);
@@ -186,6 +234,10 @@ void GameActorBuilding::saveActor(XMLElement* element, GameContext* gameContext)
   XMLElement* xmlAttachedUnits = xmlCreateElement(element, SL_ATTACHEDUNITS);
   for (SMGameActorPtr unit : *attachedUnits.getList())
     xmlCreateElement(xmlAttachedUnits, SL_LINKID, unit->getLinkID());
+
+  XMLElement* xmlResidentUnits = xmlCreateElement(element, SL_RESIDENTUNITS);
+  for (SMGameActorPtr unit : *residentUnits.getList())
+    xmlCreateElement(xmlResidentUnits, SL_LINKID, unit->getLinkID());
 
   xmlCreateElement(element, SL_UNDER_CONSTR, isUnderConstruction);
   
@@ -241,15 +293,10 @@ void GameActorBuilding::finaliseActorFromSave(GameContext* gameContext, XMLEleme
   SMGameActor::finaliseActorFromSave(gameContext, element);
   SMGameContext* smGameContext = SMGameContext::cast(gameContext);
 
-  if (!isUnderConstruction)
+  //  attached units
+  XMLElement* xmlAttachedUnits = element->FirstChildElement(SL_ATTACHEDUNITS);
+  if (xmlAttachedUnits)
     {
-    if (blueprint->constructionPackID > 0 && blueprint->constructionPackAmount > 0)
-      makeConstructed(gameContext, true);
-
-    XMLElement* xmlAttachedUnits = element->FirstChildElement(SL_ATTACHEDUNITS);
-    if (!xmlAttachedUnits)
-      return;
-
     XMLElement* xmlUnitLinkID = xmlAttachedUnits->FirstChildElement(SL_LINKID);
     while (xmlUnitLinkID)
       {
@@ -257,6 +304,21 @@ void GameActorBuilding::finaliseActorFromSave(GameContext* gameContext, XMLEleme
       SMGameActorPtr linkedActor = smGameContext->getSMGameActorByLinkID(unitLinkID);
       if (GameActorUnitPtr unit = std::dynamic_pointer_cast<GameActorUnit>(linkedActor))
         attachUnit(unit);
+      xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
+      }
+    }
+
+  // resident units
+  XMLElement* xmlResidentUnits = element->FirstChildElement(SL_RESIDENTUNITS);
+  if (xmlResidentUnits)
+    {
+    XMLElement* xmlUnitLinkID = xmlResidentUnits->FirstChildElement(SL_LINKID);
+    while (xmlUnitLinkID)
+      {
+      const uint unitLinkID = (uint) xmlUnitLinkID->IntText(0);
+      SMGameActorPtr linkedActor = smGameContext->getSMGameActorByLinkID(unitLinkID);
+      if (GameActorUnitPtr unit = std::dynamic_pointer_cast<GameActorUnit>(linkedActor))
+        addResidentUnit(unit);
       xmlUnitLinkID = xmlUnitLinkID->NextSiblingElement(SL_LINKID);
       }
     }
@@ -279,16 +341,6 @@ void GameActorBuilding::makeConstructed(GameContext* gameContext, bool force)
     isUnderConstruction = false;
     constructionResourceStorage.clearAllResources();
     postMessage(gameContext, SMMessage::constructionFinished);
-
-    // temp
-    SMGameContext* smGameContext = SMGameContext::cast(gameContext);
-    for (int i = 0; i < 3; ++i)
-      {
-      SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, getEntryPosition());
-      ASSERT(unit, "");
-      GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
-      attachUnit(unitPtr);
-      }
     }
   }
 

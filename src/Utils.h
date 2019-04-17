@@ -14,6 +14,7 @@
 #define DYNAMIC_VOXEL_SIZE 0.0625
 #define SEND_SETTLER_COOLDOWN 4000
 #define MANUFACTURE_COOLDOWN  5000
+#define RECRUIT_UNIT_COOLDOWN 3500
 
 #define HUD_COL_BG              colToVec3(62, 62, 63)
 #define HUD_COL_BORDER          colToVec3(30, 30, 30)
@@ -72,11 +73,13 @@ enum class SMComponentType
   buildingHarvester,
   buildingManufacturer,
   buildingStorage,
+  buildingResidents,
   resourceStacks,
   resourcePickup,
   destroyWhenNoResource,
   buildingConstructor,
   initResources,
+  unitRecruiter,
   };
 
 
@@ -89,11 +92,13 @@ namespace SMTypes
       { SMComponentType::buildingHarvester, "BuildingHarvester" },
       { SMComponentType::buildingManufacturer, "BuildingManufacturer" },
       { SMComponentType::buildingStorage, "BuildingStorage" },
+      { SMComponentType::buildingResidents, "BuildingResidents" },
       { SMComponentType::resourceStacks, "ResourceStacks" },
       { SMComponentType::resourcePickup, "ResourcePickup" },
       { SMComponentType::destroyWhenNoResource, "DestroyWhenNoResource" },
       { SMComponentType::buildingConstructor, "BuildingConstructor" },
       { SMComponentType::initResources, "InitResources" },
+      { SMComponentType::unitRecruiter, "UnitRecruiter" },
     };
 
   static const std::map<SMGameActorType, string> typeNames

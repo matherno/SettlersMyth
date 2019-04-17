@@ -51,22 +51,6 @@ bool WorldItemPlacementHandler::onMouseReleased(GameContext* gameContext, uint b
     if (isOutlinePosValid)
       {
       SMGameActorPtr gameActor = smGameContext->createSMGameActor(buildingBlueprintID, buildingPlacementPos);
-
-      if (GameActorBuilding* building = GameActorBuilding::cast(gameActor.get()))
-        {
-        // temp
-        if (!building->getIsUnderConstruction())
-          {
-          for (int i = 0; i < 3; ++i)
-            {
-            SMGameActorPtr unit = smGameContext->createSMGameActor(smGameContext->getGameObjectFactory()->findGameActorBlueprint("Settler")->id, building->getEntryPosition());
-            ASSERT(unit, "");
-            GameActorUnitPtr unitPtr = std::dynamic_pointer_cast<GameActorUnit>(unit);
-            building->attachUnit(unitPtr);
-            }
-          }
-        }
-
       if (!gameContext->getInputManager()->isKeyDown(KEY_LCTRL))
         {
         if (endHandlerCallback)

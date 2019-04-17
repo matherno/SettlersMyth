@@ -99,6 +99,7 @@ class GameActorUnit : public SMGameActor
 private:
   friend class GameActorUnitBlueprint;
   uint attachedBuilding = 0;
+  uint residentsBuilding = 0;
   double speed = 1;   // units per second
   UnitCommandPtr currentCommand;
 
@@ -119,6 +120,9 @@ public:
   uint getAttachedBuilding() const { return attachedBuilding; }
   GameActorBuilding* getAttachedBuilding(GameContext* gameContext) const;
   bool isAttachedToBuilding() const { return attachedBuilding > 0; }
+
+  void setResidentsBuilding(uint id) { residentsBuilding = id; }
+  uint getResidentsBuilding() const { return residentsBuilding; }
 
   static GameActorUnit* cast(SMGameActor* actor) { return dynamic_cast<GameActorUnit*>(actor); }
   };
