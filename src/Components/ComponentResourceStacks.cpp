@@ -61,9 +61,11 @@ void ComponentResourceStacks::update(GameContext* gameContext)
     int stackIdx = 0;
     for (const ResourceStack& stack : *storedStacks)
       {
+      if (stackIdx >= resourceStacks.size())
+        break;
+
       const uint storedResID = stack.id;
       const uint storedResAmount = (uint) std::min(stack.amount, MAX_STACK_SIZE);
-
       if (resourceStacks[stackIdx].id != storedResID || resourceStacks[stackIdx].amount != storedResAmount)
         {
         //  update stack and recreate actors
