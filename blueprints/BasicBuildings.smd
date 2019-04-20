@@ -160,18 +160,15 @@
     <component type="UnitRecruiter" id="5" max_units="4" unit="Settler"/>
 </blueprint>
 
-<blueprint name="Basic Hut" type="Building" description="A basic residents where settlers live" buildable="true">
-    <icon imagefile="icons/woodcutter.png"/>
-    <grid x="4" y="4" height="2.3" posincentre="false">
-        <resourcestack x="3" y="2"/>
-        <clearpos x="2" y="3"/>
-        <clearpos x="2" y="2"/>
-        <clearpos x="3" y="3"/>
-        <entry x="2" y="1"/>
+<blueprint name="Hut" type="Building" description="A basic hut where settlers live" buildable="true">
+    <icon imagefile="icons/hut.png"/>
+    <grid x="3" y="3" height="2.3" posincentre="false">
+        <clearpos x="1" y="2"/>
+        <entry x="1" y="1"/>
     </grid>
     <construction construction_pack="BuildMaterials1" amount="6"/>
     <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
-        <model voxelfile="buildings/Woodcutter.mgv"/>
+        <model voxelfile="buildings/Hut.mgv"/>
     </component>
     <component type="BuildingResidents" id="2" unit="Settler" max_units="10"/>
     <component type="ResourceStacks" id="3"/>    
