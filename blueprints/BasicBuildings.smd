@@ -4,7 +4,6 @@
         <resourcestack x="2" y="1"/>
         <resourcestack x="0" y="2"/>
         <resourcestack x="1" y="0"/>
-        <resourcestack x="3" y="2"/>
         <resourcestack x="3" y="1"/>
         <resourcestack x="1" y="2"/>
         <entry x="2" y="3"/>
@@ -19,6 +18,33 @@
     </component>
     <component type="BuildingResidents" id="5" unit="Settler" max_units="15"/>
     <component type="UnitRecruiter" id="6" unit="Settler" max_units="5"/>
+
+    <component type="ParticleSystem" id="7" size="0.07" velocity="0.4" gravity="0.00015" time_alive="1000" time_between_spawns="80">
+    	<emitter x="3.5" y="0.2" z="-2.5"/>
+    	<emitter x="0.5" y="0.2" z="-0.5"/>
+    	<colour r="50" g="0" b="0"/>
+    	<spawnpos mode="circle" radius="0.25">
+    		<normal x="0" y="1" z="0"/>
+    	</spawnpos>
+    	<spawndir mode="hemisphere" exp="200">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>
+
+    <component type="ParticleSystem" id="8" size="0.07" velocity="0.4" gravity="0.00001" time_alive="4000" time_between_spawns="300">
+    	<emitter x="3.5" y="0" z="-2.5"/>
+    	<emitter x="0.5" y="0" z="-0.5"/>
+    	<colour r="40" g="40" b="40"/>
+    	<spawnpos mode="circle" radius="0.2">
+    		<normal x="0" y="1" z="0"/>
+    	</spawnpos>
+    	<spawndir mode="hemisphere" exp="200">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>
+
 </blueprint>
 
 <blueprint name="Wood Cutter" type="Building" description="Cuts down trees for logs" buildable="true">
@@ -172,4 +198,13 @@
     </component>
     <component type="BuildingResidents" id="2" unit="Settler" max_units="10"/>
     <component type="ResourceStacks" id="3"/>    
+    <component type="ParticleSystem" id="4" size="0.1" velocity="0.3" gravity="0.00001" time_alive="9000" time_between_spawns="200">
+    	<emitter x="0.57" y="1.9" z="-0.8"/>
+    	<colour r="40" g="40" b="40"/>
+    	<spawnpos mode="point"/>
+    	<spawndir mode="hemisphere" exp="150">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>    
 </blueprint>

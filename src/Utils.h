@@ -80,6 +80,7 @@ enum class SMComponentType
   buildingConstructor,
   initResources,
   unitRecruiter,
+  particleSystem,
   };
 
 
@@ -99,6 +100,7 @@ namespace SMTypes
       { SMComponentType::buildingConstructor, "BuildingConstructor" },
       { SMComponentType::initResources, "InitResources" },
       { SMComponentType::unitRecruiter, "UnitRecruiter" },
+      { SMComponentType::particleSystem, "ParticleSystem" },
     };
 
   static const std::map<SMGameActorType, string> typeNames

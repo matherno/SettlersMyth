@@ -19,6 +19,7 @@
 #include <Components/ComponentInitResources.h>
 #include <Components/ComponentResidents.h>
 #include <Components/ComponentUnitRecruiter.h>
+#include <Components/ComponentParticleSystem.h>
 #include "SMGameObjectFactory.h"
 #include "BlueprintFileHelper.h"
 #include "Resources.h"
@@ -174,6 +175,9 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
       break;
     case SMComponentType::unitRecruiter:
       blueprint.reset(new ComponentUnitRecruiterBlueprint());
+      break;
+    case SMComponentType::particleSystem:
+      blueprint.reset(new ComponentParticleSystemBlueprint());
       break;
     }
 

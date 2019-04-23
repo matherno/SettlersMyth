@@ -20,6 +20,9 @@
 #define SL_X "x"
 #define SL_Y "y"
 #define SL_Z "z"
+#define SL_R "r"
+#define SL_G "g"
+#define SL_B "b"
 #define SL_LINKID "linkid"
 #define SL_BEHAVIOUR "behaviour"
 #define SL_TYPE "type"
@@ -135,6 +138,18 @@ static Vector3D xmlGetVec3Value(tinyxml2::XMLElement* parent, string name)
   return value;
   }
 
+static Vector3D xmlGetVec3Value(tinyxml2::XMLElement* element)
+  {
+  Vector3D value;
+  if (element)
+    {
+    element->QueryAttribute(SL_X, &value.x);
+    element->QueryAttribute(SL_Y, &value.y);
+    element->QueryAttribute(SL_Z, &value.z);
+    }
+  return value;
+  }
+
 static Vector2D xmlGetVec2Value(tinyxml2::XMLElement* parent, string name)
   {
   Vector2D value;
@@ -186,4 +201,20 @@ static string xmlGetValue(tinyxml2::XMLElement* parent, string name)
 static string xmlConstructCompElemName(uint id)
   {
   return string(SL_COMPONENT) + "_" + std::to_string(id);
+  }
+
+static Vector3D xmlGetRGBValue(tinyxml2::XMLElement* parent, string name)
+  {
+  Vector3D value(1, 0, 0);
+  auto element = parent->FirstChildElement(name.c_str());
+  if (element)
+    {
+    element->QueryAttribute(SL_R, &value.x);
+    element->QueryAttribute(SL_G, &value.y);
+    element->QueryAttribute(SL_B, &value.z);
+    value.x /= 255;
+    value.y /= 255;
+    value.z /= 255;
+    }
+  return value;
   }
