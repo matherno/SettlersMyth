@@ -10,7 +10,7 @@ project "SettlersMyth"
    
    libdirs { "./dependencies/mathernogl" }
 
-   links { "MathernoGL", "GL", "GLEW", "glfw", "freeimage" }
+   links { "GL", "GLEW", "glfw", "freeimage" }
    
    includedirs { "./dependencies", "./dependencies/mathernogl", "./src", "./dependencies/misc" }
 
@@ -19,7 +19,12 @@ project "SettlersMyth"
    filter "configurations:debug"
       defines { "DEBUG" }
       symbols "On"
+      links { "MathernoGL_DEBUG" }
 
    filter "configurations:release"
       defines { "NDEBUG" }
       optimize "On"
+      links { "MathernoGL" }
+
+   filter {}
+      links { "GL", "GLEW", "glfw", "freeimage" }
