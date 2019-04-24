@@ -30,7 +30,6 @@ void SMGameActor::onAttached(GameContext* gameContext)
     }
   else
     {
-//    meshIdx = (uint) mathernogl::RandomGenerator::randomInt(0, (int)gameObjectDef->getMeshCount() - 1);
     for (auto component : components)
       component->initialise(gameContext);
     }
@@ -56,11 +55,6 @@ void SMGameActor::onUpdate(GameContext* gameContext)
 
 void SMGameActor::onDetached(GameContext* gameContext)
   {
-//  if (renderable)
-//    {
-//    renderable->cleanUp(gameContext->getRenderContext());
-//    gameContext->getRenderContext()->getRenderableSet()->removeRenderable(renderable->getID());
-//    }
   for (auto component : components)
     component->cleanUp(gameContext);
   components.clear();
