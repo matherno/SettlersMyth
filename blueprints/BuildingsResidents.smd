@@ -1,0 +1,71 @@
+<blueprint name="Camp" type="Building" description="Starting camp for any budding settlement" buildable="true">
+    <icon imagefile="icons/camp.png"/>
+    <grid x="4" y="4" height="1.5" posincentre="false">
+        <resourcestack x="2" y="1"/>
+        <resourcestack x="0" y="2"/>
+        <resourcestack x="1" y="0"/>
+        <resourcestack x="3" y="1"/>
+        <resourcestack x="1" y="2"/>
+        <entry x="2" y="3"/>
+    </grid>
+    <component type="BuildingConstructor" id="1" construction_pack="BuildMaterials1" construction_time="5000"/>    
+    <component type="BuildingVoxelRenderable" id="2" staticmodel="true">
+        <model voxelfile="buildings/Camp.mgv"/>
+    </component>
+    <component type="ResourceStacks" id="3"/>    
+    <component type="InitResources" id="4">
+        <resource name="BuildMaterials1" amount="18"/>
+    </component>
+    <component type="BuildingResidents" id="5" unit="Settler" max_units="15"/>
+    <component type="UnitRecruiter" id="6" unit="Settler" max_units="5"/>
+
+    <component type="ParticleSystem" id="7" size="0.07" velocity="0.4" gravity="0.00015" time_alive="1000" time_between_spawns="80">
+    	<emitter x="3.5" y="0.2" z="-2.5"/>
+    	<emitter x="0.5" y="0.2" z="-0.5"/>
+    	<colour r="50" g="0" b="0"/>
+    	<spawnpos mode="circle" radius="0.25">
+    		<normal x="0" y="1" z="0"/>
+    	</spawnpos>
+    	<spawndir mode="hemisphere" exp="200">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>
+
+    <component type="ParticleSystem" id="8" size="0.07" velocity="0.4" gravity="0.00001" time_alive="4000" time_between_spawns="300">
+    	<emitter x="3.5" y="0" z="-2.5"/>
+    	<emitter x="0.5" y="0" z="-0.5"/>
+    	<colour r="40" g="40" b="40"/>
+    	<spawnpos mode="circle" radius="0.2">
+    		<normal x="0" y="1" z="0"/>
+    	</spawnpos>
+    	<spawndir mode="hemisphere" exp="200">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>
+
+</blueprint>
+
+<blueprint name="Hut" type="Building" description="A basic hut where settlers live" buildable="true">
+    <icon imagefile="icons/hut.png"/>
+    <grid x="3" y="3" height="2.3" posincentre="false">
+        <clearpos x="1" y="2"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="6"/>
+    <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="buildings/Hut.mgv"/>
+    </component>
+    <component type="BuildingResidents" id="2" unit="Settler" max_units="10"/>
+    <component type="ResourceStacks" id="3"/>    
+    <component type="ParticleSystem" id="4" size="0.1" velocity="0.3" gravity="0.00001" time_alive="9000" time_between_spawns="200">
+    	<emitter x="0.57" y="1.9" z="-0.8"/>
+    	<colour r="40" g="40" b="40"/>
+    	<spawnpos mode="point"/>
+    	<spawndir mode="hemisphere" exp="150">
+    		<direction x="0" y="1" z="0"/>
+    	</spawndir>    
+    	<trigger mode="constructed"/>
+    </component>    
+</blueprint>

@@ -1,0 +1,71 @@
+<blueprint name="Wood Cutter" type="Building" description="Cuts down trees for logs" buildable="true">
+    <icon imagefile="icons/woodcutter.png"/>
+    <grid x="4" y="4" height="2.3" posincentre="false">
+        <resourcestack x="3" y="2"/>
+        <clearpos x="2" y="3"/>
+        <clearpos x="2" y="2"/>
+        <clearpos x="3" y="3"/>
+        <entry x="2" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
+    <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="buildings/Woodcutter.mgv"/>
+    </component>
+    <component type="BuildingHarvester" id="2" deposit="Tree" harvest_time="5000"/>
+    <component type="ResourceStacks" id="3"/>    
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+</blueprint>
+
+<blueprint name="Sawmill" type="Building" description="Gathers logs and saws them into planks" buildable="true">
+    <icon imagefile="icons/sawmill.png"/>
+    <grid x="4" y="4" height="2.4" posincentre="false">
+        <resourcestack x="3" y="3"/>
+        <resourcestack x="2" y="3"/>
+        <clearpos x="1" y="3"/>
+        <clearpos x="1" y="2"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="5"/>
+    <component type="BuildingManufacturer" id="1" process_time="5000">
+        <manufacturespot x="2" y="2"/> 
+        <manufacturedir x="1" y="0"/> 
+        <input name="Log" amount="1"/> 
+        <output name="Plank" amount="1"/> 
+    </component>
+    <component type="BuildingVoxelRenderable" id="2" staticmodel="true">
+        <model voxelfile="buildings/Sawmill.mgv"/>
+    </component>
+    <component type="ResourceStacks" id="3"/>    
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+</blueprint>
+
+<blueprint name="Stone Miner" type="Building" buildable="true">
+    <icon imagefile="icons/stoneminer.png"/>
+    <grid x="3" y="3" height="1.9" posincentre="false">
+        <resourcestack x="0" y="2"/>
+        <clearpos x="1" y="2"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
+    <component type="BuildingHarvester" id="1" deposit="Stone Mound" harvest_time="7000"/>
+    <component type="ResourceStacks" id="2"/>    
+    <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
+        <model voxelfile="buildings/Stoneminer.mgv"/>
+    </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+</blueprint>
+
+<blueprint name="Thatcher" type="Building" buildable="true">
+    <icon imagefile="icons/thatcher.png"/>
+    <grid x="3" y="2" height="2.0" posincentre="false">
+        <resourcestack x="2" y="1"/>
+        <entry x="1" y="1"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="4"/>
+    <component type="BuildingHarvester" id="1" deposit="Reeds" harvest_time="3000"/>
+    <component type="ResourceStacks" id="2"/>    
+    <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
+        <model voxelfile="buildings/Thatcher.mgv"/>
+    </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+</blueprint>

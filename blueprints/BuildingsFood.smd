@@ -1,0 +1,15 @@
+<blueprint name="Gatherer" type="Building" buildable="true">
+    <icon imagefile="icons/gatherer.png"/>
+    <grid x="3" y="3" height="2.0" posincentre="false">
+        <resourcestack x="2" y="2"/>
+        <entry x="1" y="1"/>
+        <clearpos x="1" y="2"/>
+    </grid>
+    <construction construction_pack="BuildMaterials1" amount="5"/>
+    <component type="BuildingHarvester" id="1" deposit="Bush" harvest_time="3000"/>
+    <component type="ResourceStacks" id="2"/>    
+    <component type="BuildingVoxelRenderable" id="3" staticmodel="true">
+        <model voxelfile="buildings/Gatherer.mgv"/>
+    </component>
+    <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+</blueprint>
