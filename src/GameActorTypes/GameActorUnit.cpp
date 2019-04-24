@@ -190,7 +190,7 @@ void ReturnToBaseUnitCommand::onStart(GameContext* gameContext, GameActorUnit* u
   {
   GameActorBuilding* building = unit->getAttachedBuilding(gameContext);
   if (building)
-    setTargetPosition(building->getEntryPosition());
+    setTargetPosition(building->getEntryPosition(), 180);
   else
     cancelCommand(gameContext, unit);
   }
