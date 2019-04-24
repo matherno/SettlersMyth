@@ -77,3 +77,19 @@
         <model voxelfile="resources/ConstrMatsL1.mgv"/>
     </component>
 </blueprint>
+
+<blueprint name="Fruit" type="Resource" selectable="false">
+	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
+	<stackpos x="0.3" y="0.5" elev="0" rot="180"/>
+	<stackpos x="0.7" y="0.8" elev="0" rot="180"/>
+	<stackpos x="0.3" y="0.2" elev="0" rot="0"/>
+    <stackpos x="0.7" y="0.5" elev="0" rot="90"/>
+	<stackpos x="0.7" y="0.2" elev="0" rot="0"/>
+	<stackpos x="0.3" y="0.8" elev="0" rot="90"/>
+	<stackpos x="0.5" y="0.5" elev="0.25" rot="0"/>
+	<stackpos x="0.5" y="0.8" elev="0.25" rot="90"/>
+	<stackpos x="0.5" y="0.2" elev="0.25" rot="180"/>
+	<component type="VoxelRenderable" id="1" staticmodel="false">
+        <model voxelfile="resources/Fruit.mgv"/>
+    </component>
+</blueprint>

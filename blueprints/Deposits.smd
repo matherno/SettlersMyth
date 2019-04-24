@@ -33,3 +33,15 @@
     </component>
     <component type="DestroyWhenNoResource" id="2"/>        
 </blueprint>
+
+<blueprint name="Bush" type="Deposit" buildable="true">
+    <icon imagefile="icons/bush.png"/>
+    <grid x="1" y="1" height="0.7" posincentre="true"/>
+    <deposit resource_name="Fruit" resource_amount="4"/>
+    <component type="VoxelRenderable" id="1" staticmodel="true">
+        <model voxelfile="deposits/BushA.mgv"/>
+        <model voxelfile="deposits/BushB.mgv"/>
+        <model voxelfile="deposits/BushC.mgv"/>
+    </component>
+    <component type="DestroyWhenNoResource" id="2"/>        
+</blueprint>
