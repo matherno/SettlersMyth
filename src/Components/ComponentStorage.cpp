@@ -52,6 +52,39 @@ void ComponentStorage::initialise(GameContext* gameContext)
   resetResCollectCycleArray();
   }
 
+void ComponentStorage::initialiseFromSaved(GameContext* gameContext, XMLElement* xmlComponent)
+  {
+  initialise(gameContext);
+  
+  if (xmlComponent)
+    {
+    XMLElement* xmlResource = xmlComponent->FirstChildElement(SL_RESOURCE);
+    while (xmlResource)
+      {
+      string resName = xmlGetStringAttribute(xmlResource, SL_NAME);
+      const bool collectRes = xmlResource->BoolAttribute(SL_COLLECT, true);
+      const SMGameActorBlueprint* resBlueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->findGameActorBlueprint(resName);
+      if (resBlueprint && resourcesCanCollect.count(resBlueprint->id) > 0)
+        resourcesCanCollect[resBlueprint->id] = collectRes;
+      xmlResource = xmlResource->NextSiblingElement(SL_RESOURCE);
+      }
+    resetResCollectCycleArray();
+    }
+  }
+
+void ComponentStorage::save(GameContext* gameContext, XMLElement* xmlComponent)
+  {
+  for (auto& pair : resourcesCanCollect)
+    {
+    const SMGameActorBlueprint* resBlueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(pair.first);
+    if (!resBlueprint)
+      continue;
+    XMLElement* xmlResource = xmlCreateElement(xmlComponent, SL_RESOURCE);
+    xmlResource->SetAttribute(SL_NAME, resBlueprint->name.c_str());
+    xmlResource->SetAttribute(SL_COLLECT, pair.second);
+    }
+  }
+
 void ComponentStorage::update(GameContext* gameContext)
   {
   //  collect resources if got space

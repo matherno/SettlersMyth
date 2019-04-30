@@ -43,6 +43,8 @@
 #define SL_ID "id"
 #define SL_UNDER_CONSTR "under_constr"
 #define SL_CONSTR_RESOURCELIST "constr_resource_list"
+#define SL_RESOURCELIST "resource_list"
+#define SL_COLLECT "collect"
 
 #define SL_CAMERA_POS  "cam_pos"
 #define SL_CAMERA_ZOOM  "cam_zoom"

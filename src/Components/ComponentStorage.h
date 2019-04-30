@@ -34,10 +34,12 @@ public:
   ComponentStorage(const SMGameActorPtr& actor, SMComponentType type, const ComponentStorageBlueprint* blueprint);
 
   virtual void initialise(GameContext* gameContext) override;
+  virtual void initialiseFromSaved(GameContext* gameContext, XMLElement* xmlComponent) override;
   virtual void update(GameContext* gameContext) override;
   virtual void cleanUp(GameContext* gameContext) override;
   virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) override;
   virtual void onUpdateSelectionHUD(GameContext* gameContext) override;
+  virtual void save(GameContext* gameContext, XMLElement* xmlComponent) override;
 
   bool gotEnoughInputResources() const;
 
