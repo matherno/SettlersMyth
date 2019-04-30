@@ -8,6 +8,8 @@
 #include "Utils.h"
 #include "GameActorTypes/GameActorBuilding.h"
 
+#define FOCUS_PANEL_WIDTH      250
+#define FOCUS_PANEL_MIN_HEIGHT 100
 
 /*
  *  ActorFocusPanel
@@ -15,8 +17,9 @@
 
 void ActorFocusPanel::initialise(GameContext* context)
   {
-  UIPanel::initialise(context);
   setColour(HUD_COL_BORDER);
+  setSize(Vector2D(FOCUS_PANEL_WIDTH, FOCUS_PANEL_MIN_HEIGHT));
+  UIPanel::initialise(context);
   }
 
 void ActorFocusPanel::updateActorInfo(GameContext* context)
@@ -31,7 +34,9 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
       if (focusActor)
         focusActor->removeSelectionHUD(context, this);
       focusActor = actor;
-      focusActor->setupSelectionHUD(context, this);
+      const int height = focusActor->setupSelectionHUD(context, this);
+      setSize(Vector2D(FOCUS_PANEL_WIDTH, std::max(height + 10, FOCUS_PANEL_MIN_HEIGHT)));
+      invalidate();
       }
     else
       focusActor->updateSelectionHUD(context);
@@ -134,7 +139,6 @@ void HUDHandler::setupFocusPanel(GameContext* context)
   UIManager* uiManager = context->getUIManager();
   focusPanel.reset(new ActorFocusPanel(uiManager->getNextComponentID()));
   focusPanel->setOffset(Vector2D(0, 20));
-  focusPanel->setSize(Vector2D(250, 300));
   uiManager->addComponent(focusPanel);
   }
 

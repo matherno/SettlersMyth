@@ -295,7 +295,7 @@ bool SMGameActor::gotComponentType(SMComponentType type) const
   return false;
   }
 
-void SMGameActor::setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel)
+int SMGameActor::setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel)
   {
   UIManager* uiManager = gameContext->getUIManager();
   const SMGameActorBlueprint* blueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(getBlueprintTypeID());
@@ -347,6 +347,8 @@ void SMGameActor::setupSelectionHUD(GameContext* gameContext, UIPanel* parentPan
     if (componentOffsetY > 0)
       offsetY += componentOffsetY + paddingY;
     }
+
+  return offsetY;
   }
 
 void SMGameActor::updateSelectionHUD(GameContext* gameContext)

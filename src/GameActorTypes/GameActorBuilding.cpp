@@ -375,6 +375,7 @@ int GameActorBuilding::onSetupSelectionHUD(GameContext* gameContext, UIPanel* pa
   {
   UIManager* uiManager = gameContext->getUIManager();
 
+#ifdef DEBUG
   // temp force construction finished button
   UIButton* button = new UIButton(uiManager->getNextComponentID(), false);
   button->setOffset(Vector2D(10, yOffset));
@@ -388,6 +389,8 @@ int GameActorBuilding::onSetupSelectionHUD(GameContext* gameContext, UIPanel* pa
     return true;
     });
   parentPanel->addChild(UIComponentPtr(button));
-
   return 30;
+#endif
+
+  return 0;
   }

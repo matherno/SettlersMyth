@@ -129,8 +129,8 @@ void UIResourceAmountList::setOnResourceToggledFunc(std::function<void(bool togg
 
 int UIResourceAmountList::getPixelHeightUsed() const
   {
-  const int itemCount = resItems.size();
-  return itemCount * resAmountHeight + ceil(itemCount / columnCount) * paddingBetweenItems;
+  const int rowCount = (int) ceil((double)resItems.size() / columnCount);
+  return rowCount * resAmountHeight + (rowCount - 1) * paddingBetweenItems;
   }
 
 void UIResourceAmountList::initialise(GameContext* gameContext)

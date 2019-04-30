@@ -112,7 +112,7 @@ public:
   void postMessage(GameContext* gameContext, SMMessage message, void* extra = nullptr);
   bool gotComponentType(SMComponentType type) const;
 
-  void setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel);
+  int setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel);
   void updateSelectionHUD(GameContext* gameContext);
   void removeSelectionHUD(GameContext* gameContext, UIPanel* parentPanel);
 
