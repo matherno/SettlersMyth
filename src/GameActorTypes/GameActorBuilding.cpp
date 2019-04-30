@@ -370,3 +370,24 @@ void GameActorBuilding::onUpdateReturnIdleUnits(GameContext* gameContext)
     returnIdleUnitsTimer.reset();
     }
   }
+
+int GameActorBuilding::onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset)
+  {
+  UIManager* uiManager = gameContext->getUIManager();
+
+  // temp force construction finished button
+  UIButton* button = new UIButton(uiManager->getNextComponentID(), false);
+  button->setOffset(Vector2D(10, yOffset));
+  button->setSize(Vector2D(30, 30));
+  button->setButtonColour(Vector3D(0.7, 0.1, 0.1));
+  button->setButtonHighlightColour(BTN_PRESSED_COL, BTN_UNPRESSED_COL);
+  button->setHighlightWidth(BTN_BORDER_SIZE);
+  button->setMouseClickCallback([this, gameContext](uint x, uint y) -> bool
+    {
+    makeConstructed(gameContext, true);
+    return true;
+    });
+  parentPanel->addChild(UIComponentPtr(button));
+
+  return 30;
+  }

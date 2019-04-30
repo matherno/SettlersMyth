@@ -14,10 +14,6 @@
 class ActorFocusPanel : public UIPanel
   {
 private:
-  std::shared_ptr<UIPanel> icon;
-  std::shared_ptr<UIText> nameText;
-  std::shared_ptr<UIText> resourceText;
-  std::shared_ptr<UIText> attachedUnitText;
   SMGameActorPtr focusActor;
 
 public:

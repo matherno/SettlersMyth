@@ -8,6 +8,7 @@
 #include "ComponentManufacturer.h"
 #include "GameActorTypes/GameActorDeposit.h"
 #include "GameActorTypes/GameActorResource.h"
+#include "UIResourceAmount.h"
 
 
 /*
@@ -235,6 +236,31 @@ void ComponentManufacturer::onMessage(GameContext* gameContext, SMMessage messag
         }
       break;
     }
+  }
+
+
+int ComponentManufacturer::onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset)
+  {
+  uiResourceListInput.reset(new UIResourceAmountList(gameContext->getUIManager()->getNextComponentID(), getActor().get()));
+  for (auto pair : blueprint->inputs)
+    uiResourceListInput->addResource(pair.first, gameContext);
+  uiResourceListInput->setOffset(Vector2D(40, yOffset));
+  uiResourceListInput->setHorizontalAlignment(Alignment::alignmentStart);
+  parentPanel->addChild(uiResourceListInput);
+  
+  uiResourceListOutput.reset(new UIResourceAmountList(gameContext->getUIManager()->getNextComponentID(), getActor().get()));
+  uiResourceListOutput->addResource(blueprint->outputResID, gameContext);
+  uiResourceListOutput->setOffset(Vector2D(-40, yOffset));
+  uiResourceListOutput->setHorizontalAlignment(Alignment::alignmentEnd);
+  parentPanel->addChild(uiResourceListOutput);
+
+  return uiResourceListInput->getPixelHeightUsed();
+  }
+
+void ComponentManufacturer::onUpdateSelectionHUD(GameContext* gameContext) 
+  {
+  uiResourceListInput->updateResources();
+  uiResourceListOutput->updateResources();
   }
 
 bool ComponentManufacturer::gotEnoughInputResources() const

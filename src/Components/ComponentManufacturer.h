@@ -52,6 +52,7 @@ protected:
   virtual void onReachedTarget(GameContext* gameContext, GameActorUnit* unit) override;
   };
 
+class UIResourceAmountList;
 
 class ComponentManufacturer : public BuildingComponent
   {
@@ -61,6 +62,8 @@ private:
   Timer collectResTimer;
   std::vector<uint> resCollectCycle;
   int resCollectIdx = 0;
+  std::shared_ptr<UIResourceAmountList> uiResourceListInput;
+  std::shared_ptr<UIResourceAmountList> uiResourceListOutput;
 
   Timer startManufactureTimer;
   bool isUnitManufacturing = false;   //  a unit is currently in the process of manufacturing (either moving to or performing)
@@ -72,6 +75,8 @@ public:
   virtual void update(GameContext* gameContext) override;
   virtual void cleanUp(GameContext* gameContext) override;
   virtual void onMessage(GameContext* gameContext, SMMessage message, void* extra) override;
+  virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) override;
+  virtual void onUpdateSelectionHUD(GameContext* gameContext) override;
 
   bool gotEnoughInputResources() const;
 

@@ -20,6 +20,7 @@
 #include <Components/ComponentResidents.h>
 #include <Components/ComponentUnitRecruiter.h>
 #include <Components/ComponentParticleSystem.h>
+#include <Components/ComponentResListHUD.h>
 #include "SMGameObjectFactory.h"
 #include "BlueprintFileHelper.h"
 #include "Resources.h"
@@ -178,6 +179,9 @@ SMComponentBlueprintPtr SMGameActorBlueprint::constructComponentBlueprint(const 
       break;
     case SMComponentType::particleSystem:
       blueprint.reset(new ComponentParticleSystemBlueprint());
+      break;
+    case SMComponentType::resListHUD:
+      blueprint.reset(new ComponentResListHUDBlueprint());
       break;
     }
 

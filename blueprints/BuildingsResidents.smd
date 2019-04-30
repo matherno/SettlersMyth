@@ -45,6 +45,9 @@
     	<trigger mode="constructed"/>
     </component>
 
+    <component type="ResListHUD" id="9">
+        <resource name="BuildMaterials1"/>
+    </component>
 </blueprint>
 
 <blueprint name="Hut" type="Building" description="A basic hut where settlers live" buildable="true">

@@ -16,77 +16,7 @@
 void ActorFocusPanel::initialise(GameContext* context)
   {
   UIPanel::initialise(context);
-  UIManager* uiManager = context->getUIManager();
-
   setColour(HUD_COL_BORDER);
-
-  UIPanel* subPanel = new UIPanel(uiManager->getNextComponentID());
-  subPanel->setColour(HUD_COL_BG);
-  subPanel->setVerticalAlignment(alignmentCentre);
-  subPanel->setHorizontalAlignment(alignmentCentre);
-  subPanel->setHeightMatchParent(true);
-  subPanel->setWidthMatchParent(true);
-  subPanel->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
-  addChild(UIComponentPtr(subPanel));
-
-  UIPanel* iconBorder = new UIPanel(uiManager->getNextComponentID());
-  iconBorder->setColour(BTN_UNPRESSED_COL);
-  iconBorder->setOffset(Vector2D(10, 10));
-  iconBorder->setSize(Vector2D(45));
-  iconBorder->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
-  addChild(UIComponentPtr(iconBorder));
-
-  icon.reset(new UIPanel(uiManager->getNextComponentID()));
-  icon->setVerticalAlignment(alignmentCentre);
-  icon->setHorizontalAlignment(alignmentCentre);
-  icon->setHeightMatchParent(true);
-  icon->setWidthMatchParent(true);
-  icon->setPadding(BTN_BORDER_SIZE, BTN_BORDER_SIZE);
-  iconBorder->addChild(icon);
-
-  nameText.reset(new UIText(uiManager->getNextComponentID()));
-  nameText->setOffset(Vector2D(10, 60));
-  nameText->setSize(Vector2D(250, 30));
-  nameText->setFontSize(25);
-  nameText->setFontColour(Vector3D(0));
-  nameText->showBackground(false);
-  subPanel->addChild(nameText);
-
-  attachedUnitText.reset(new UIText(uiManager->getNextComponentID()));
-  attachedUnitText->setOffset(Vector2D(65, 20));
-  attachedUnitText->setSize(Vector2D(170, 30));
-  attachedUnitText->setFontSize(25);
-  attachedUnitText->setFontColour(Vector3D(0));
-  attachedUnitText->showBackground(false);
-  subPanel->addChild(attachedUnitText);
-
-  resourceText.reset(new UIText(uiManager->getNextComponentID()));
-  resourceText->setOffset(Vector2D(0, 90));
-  resourceText->setSize(Vector2D(0, 100));
-  resourceText->setWidthMatchParent(true);
-  resourceText->setPadding(10, 10);
-  resourceText->setFontSize(22);
-  resourceText->setFontColour(Vector3D(0));
-  resourceText->showBackground(false);
-  subPanel->addChild(resourceText);
-
-  // temp force construction finished button
-  UIButton* button = new UIButton(uiManager->getNextComponentID(), false);
-  button->setVerticalAlignment(Alignment::alignmentEnd);
-  button->setHorizontalAlignment(Alignment::alignmentEnd);
-  button->setOffset(Vector2D(-10, -10));
-  button->setSize(Vector2D(30, 30));
-  button->setButtonColour(Vector3D(0.7, 0.1, 0.1));
-  button->setButtonHighlightColour(BTN_PRESSED_COL, BTN_UNPRESSED_COL);
-  button->setHighlightWidth(BTN_BORDER_SIZE);
-  button->setMouseClickCallback([this, context](uint x, uint y) -> bool
-    {
-    GameActorBuilding* buildingActor = GameActorBuilding::cast(focusActor.get());
-    if (buildingActor)
-      buildingActor->makeConstructed(context, true);
-    return true;
-    });
-  subPanel->addChild(UIComponentPtr(button));
   }
 
 void ActorFocusPanel::updateActorInfo(GameContext* context)
@@ -96,70 +26,21 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
   if (SMGameActorPtr actor = smGameContext->getSelectionManager()->getFirstSelectedActor())
     {
     setVisible(true, true);
-
-
     if (!focusActor || focusActor->getID() != actor->getID())
       {
+      if (focusActor)
+        focusActor->removeSelectionHUD(context, this);
       focusActor = actor;
-      const SMGameActorBlueprint* blueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(actor->getBlueprintTypeID());
-      ASSERT(blueprint, "");
-      nameText->setText(blueprint->displayName);
-      nameText->invalidate();
-      if (!blueprint->iconPath.empty())
-        icon->setTexture(context->getRenderContext()->getSharedTexture(blueprint->iconPath));
-      else
-        icon->setTexture(nullptr);
-      icon->invalidate();
-      }
-
-    GameActorBuilding* buildingActor = GameActorBuilding::cast(actor.get());
-    bool buildingUnderConstruction = false;
-    string unitText;
-    if (buildingActor)
-      {
-      buildingUnderConstruction = buildingActor->getIsUnderConstruction();
-      if (!buildingUnderConstruction)
-        {
-        const int attachedUnitCount = buildingActor->getAttachedUnits()->count();
-        const int residentUnitCount = buildingActor->getDettachedResidentUnitCount();
-        const int idleCount = buildingActor->getIdleUnitCount();
-        unitText = mathernogl::stringFormat("%d|%d|%d", idleCount, attachedUnitCount, residentUnitCount);
-        }
-      }
-    attachedUnitText->setText(unitText);
-    attachedUnitText->invalidate();
-
-    bool first = true;
-    string resText;
-    if (buildingUnderConstruction)
-      {
-      resText = "Under Construction\n";
-      const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(buildingActor->getConstructionPackID());
-      if (resourceBlueprint)
-        resText += resourceBlueprint->displayName + "\n";
-      resText += mathernogl::stringFormat("Progress %.0f%%", buildingActor->getConstructionProgress() * 100.0);
+      focusActor->setupSelectionHUD(context, this);
       }
     else
-      {
-      actor->forEachResource([&](uint id, uint amount)
-        {
-        const SMGameActorBlueprint* resourceBlueprint = smGameContext->getGameObjectFactory()->getGameActorBlueprint(id);
-        if (resourceBlueprint)
-          {
-          if (!first)
-            resText += "\n";
-          resText += resourceBlueprint->displayName + ": " + std::to_string(amount);
-          first = false;
-          }
-        }, true, true);
-      }
-
-    resourceText->setText(resText);
-    resourceText->invalidate();
+      focusActor->updateSelectionHUD(context);
     }
   else
     {
     setVisible(false, true);
+    if (focusActor)
+      focusActor->removeSelectionHUD(context, this);
     focusActor.reset();
     }
   }
@@ -253,7 +134,7 @@ void HUDHandler::setupFocusPanel(GameContext* context)
   UIManager* uiManager = context->getUIManager();
   focusPanel.reset(new ActorFocusPanel(uiManager->getNextComponentID()));
   focusPanel->setOffset(Vector2D(0, 20));
-  focusPanel->setSize(Vector2D(250, 200));
+  focusPanel->setSize(Vector2D(250, 300));
   uiManager->addComponent(focusPanel);
   }
 

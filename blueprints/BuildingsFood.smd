@@ -12,4 +12,7 @@
         <model voxelfile="buildings/Gatherer.mgv"/>
     </component>
     <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+    <component type="ResListHUD" id="5">
+        <resource name="Fruit"/>
+    </component>
 </blueprint>

@@ -13,7 +13,7 @@
 */
 
 
-
+class UIPanel;
 class SMGameActor;
 typedef std::shared_ptr<SMGameActor> SMGameActorPtr;
 typedef std::weak_ptr<SMGameActor> SMGameActorWkPtr;
@@ -37,6 +37,10 @@ public:
   virtual void cleanUp(GameContext* gameContext) {};
   virtual void onMessage(GameContext* gameContext, SMMessage message, void* extra = nullptr) {};
   virtual void save(GameContext* gameContext, XMLElement* xmlComponent) {};
+
+  //  onSetupSelectionHUD returns the height in pixels taken up by any created UI
+  virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) { return 0; } 
+  virtual void onUpdateSelectionHUD(GameContext* gameContext) {}
   };
 typedef std::shared_ptr<SMComponent> SMComponentPtr;
 
@@ -59,6 +63,7 @@ private:
   bool positionChanged = false;
   bool rotationChanged = false;
   bool isSelectable = false;
+  UIComponentPtr selectionHUD;
 
 protected:
   uint boundingBoxID = 0;
@@ -107,11 +112,20 @@ public:
   void postMessage(GameContext* gameContext, SMMessage message, void* extra = nullptr);
   bool gotComponentType(SMComponentType type) const;
 
+  void setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel);
+  void updateSelectionHUD(GameContext* gameContext);
+  void removeSelectionHUD(GameContext* gameContext, UIPanel* parentPanel);
+
 protected:
   virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element);
   virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) {};     //  called after all loaded actors are initialised
   void sendMessageToComponents(GameContext* gameContext, SMMessage message, void* extra = nullptr);
   void updateBoundingBox();
+
+  //  following allows sub-classes to setup/update any HUD elements
+  //  onSetupSelectionHUD returns the height in pixels taken up by any created UI
+  virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) { return 0; } 
+  virtual void onUpdateSelectionHUD(GameContext* gameContext) {}
   };
 
 

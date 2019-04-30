@@ -1,4 +1,5 @@
 <blueprint name="Log" type="Resource" selectable="false">
+    <icon imagefile="icons/log.png"/>
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
@@ -15,6 +16,7 @@
 </blueprint>
 
 <blueprint name="Plank" type="Resource" selectable="false">
+    <icon imagefile="icons/plank.png"/>
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
@@ -31,6 +33,7 @@
 </blueprint>
 
 <blueprint name="Stone" type="Resource" selectable="false">
+    <icon imagefile="icons/stone.png"/>
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
@@ -47,6 +50,7 @@
 </blueprint>
 
 <blueprint name="Thatch" type="Resource" selectable="false">
+    <icon imagefile="icons/thatch.png"/>
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
@@ -63,6 +67,7 @@
 </blueprint>
 
 <blueprint name="BuildMaterials1" displayname="Build Materials L1" type="Resource" selectable="false">
+    <icon imagefile="icons/buildmaterials1.png"/>
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.35" y="0.5"  elev="0" rot="0"/>
 	<stackpos x="0.35" y="0.8" elev="0" rot="0"/>
@@ -79,6 +84,7 @@
 </blueprint>
 
 <blueprint name="Fruit" type="Resource" selectable="false">
+    <icon imagefile="icons/fruit.png"/>	
 	<grid x="0.4" y="0.4" height="0.2" posincentre="true"/>
 	<stackpos x="0.3" y="0.5" elev="0" rot="180"/>
 	<stackpos x="0.7" y="0.8" elev="0" rot="180"/>

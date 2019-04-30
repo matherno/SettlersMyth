@@ -6,6 +6,7 @@
 #include <BlueprintFileHelper.h>
 #include <Resources.h>
 #include "ComponentStorage.h"
+#include "UIResourceAmount.h"
 
 
 /*
@@ -46,10 +47,9 @@ void ComponentStorage::initialise(GameContext* gameContext)
   SMGameContext::cast(gameContext)->getGameObjectFactory()->forEachGameActorBlueprint([&](const SMGameActorBlueprint* blueprint)
     {
     if (blueprint->type == SMGameActorType::resource)
-      resCollectCycle.push_back(blueprint->id);
+      resourcesCanCollect[blueprint->id] = true;
     });
-
-  std::shuffle(resCollectCycle.begin(), resCollectCycle.end(), std::default_random_engine());
+  resetResCollectCycleArray();
   }
 
 void ComponentStorage::update(GameContext* gameContext)
@@ -110,4 +110,36 @@ void ComponentStorage::sendUnitToCollect(GameContext* gameContext)
     UnitCommandPtr command(new CollectResourceUnitCommand(actorToCollectFrom->getID(), resToCollect));
     unit->performCommand(command);
     }
+  }
+
+int ComponentStorage::onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset)
+  {
+  uiResourceList.reset(new UIResourceAmountList(gameContext->getUIManager()->getNextComponentID(), getActor().get(), 3));
+  for (auto& pair : resourcesCanCollect)
+    uiResourceList->addResource(pair.first, gameContext, pair.second);
+  uiResourceList->setOffset(Vector2D(0, yOffset));
+  uiResourceList->setHorizontalAlignment(Alignment::alignmentCentre);
+  uiResourceList->setOnResourceToggledFunc([this](bool toggledOn, uint resID)
+    {
+    resourcesCanCollect[resID] = toggledOn;
+    resetResCollectCycleArray();
+    });
+  parentPanel->addChild(uiResourceList);
+  return uiResourceList->getPixelHeightUsed();
+  }
+
+void ComponentStorage::onUpdateSelectionHUD(GameContext* gameContext) 
+  {
+  uiResourceList->updateResources();
+  }
+
+void ComponentStorage::resetResCollectCycleArray()
+  {
+  resCollectCycle.clear();
+  for (auto& pair : resourcesCanCollect)
+    {
+    if (pair.second)  
+      resCollectCycle.push_back(pair.first);
+    }
+  std::shuffle(resCollectCycle.begin(), resCollectCycle.end(), std::default_random_engine());
   }

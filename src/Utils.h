@@ -17,6 +17,7 @@
 #define RECRUIT_UNIT_COOLDOWN 3500
 
 #define HUD_COL_BG              colToVec3(62, 62, 63)
+#define HUD_COL_BG_ACCENT       colToVec3(75, 75, 75)
 #define HUD_COL_BORDER          colToVec3(30, 30, 30)
 #define HUD_BORDER_SIZE         3
 #define BTN_PRESSED_COL         Vector3D(0.5, 0.5, 0.6)
@@ -81,6 +82,7 @@ enum class SMComponentType
   initResources,
   unitRecruiter,
   particleSystem,
+  resListHUD,
   };
 
 
@@ -101,6 +103,7 @@ namespace SMTypes
       { SMComponentType::initResources, "InitResources" },
       { SMComponentType::unitRecruiter, "UnitRecruiter" },
       { SMComponentType::particleSystem, "ParticleSystem" },
+      { SMComponentType::resListHUD, "ResListHUD" },
     };
 
   static const std::map<SMGameActorType, string> typeNames

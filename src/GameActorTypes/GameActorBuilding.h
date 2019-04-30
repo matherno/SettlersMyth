@@ -76,5 +76,6 @@ public:
 protected:
   virtual void initialiseActorFromSave(GameContext* gameContext, XMLElement* element) override;
   virtual void finaliseActorFromSave(GameContext* gameContext, XMLElement* element) override;
+  virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) override;
   void onUpdateReturnIdleUnits(GameContext* gameContext);
   };

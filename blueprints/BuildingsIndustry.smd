@@ -14,6 +14,9 @@
     <component type="BuildingHarvester" id="2" deposit="Tree" harvest_time="5000"/>
     <component type="ResourceStacks" id="3"/>    
     <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+    <component type="ResListHUD" id="5">
+        <resource name="Log"/>
+    </component>
 </blueprint>
 
 <blueprint name="Sawmill" type="Building" description="Gathers logs and saws them into planks" buildable="true">
@@ -53,6 +56,9 @@
         <model voxelfile="buildings/Stoneminer.mgv"/>
     </component>
     <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+    <component type="ResListHUD" id="5">
+        <resource name="Stone"/>
+    </component>
 </blueprint>
 
 <blueprint name="Thatcher" type="Building" buildable="true">
@@ -68,4 +74,7 @@
         <model voxelfile="buildings/Thatcher.mgv"/>
     </component>
     <component type="UnitRecruiter" id="4" max_units="3" unit="Settler"/>
+    <component type="ResListHUD" id="5">
+        <resource name="Thatch"/>
+    </component>
 </blueprint>

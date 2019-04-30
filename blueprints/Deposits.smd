@@ -8,6 +8,9 @@
         <model voxelfile="deposits/TreeC.mgv"/>
     </component>
     <component type="DestroyWhenNoResource" id="2"/>    
+    <component type="ResListHUD" id="3">
+        <resource name="Log"/>
+    </component>
 </blueprint>
 
 <blueprint name="Stone Mound" type="Deposit" buildable="true">
@@ -19,7 +22,10 @@
         <model voxelfile="deposits/StoneB.mgv"/>
         <model voxelfile="deposits/StoneC.mgv"/>
     </component>
-    <component type="DestroyWhenNoResource" id="2"/>        
+    <component type="DestroyWhenNoResource" id="2"/>   
+    <component type="ResListHUD" id="3">
+        <resource name="Stone"/>
+    </component>     
 </blueprint>
 
 <blueprint name="Reeds" type="Deposit" buildable="true">
@@ -31,7 +37,10 @@
         <model voxelfile="deposits/ReedsB.mgv"/>
         <model voxelfile="deposits/ReedsC.mgv"/>
     </component>
-    <component type="DestroyWhenNoResource" id="2"/>        
+    <component type="DestroyWhenNoResource" id="2"/>     
+    <component type="ResListHUD" id="3">
+        <resource name="Thatch"/>
+    </component>   
 </blueprint>
 
 <blueprint name="Bush" type="Deposit" buildable="true">
@@ -43,5 +52,8 @@
         <model voxelfile="deposits/BushB.mgv"/>
         <model voxelfile="deposits/BushC.mgv"/>
     </component>
-    <component type="DestroyWhenNoResource" id="2"/>        
+    <component type="DestroyWhenNoResource" id="2"/> 
+    <component type="ResListHUD" id="3">
+        <resource name="Fruit"/>
+    </component>       
 </blueprint>

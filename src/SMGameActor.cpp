@@ -5,6 +5,10 @@
 #include "SMGameActor.h"
 #include "SMGameContext.h"
 #include "BlueprintFileHelper.h"
+#include <UISystem/UIPanel.h>
+#include <UISystem/UIProgressBar.h>
+#include <UISystem/UIButton.h>
+#include <UISystem/UIText.h>
 
 SMGameActor::SMGameActor(uint id, uint blueprintID) : GameActor(id), blueprintID(blueprintID)
   {
@@ -291,6 +295,75 @@ bool SMGameActor::gotComponentType(SMComponentType type) const
   return false;
   }
 
+void SMGameActor::setupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel)
+  {
+  UIManager* uiManager = gameContext->getUIManager();
+  const SMGameActorBlueprint* blueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(getBlueprintTypeID());
+
+  UIPanel* selectionPanel = new UIPanel(uiManager->getNextComponentID());
+  selectionPanel->setWidthMatchParent(true);
+  selectionPanel->setHeightMatchParent(true);
+  selectionPanel->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  selectionPanel->setColour(HUD_COL_BG);
+
+  selectionHUD.reset(selectionPanel);
+  parentPanel->addChild(selectionHUD);
+
+  UIPanel* iconBorder = new UIPanel(uiManager->getNextComponentID());
+  iconBorder->setColour(BTN_UNPRESSED_COL);
+  iconBorder->setOffset(Vector2D(10, 10));
+  iconBorder->setSize(Vector2D(45));
+  iconBorder->setPadding(HUD_BORDER_SIZE, HUD_BORDER_SIZE);
+  selectionPanel->addChild(UIComponentPtr(iconBorder));
+
+  UIPanel* icon = new UIPanel(uiManager->getNextComponentID());
+  icon->setVerticalAlignment(alignmentCentre);
+  icon->setHorizontalAlignment(alignmentCentre);
+  icon->setHeightMatchParent(true);
+  icon->setWidthMatchParent(true);
+  icon->setPadding(BTN_BORDER_SIZE, BTN_BORDER_SIZE);
+  icon->setTexture(gameContext->getRenderContext()->getSharedTexture(blueprint->iconPath));
+  iconBorder->addChild(UIComponentPtr(icon));
+
+  UIText* nameText = new UIText(uiManager->getNextComponentID());
+  nameText->setOffset(Vector2D(65, 10));
+  nameText->setSize(Vector2D(170, 50));
+  nameText->setFontSize(25);
+  nameText->setFontColour(Vector3D(0));
+  nameText->showBackground(false);
+  nameText->setTextCentreAligned(true, false);
+  nameText->setText(blueprint->displayName);
+  selectionPanel->addChild(UIComponentPtr(nameText));
+
+  const int paddingY = 10;
+  int offsetY = 55 + paddingY;
+  int subOffsetY = onSetupSelectionHUD(gameContext, selectionPanel, offsetY);
+  if (subOffsetY > 0)
+    offsetY += subOffsetY + paddingY;
+
+  for (SMComponentPtr component : components)
+    {
+    int componentOffsetY = component->onSetupSelectionHUD(gameContext, selectionPanel, offsetY);
+    if (componentOffsetY > 0)
+      offsetY += componentOffsetY + paddingY;
+    }
+  }
+
+void SMGameActor::updateSelectionHUD(GameContext* gameContext)
+  {
+  ASSERT(selectionHUD, "");
+
+  onUpdateSelectionHUD(gameContext);
+
+  for (SMComponentPtr component : components)
+    component->onUpdateSelectionHUD(gameContext);
+  }
+
+void SMGameActor::removeSelectionHUD(GameContext* gameContext, UIPanel* parentPanel)
+  {
+  parentPanel->removeChild(selectionHUD->getID());
+  selectionHUD.reset();
+  }
 
 
 
