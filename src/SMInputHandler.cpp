@@ -6,6 +6,7 @@
 #include "SMInputHandler.h"
 #include "SMGameContext.h"
 #include "SaveLoadDlg.h"
+#include "GameActorTypes/GameActorBuilding.h"
 
 SMInputHandler::SMInputHandler(uint id, const Vector3D& focalPosition, float zoomOffset, float rotation, float pitch)
   : InputHandler(id), focalPosition(focalPosition), zoomOffset(zoomOffset), rotation(rotation), pitch(pitch)
@@ -135,12 +136,31 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
       }
     }
 
+#ifdef DEBUG
   switch(getCharFromKeyCode(key))
     {
     case 'T':
+      {
       smGameContext->getHUDHandler()->toggleDebugPanel();
       return true;
+      }
+    
+    case 'C':
+      {
+      if (smGameContext->getSelectionManager()->selectionCount() > 0)
+        {
+        auto selectedActors = smGameContext->getSelectionManager()->getSelectedActors();
+        for (SMGameActorPtr actor : *selectedActors->getList())
+          {
+          if (GameActorBuilding* building = GameActorBuilding::cast(actor.get()))
+            building->makeConstructed(gameContext, true);
+          }
+        }
+      return true;
+      }
     }
+#endif
+
   return false;
   }
 

@@ -256,10 +256,8 @@ void HUDHandler::setupDebugPanel(GameContext* context)
   debugPanel->setVerticalAlignment(alignmentEnd);
   debugPanel->setSize(Vector2D(260, 150));
   debugPanel->setColour(Vector3D(0.2));
-  uiManager->addComponent(debugPanel);
-#ifdef NDEBUG
+  uiManager->addComponent(debugPanel);\
   debugPanel->setVisible(false, true);
-#endif
   }
 
 void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)
