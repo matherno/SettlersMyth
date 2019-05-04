@@ -50,6 +50,7 @@ public:
   virtual void processInputStage() override;
   virtual void processUpdateStage() override;
   virtual void processDrawStage() override;
+  virtual void doIMGui() override;
 
   virtual FontPtr getDefaultFont() override;
   HUDHandler* getHUDHandler(){ return &hudHandler; }

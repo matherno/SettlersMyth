@@ -138,13 +138,7 @@ bool SMInputHandler::onKeyPressed(GameContext* gameContext, uint key)
 
 #ifdef DEBUG
   switch(getCharFromKeyCode(key))
-    {
-    case 'T':
-      {
-      smGameContext->getHUDHandler()->toggleDebugPanel();
-      return true;
-      }
-    
+    {    
     case 'C':
       {
       if (smGameContext->getSelectionManager()->selectionCount() > 0)

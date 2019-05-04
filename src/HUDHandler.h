@@ -23,26 +23,13 @@ public:
 private:
   virtual void initialise(GameContext* context) override;
   };
-
-class SMDebugPanel : public UIPanel
-  {
-private:
-  std::shared_ptr<UIText> textComponent;
-  Timer refreshTimer;
-
-public:
-  SMDebugPanel(uint id) : UIPanel(id) {}
-  void updateDebugInfo(GameContext* context);
-private:
-  virtual void initialise(GameContext* context) override;
-  };
+  
 
 class HUDHandler
   {
 private:
   std::shared_ptr<UIPanel> mainUIPanel;
   std::shared_ptr<ActorFocusPanel> focusPanel;
-  std::shared_ptr<SMDebugPanel> debugPanel;
   UIToggleButtonGroupPtr buildingButtonGroup;
   std::shared_ptr<WorldItemPlacementHandler> placementHandler;
   
@@ -55,12 +42,10 @@ public:
   void updateUI(GameContext* context);
   void cleanUp(GameContext* context);
   void deselectUI();
-  void toggleDebugPanel();
 
 protected:
   void setupFocusPanel(GameContext* context);
   void setupBuildPanel(GameContext* context);
-  void setupDebugPanel(GameContext* context);
   void startBuildingPlacingMode(GameContext* gameContext, uint buildingBlueprintID);
   void endBuildingPlacingMode(GameContext* gameContext);
   void updateBuildSelectionDetails(GameContext* gameContext, uint buildingBlueprintID);

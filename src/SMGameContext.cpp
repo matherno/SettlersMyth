@@ -9,6 +9,7 @@
 #include "Resources.h"
 #include "SaveLoadFileHelper.h"
 #include "Utils.h"
+#include "imgui/imgui.h"
 
 #define LAND_HEIGHT 0
 
@@ -75,6 +76,27 @@ void SMGameContext::processDrawStage()
   if (refreshShadowMapTimer.incrementTimer(getDeltaTime()) && !shadowMapValid)
     recalculateShadowMap();
   GameContextImpl::processDrawStage();
+  }
+
+void SMGameContext::doIMGui()
+  {
+  GameContextImpl::doIMGui();
+
+#ifndef NDEBUG
+  const double msPerFrame = 1000.0f / ImGui::GetIO().Framerate;
+
+  static std::list<float> runningFrameTimeList;
+  runningFrameTimeList.push_back(msPerFrame);
+  if (runningFrameTimeList.size() > 1000)
+    runningFrameTimeList.pop_front();
+
+  std::vector<float> graphPoints(runningFrameTimeList.begin(), runningFrameTimeList.end());
+
+  ImGui::Begin("Debug Panel");
+  ImGui::Text("FPS %.1f, ms per frame %.3f", ImGui::GetIO().Framerate, msPerFrame);
+  ImGui::PlotLines("", graphPoints.data(), graphPoints.size(), 0, nullptr, 15, 30, ImVec2(0, 100));
+  ImGui::End();
+#endif
   }
 
 void SMGameContext::initSurface()

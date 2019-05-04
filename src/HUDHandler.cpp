@@ -52,50 +52,6 @@ void ActorFocusPanel::updateActorInfo(GameContext* context)
 
 
 /*
- *  SMDebugPanel
- */
-
-void SMDebugPanel::initialise(GameContext* context)
-  {
-  UIPanel::initialise(context);
-
-  UIManager* uiManager = context->getUIManager();
-
-  textComponent.reset(new UIText(uiManager->getNextComponentID()));
-  textComponent->setPadding(10, 10);
-  textComponent->setFontSize(20);
-  textComponent->setFontColour(Vector3D(0));
-  textComponent->showBackground(false);
-  textComponent->setFontColour(Vector3D(0.1));
-  textComponent->setHeightMatchParent(true);
-  textComponent->setWidthMatchParent(true);
-  textComponent->setVisible(isVisible(), true);
-  addChild(textComponent);
-
-  refreshTimer.setTimeOut(1000);
-  }
-
-void SMDebugPanel::updateDebugInfo(GameContext* context)
-  {
-  if (textComponent && isVisible() && refreshTimer.incrementTimer(context->getDeltaTime()))
-    {
-    SMGameContext* smGameContext = SMGameContext::cast(context);
-    string text;
-    text += "Game Time: " + mathernogl::formatTime(context->getGameTime()) + "\n";
-    text += "Delta Time: " + std::to_string(smGameContext->getDeltaTime()) + " ms\n";
-    text += "FPS: " + std::to_string(int(1.0f / ((float)smGameContext->getDeltaTime() / 1000.0f))) + "\n";
-    text += "Speed: " + std::to_string(smGameContext->getSpeed()) + "\n";
-    text += "Actors: " + std::to_string(smGameContext->getSMActorCount()) + "\n";
-
-    textComponent->setText(text);
-    textComponent->setVisible(isVisible(), true);
-    textComponent->invalidate();
-    refreshTimer.reset();
-    }
-  }
-
-
-/*
  *  HUDHandler
  */
 
@@ -113,25 +69,16 @@ void HUDHandler::initialiseUI(GameContext* context)
 
   setupBuildPanel(context);
   setupFocusPanel(context);
-  setupDebugPanel(context);
   }
 
 void HUDHandler::updateUI(GameContext* context)
   {
   focusPanel->updateActorInfo(context);
-  debugPanel->updateDebugInfo(context);
   }
 
 void HUDHandler::deselectUI()
   {
   buildingButtonGroup->forceDeselectAll();
-  }
-
-void HUDHandler::toggleDebugPanel()
-  {
-  if (!debugPanel)
-    return;
-  debugPanel->setVisible(!debugPanel->isVisible(), true);
   }
 
 void HUDHandler::setupFocusPanel(GameContext* context)
@@ -246,18 +193,6 @@ void HUDHandler::setupBuildPanel(GameContext* context)
     subPanel->addChild(UIComponentPtr(button));
     ++buildingNum;
     });
-  }
-
-void HUDHandler::setupDebugPanel(GameContext* context)
-  {
-  UIManager* uiManager = context->getUIManager();
-  debugPanel.reset(new SMDebugPanel(uiManager->getNextComponentID()));
-  debugPanel->setHorizontalAlignment(alignmentStart);
-  debugPanel->setVerticalAlignment(alignmentEnd);
-  debugPanel->setSize(Vector2D(260, 150));
-  debugPanel->setColour(Vector3D(0.2));
-  uiManager->addComponent(debugPanel);\
-  debugPanel->setVisible(false, true);
   }
 
 void HUDHandler::endBuildingPlacingMode(GameContext* gameContext)
