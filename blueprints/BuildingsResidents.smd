@@ -16,7 +16,9 @@
     <component type="InitResources" id="4">
         <resource name="BuildMaterials1" amount="18"/>
     </component>
-    <component type="BuildingResidents" id="5" unit="Settler" max_units="15"/>
+
+    <component type="BuildingResidents" id="5" unit="Settler" max_units="15" init_units="15" unitgen_base="0"/>
+
     <component type="UnitRecruiter" id="6" unit="Settler" max_units="5"/>
 
     <component type="ParticleSystem" id="7" size="0.07" velocity="0.4" gravity="0.00015" time_alive="1000" time_between_spawns="80">
@@ -60,7 +62,7 @@
     <component type="BuildingVoxelRenderable" id="1" staticmodel="true">
         <model voxelfile="buildings/Hut.mgv"/>
     </component>
-    <component type="BuildingResidents" id="2" unit="Settler" max_units="10"/>
+    <component type="BuildingResidents" id="2" unit="Settler" max_units="10" unitgen_base="300"/>
     <component type="ResourceStacks" id="3"/>    
     <component type="ParticleSystem" id="4" size="0.1" velocity="0.3" gravity="0.00001" time_alive="9000" time_between_spawns="200">
     	<emitter x="0.57" y="1.9" z="-0.8"/>

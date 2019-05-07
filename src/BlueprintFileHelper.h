@@ -39,6 +39,8 @@
 #define OD_IMAGEFILE "imagefile"
 #define OD_UNIT "unit"
 #define OD_MAXUNITS "max_units"
+#define OD_INITUNITS "init_units"
+#define OD_UNITGENTIME "unitgen_base"
 #define OD_SPEED "speed"
 #define OD_DEPOSIT "deposit"
 #define OD_RESOURCENAME "resource_name"

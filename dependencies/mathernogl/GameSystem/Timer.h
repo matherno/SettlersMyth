@@ -38,4 +38,9 @@ public:
     {
     this->paused = paused;
     }
+
+  long getTimeRemaining() const
+    {
+    return timer;
+    }
   };
