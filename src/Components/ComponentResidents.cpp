@@ -5,6 +5,7 @@
 #include <SMGameContext.h>
 #include <BlueprintFileHelper.h>
 #include "ComponentResidents.h"
+#include "UIResourceAmount.h"
 
 
 /*
@@ -89,3 +90,23 @@ void ComponentResidents::populateResidents(GameContext* gameContext)
     }
   }
 
+int ComponentResidents::onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset)
+  {
+  GameActorBuilding* building = getBuildingActor();
+  const SMGameActorBlueprint* unitBlueprint = SMGameContext::cast(gameContext)->getGameObjectFactory()->getGameActorBlueprint(blueprint->unitBlueprintID);
+  if (!unitBlueprint)
+    return 0;
+
+  uiOccupancyCount.reset(new UIResourceAmount(gameContext->getUIManager()->getNextComponentID(), unitBlueprint->iconPath, building->getResidentUnitCount()));
+  uiOccupancyCount->setOffset(Vector2D(0, yOffset));
+  uiOccupancyCount->setHorizontalAlignment(alignmentCentre);
+  parentPanel->addChild(uiOccupancyCount);
+  return uiOccupancyCount->getSize().y;
+  }
+
+void ComponentResidents::onUpdateSelectionHUD(GameContext* gameContext) 
+  {
+  GameActorBuilding* building = getBuildingActor();
+  if (uiOccupancyCount)
+    uiOccupancyCount->updateAmount(building->getResidentUnitCount());
+  }

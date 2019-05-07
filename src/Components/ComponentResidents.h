@@ -7,6 +7,7 @@
 *   
 */
 
+class UIResourceAmount;
 
 class ComponentResidentsBlueprint : public SMComponentBlueprint
   {
@@ -25,6 +26,7 @@ class ComponentResidents : public BuildingComponent
   {
 private:
   const ComponentResidentsBlueprint* blueprint;
+  std::shared_ptr<UIResourceAmount> uiOccupancyCount;
 
 public:
   ComponentResidents(const SMGameActorPtr& actor, SMComponentType type, const ComponentResidentsBlueprint* blueprint);
@@ -34,6 +36,8 @@ public:
   virtual void onMessage(GameContext* gameContext, SMMessage message, void* extra) override;
   virtual void update(GameContext* gameContext) override;
   virtual void cleanUp(GameContext* gameContext) override;
+  virtual int onSetupSelectionHUD(GameContext* gameContext, UIPanel* parentPanel, int yOffset) override;
+  virtual void onUpdateSelectionHUD(GameContext* gameContext) override;
 
 protected:
   void populateResidents(GameContext* gameContext);

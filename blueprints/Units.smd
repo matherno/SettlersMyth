@@ -1,4 +1,5 @@
 <blueprint name="Settler" type="Unit" selectable="false">
+    <icon imagefile="icons/settler.png"/>
 	<grid x="0.3" y="0.3" height="0.7" posincentre="true"/>
     <unit speed="2"/>
 	<component type="ResourcePickup" id="1">
