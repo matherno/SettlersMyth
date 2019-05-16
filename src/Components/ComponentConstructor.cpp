@@ -183,6 +183,7 @@ void ComponentConstructor::sendUnitToConstruct(GameContext* gameContext)
     GameActorBuilding* buildingActor = GameActorBuilding::cast(actor.get());
     if (buildingActor && buildingActor->getIsUnderConstruction() && buildingActor->getConstructionPackID() == blueprint->constructionPackID)
       return buildingActor->getConstructionResourceStorage()->canStoreResource(blueprint->constructionPackID, 1);
+    return false;
     });
 
   // then tell the idle unit to take a construction pack to this building and construct it a bit
